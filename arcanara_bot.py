@@ -404,9 +404,9 @@ async def insight(ctx):
     embed.add_field(name="!shuffle", value="Shuffle and cleanse the deck.", inline=False)
     embed.add_field(name="!intent <message>", value="Set or view your reading intention.", inline=False)
     embed.add_field(name="!cardoftheday", value="Draw a random tarot card.", inline=False)
-    embed.add_field(name="!drawcards", value="Draw as many cards as you need.", inline=False)
+    embed.add_field(name="!drawcards <number>", value="Draw as many cards as you need.", inline=False)
     embed.add_field(name="!threecard", value="Draw a 3-card spread.", inline=False)
-    embed.add_field(name="!celtic <message>", value="Perform the Celtic Cross Spread.", inline=False)
+    embed.add_field(name="!celtic", value="Perform the Celtic Cross Spread.", inline=False)
     embed.add_field(name="!read <question>", value="Ask a question for a guided 3-card reading.", inline=False)
     embed.add_field(name="!clarify", value="Pull a clarifier for your last reading.", inline=False)
     embed.add_field(name="!meaning <card>", value="Show meanings, numerology, and guidance for a card.", inline=False)
@@ -490,4 +490,5 @@ if __name__ == "__main__":
 # RUN BOT
 # ==============================
 bot.run(BOT_TOKEN)
+
 
