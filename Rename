@@ -1,3 +1,0 @@
-git mv -f Arcanara_Bot.py arcanara_bot.py
-git commit -m "Fix bot filename"
-git push
