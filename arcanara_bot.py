@@ -393,8 +393,8 @@ async def meaning(ctx, *, card_name: str):
     embed.set_footer(text=f"{E['spark']} Arcanara Tarot Bot")
     await ctx.send(embed=embed)
 
-@bot.command(name="wisdom")
-async def wisdom(ctx):
+@bot.command(name="insight")
+async def insight(ctx):
     if not await channel_check(ctx): return
     embed = discord.Embed(
         title=f"{E['spark']} Arcanara Tarot Bot Commands",
@@ -490,3 +490,4 @@ if __name__ == "__main__":
 # RUN BOT
 # ==============================
 bot.run(BOT_TOKEN)
+
