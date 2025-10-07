@@ -485,13 +485,12 @@ if __name__ == "__main__":
     import sys
     if sys.stdin.isatty():
         input("\nPress Enter to exit...")
-
-    bot.run(BOT_TOKEN)
-
+        
 # ==============================
 # RUN BOT
 # ==============================
 bot.run(BOT_TOKEN)
+
 
 
 
