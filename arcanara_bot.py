@@ -480,12 +480,18 @@ async def celtic_cross(ctx):
 
     embed.set_footer(text=f"{E['spark']} Trust the flow of insight • Arcanara Tarot Bot")
     await ctx.send(embed=embed)
+if __name__ == "__main__":
+    # Only prompt locally
+    import sys
+    if sys.stdin.isatty():
+        input("\nPress Enter to exit...")
 
-input("\nPress Enter to exit...")
+    bot.run(BOT_TOKEN)
 
 # ==============================
 # RUN BOT
 # ==============================
 bot.run(BOT_TOKEN)
+
 
 
