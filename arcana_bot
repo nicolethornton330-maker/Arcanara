@@ -175,7 +175,7 @@ def get_intent_text(user_id):
 # ==============================
 @bot.event
 async def on_ready():
-    print(f"{E['crystal']} Witchy Wisdom is online as {bot.user}")
+    print(f"{E['crystal']} Arcanara is online as {bot.user}")
 
 # ==============================
 # COMMANDS
@@ -190,7 +190,7 @@ async def shuffle(ctx):
         description="Energy reset complete. The cards are ready to speak again.",
         color=0x9370DB
     )
-    embed.set_footer(text=f"{E['spark']} Intention renewed • Witchy Wisdom Tarot Bot")
+    embed.set_footer(text=f"{E['spark']} Intention renewed • Arcanara Tarot Bot")
     await ctx.send(embed=embed)
 
 @bot.command(name="intent")
@@ -381,14 +381,14 @@ async def meaning(ctx, *, card_name: str):
     embed.add_field(name=f"Reversed {E['moon']}", value=card["reversed"], inline=False)
     embed.add_field(name=f"Guidance {E['light']}", value=card.get("guidance", "—"), inline=False)
     embed.add_field(name=f"Call to Action {E['crystal']}", value=card.get("call_to_action", "—"), inline=False)
-    embed.set_footer(text=f"{E['spark']} Witchy Wisdom Tarot Bot")
+    embed.set_footer(text=f"{E['spark']} Arcanara Tarot Bot")
     await ctx.send(embed=embed)
 
 @bot.command(name="wisdom")
 async def wisdom(ctx):
     if not await channel_check(ctx): return
     embed = discord.Embed(
-        title=f"{E['spark']} Witchy Wisdom Tarot Bot Commands",
+        title=f"{E['spark']} Arcanara Tarot Bot Commands",
         color=0x9370DB,
         description="Your magical guide to tarot readings in Discord."
     )
@@ -426,7 +426,7 @@ async def draw_many(ctx, number_of_cards: int):
             inline=False
         )
 
-    embed.set_footer(text=f"{E['spark']} Trust your intuition • Witchy Wisdom Tarot Bot")
+    embed.set_footer(text=f"{E['spark']} Trust your intuition • Arcanara Tarot Bot")
     await ctx.send(embed=embed)
 
 @bot.command(name="celtic")
@@ -469,7 +469,7 @@ async def celtic_cross(ctx):
             inline=False
         )
 
-    embed.set_footer(text=f"{E['spark']} Trust the flow of insight • Witchy Wisdom Tarot Bot")
+    embed.set_footer(text=f"{E['spark']} Trust the flow of insight • Arcanara Tarot Bot")
     await ctx.send(embed=embed)
 
 input("\nPress Enter to exit...")
