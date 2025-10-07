@@ -29,13 +29,22 @@ RESTRICT_TO_CHANNEL = False  # set to False if you want commands anywhere
 # LOAD TAROT JSON
 # ==============================
 def load_tarot_json():
-    json_path = Path(r"C:\Users\Nicole\Tarot\Tarot_Official.JSON")
+    # Dynamically find the Tarot JSON file in the same folder as this script
+    base_dir = Path(__file__).resolve().parent
+    json_path = base_dir / "Tarot_Official.JSON"
+
     if not json_path.exists():
-        raise FileNotFoundError(f"Tarot JSON not found at {json_path}.")
+        raise FileNotFoundError(
+            f"❌ Tarot JSON not found at {json_path}. "
+            "Make sure 'Tarot_Official.JSON' is in the same directory as this file."
+        )
+
+    print(f"🔮 Loading tarot data from: {json_path}")
     with json_path.open("r", encoding="utf-8") as fh:
         return json.load(fh)
 
 tarot_cards = load_tarot_json()
+print(f"✅ Loaded {len(tarot_cards)} tarot cards successfully!")
 
 # ==============================
 # BOT SETUP
@@ -478,4 +487,5 @@ input("\nPress Enter to exit...")
 # RUN BOT
 # ==============================
 bot.run(BOT_TOKEN)
+
 
