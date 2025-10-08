@@ -412,7 +412,7 @@ async def insight(ctx):
         color=0xB28DFF
     )
 
-        embed.add_field(
+    embed.add_field(
         name=f"{E['light']} **Intent & Focus**",
         value=("• `!intent <your focus>` — Set or view your current intention.\n"
                "• `!clarify` — Draw a clarifier for your most recent reading."),
