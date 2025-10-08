@@ -6,6 +6,7 @@ import json
 import asyncio
 from pathlib import Path
 import os
+import re
 
 # ==============================
 # CONFIGURATION
@@ -34,7 +35,6 @@ print(f"✅ Loaded {len(tarot_cards)} tarot cards successfully!")
 # ==============================
 KNOWN_SEEKERS_FILE = Path("known_seekers.json")
 
-# Load known seekers from file (if exists)
 def load_known_seekers():
     if KNOWN_SEEKERS_FILE.exists():
         try:
@@ -44,13 +44,12 @@ def load_known_seekers():
             return {}
     return {}
 
-# Save known seekers to file
 def save_known_seekers(data):
     with KNOWN_SEEKERS_FILE.open("w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-# Global memory store
 known_seekers = load_known_seekers()
+user_intentions = {}
 
 # ==============================
 # BOT SETUP
@@ -69,9 +68,10 @@ E = {
     "fire": "🔥", "water": "💧", "sword": "⚔️",
     "leaf": "🌿", "arcana": "🌌", "shuffle": "🔁"
 }
-import re
 
-# Convert number words ↔ digits for flexible matching
+# ==============================
+# NAME NORMALIZATION
+# ==============================
 NUM_WORDS = {
     "one": "1", "two": "2", "three": "3", "four": "4", "five": "5",
     "six": "6", "seven": "7", "eight": "8", "nine": "9", "ten": "10",
@@ -79,11 +79,8 @@ NUM_WORDS = {
 NUM_WORDS_RE = re.compile(r"\b(" + "|".join(NUM_WORDS.keys()) + r")\b")
 
 def normalize_card_name(name: str) -> str:
-    """Normalize card names and queries for flexible matching."""
     s = name.lower().strip()
-    # Replace number words with digits (e.g., 'two' → '2')
     s = NUM_WORDS_RE.sub(lambda m: NUM_WORDS[m.group(1)], s)
-    # Remove extra spaces and punctuation
     s = re.sub(r"[^a-z0-9\s]", "", s)
     s = re.sub(r"\s+", " ", s)
     return s
@@ -213,36 +210,47 @@ async def shuffle(ctx):
     )
     await send_with_typing(ctx, embed, delay_range=(1.0, 2.0), mood="shuffle")
 
-intent_text = user_intentions.get(ctx.author.id)
+@bot.command(name="cardoftheday")
+async def card_of_the_day(ctx):
+    card, orientation, meaning = draw_card()
+    tone = E["sun"] if orientation == "Upright" else E["moon"]
+    intent_text = user_intentions.get(ctx.author.id)
 
-desc = f"**{card['name']} ({orientation} {tone})**\n\n{meaning}"
-if intent_text:
-    desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
+    desc = f"**{card['name']} ({orientation} {tone})**\n\n{meaning}"
+    if intent_text:
+        desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
 
-embed = discord.Embed(
-    title=f"{E['crystal']} Card of the Day",
-    description=desc,
-    color=suit_color(card["suit"])
-)
+    embed = discord.Embed(
+        title=f"{E['crystal']} Card of the Day",
+        description=desc,
+        color=suit_color(card["suit"])
+    )
 
-await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="daily")
+    await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="daily")
 
 @bot.command(name="threecard")
 async def three_card(ctx):
     positions = [f"Past {E['clock']}", f"Present {E['moon']}", f"Future {E['star']}"]
     cards = draw_unique_cards(3)
     intent_text = user_intentions.get(ctx.author.id)
+
     desc = "Past • Present • Future"
     if intent_text:
-    desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
+        desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
 
-embed = discord.Embed(
-    title=f"{E['crystal']} Three-Card Spread",
-    description=desc,
-    color=0xA020F0
-)
+    embed = discord.Embed(
+        title=f"{E['crystal']} Three-Card Spread",
+        description=desc,
+        color=0xA020F0
+    )
+
     for pos, (card, orientation, meaning) in zip(positions, cards):
-        embed.add_field(name=f"{pos}: {card['name']} ({orientation})", value=meaning, inline=False)
+        embed.add_field(
+            name=f"{pos}: {card['name']} ({orientation})",
+            value=meaning,
+            inline=False
+        )
+
     await send_with_typing(ctx, embed, delay_range=(2.5, 4.0), mood="spread")
 
 @bot.command(name="celtic")
@@ -275,7 +283,6 @@ async def clarify(ctx):
 
 @bot.command(name="meaning")
 async def meaning(ctx, *, query: str):
-    """Look up a tarot card meaning (without in-character response)."""
     norm_query = normalize_card_name(query)
 
     matches = [
@@ -302,11 +309,9 @@ async def meaning(ctx, *, query: str):
         await asyncio.sleep(random.uniform(1.0, 2.0))
 
     await ctx.send(embed=embed)
-    user_intentions = {}
 
 @bot.command(name="intent")
 async def intent(ctx, *, message: str = None):
-    """Set or view your current intention."""
     if not message:
         current = user_intentions.get(ctx.author.id)
         if current:
@@ -320,70 +325,44 @@ async def intent(ctx, *, message: str = None):
 
 @bot.command(name="insight")
 async def insight(ctx):
-    """Shows a modern, personalized command guide with memory."""
     user_id = str(ctx.author.id)
     user_name = ctx.author.display_name
 
-    # Check if user is known
     first_time = user_id not in known_seekers
     if first_time:
-        greeting = (
-            f"{E['spark']} **Welcome, {user_name}.**\n"
-            "The deck senses a new presence — your journey begins here."
-        )
+        greeting = f"{E['spark']} **Welcome, {user_name}.**\nThe deck senses a new presence — your journey begins here."
         known_seekers[user_id] = {"name": user_name}
         save_known_seekers(known_seekers)
     else:
-        greeting = (
-            f"{E['spark']} **Welcome back, {user_name}.**\n"
-            "Your energy feels familiar — shall we continue?"
-        )
+        greeting = f"{E['spark']} **Welcome back, {user_name}.**\nYour energy feels familiar — shall we continue?"
 
     embed = discord.Embed(
         title=f"{E['crystal']} Arcanara Insight Menu {E['crystal']}",
-        description=(
-            f"{greeting}\n\n"
-            "Your intuition is your compass — here are the paths you may travel:\n\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━"
-        ),
+        description=(f"{greeting}\n\nYour intuition is your compass — here are the paths you may travel:\n\n━━━━━━━━━━━━━━━━━━━━━━━"),
         color=0xB28DFF
     )
 
     embed.add_field(
         name=f"{E['light']} **Intent & Focus**",
-        value=(
-            "• `!intent <your focus>` — Set or view your current intention.\n"
-            "• `!clarify` — Draw a clarifier for your most recent reading."
-        ),
+        value=("• `!intent <your focus>` — Set or view your current intention.\n• `!clarify` — Draw a clarifier for your most recent reading."),
         inline=False
     )
 
     embed.add_field(
         name=f"{E['book']} **Draws & Spreads**",
-        value=(
-            "• `!cardoftheday` — Reveal the card that guides your day.\n"
-            "• `!threecard` — Explore Past, Present, and Future energies.\n"
-            "• `!celtic` — Perform a full 10-card Celtic Cross spread."
-        ),
+        value=("• `!cardoftheday` — Reveal the card that guides your day.\n• `!threecard` — Explore Past, Present, and Future energies.\n• `!celtic` — Perform a full 10-card Celtic Cross spread."),
         inline=False
     )
 
     embed.add_field(
         name=f"{E['spark']} **Knowledge & Reflection**",
-        value=(
-            "• `!meaning <card>` — Uncover upright and reversed meanings.\n"
-            "• `!shuffle` — Cleanse and reset the deck’s energy.\n"
-            "• `!insight` — Return to this sacred index anytime."
-        ),
+        value=("• `!meaning <card>` — Uncover upright and reversed meanings.\n• `!shuffle` — Cleanse and reset the deck’s energy.\n• `!insight` — Return to this sacred index anytime."),
         inline=False
     )
 
     embed.add_field(
         name=f"{E['moon']} **Coming Soon**",
-        value=(
-            "• `!reflect` — Journal your readings for personal insight.\n"
-            "• `!mystery` — Draw a silent card that speaks only through intuition."
-        ),
+        value=("• `!reflect` — Journal your readings for personal insight.\n• `!mystery` — Draw a silent card that speaks only through intuition."),
         inline=False
     )
 
