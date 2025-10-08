@@ -425,7 +425,7 @@ async def insight(ctx):
            "• `!read <focus>` — Receive a three-card reading (Situation, Obstacle, Guidance).\n"
            "• `!celtic` — Perform a full 10-card Celtic Cross spread."),
     inline=False
-)
+    )
 
    embed.add_field(
         name=f"{E['spark']} **Knowledge & Reflection**",
