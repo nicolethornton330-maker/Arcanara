@@ -3,17 +3,16 @@ import discord
 from discord.ext import commands
 import random
 import json
+import asyncio
 from pathlib import Path
 import re
 import difflib
 import unicodedata
+import os
 
 # ==============================
 # CONFIGURATION
 # ==============================
-import os
-
-# Load your bot token securely from an environment variable
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 if not BOT_TOKEN:
@@ -28,7 +27,6 @@ RESTRICT_TO_CHANNEL = False  # set to False if you want commands anywhere
 # LOAD TAROT JSON
 # ==============================
 def load_tarot_json():
-    # Look for Tarot_Official.JSON in the same directory as this script
     base_dir = Path(__file__).resolve().parent
     json_path = base_dir / "Tarot_Official.JSON"
 
@@ -158,11 +156,13 @@ def suit_emoji(suit):
         "Pentacles": E["leaf"], "Major Arcana": E["arcana"]
     }.get(suit, E["crystal"])
 
-async def channel_check(ctx):
-    return True  # easy mode for now
-
-def get_intent_text(user_id):
-    return user_intentions.get(user_id, "No specific intention set.")
+# ==============================
+# NEW FUNCTION — adds typing delay
+# ==============================
+async def send_with_typing(ctx, embed, delay_range=(1.5, 3.0)):
+    async with ctx.typing():
+        await asyncio.sleep(random.uniform(*delay_range))
+        await ctx.send(embed=embed)
 
 # ==============================
 # EVENTS
@@ -183,12 +183,12 @@ async def shuffle(ctx):
         color=0x9370DB
     )
     embed.set_footer(text=f"{E['spark']} Intention renewed • Arcanara Tarot Bot")
-    await ctx.send(embed=embed)
+    await send_with_typing(ctx, embed)
 
 @bot.command(name="intent")
 async def intent(ctx, *, message: str = None):
     if not message:
-        current = get_intent_text(ctx.author.id)
+        current = user_intentions.get(ctx.author.id, "No specific intention set.")
         await ctx.send(f"{E['light']} Your current intention: *{current}*")
         return
 
@@ -204,7 +204,7 @@ async def intent(ctx, *, message: str = None):
     )
     embed.add_field(name="Numerology", value=num_text, inline=True)
     embed.add_field(name="Theme", value=card.get("theme", "—"), inline=False)
-    await ctx.send(embed=embed)
+    await send_with_typing(ctx, embed)
 
 @bot.command(name="cardoftheday")
 async def card_of_the_day(ctx):
@@ -217,7 +217,7 @@ async def card_of_the_day(ctx):
         color=suit_color(card["suit"])
     )
     embed.add_field(name="Numerology", value=num_text, inline=False)
-    await ctx.send(embed=embed)
+    await send_with_typing(ctx, embed)
 
 @bot.command(name="threecard")
 async def three_card(ctx):
@@ -230,7 +230,7 @@ async def three_card(ctx):
     )
     for pos, (card, orientation, meaning) in zip(positions, cards):
         embed.add_field(name=f"{pos}: {card['name']} ({orientation})", value=meaning, inline=False)
-    await ctx.send(embed=embed)
+    await send_with_typing(ctx, embed)
 
 @bot.command(name="drawcards", aliases=["pull"])
 async def draw_many(ctx, number_of_cards: int = 1):
@@ -249,7 +249,7 @@ async def draw_many(ctx, number_of_cards: int = 1):
             name=f"Card {i}: {card['name']} ({orientation} {tone})",
             value=meaning, inline=False
         )
-    await ctx.send(embed=embed)
+    await send_with_typing(ctx, embed)
 
 @bot.command(name="celtic")
 async def celtic_cross(ctx):
@@ -266,7 +266,7 @@ async def celtic_cross(ctx):
     )
     for pos, (card, orientation, meaning) in zip(positions, cards):
         embed.add_field(name=f"{pos}: {card['name']} ({orientation})", value=meaning, inline=False)
-    await ctx.send(embed=embed)
+    await send_with_typing(ctx, embed)
 
 @bot.command(name="clarify")
 async def clarify(ctx):
@@ -277,7 +277,7 @@ async def clarify(ctx):
         description=f"**{card['name']} ({orientation} {tone})**\n\n{meaning}",
         color=suit_color(card["suit"])
     )
-    await ctx.send(embed=embed)
+    await send_with_typing(ctx, embed)
 
 @bot.command(name="meaning", aliases=["lookup", "info", "define", "cardinfo"])
 async def meaning(ctx, *, query: str):
@@ -294,7 +294,7 @@ async def meaning(ctx, *, query: str):
     embed.add_field(name=f"Upright {E['sun']}", value=card.get("upright", "—"), inline=False)
     embed.add_field(name=f"Reversed {E['moon']}", value=card.get("reversed", "—"), inline=False)
     embed.add_field(name="Numerology", value=num_text, inline=True)
-    await ctx.send(embed=embed)
+    await send_with_typing(ctx, embed)
 
 @bot.command(name="wisdom")
 async def wisdom(ctx):
@@ -311,7 +311,7 @@ async def wisdom(ctx):
     embed.add_field(name="!meaning <card>", value="Show a card’s full meaning.", inline=False)
     embed.add_field(name="!clarify", value="Draw a clarifier card.", inline=False)
     embed.set_footer(text=f"{E['light']} Trust your intuition • Arcanara Tarot Bot")
-    await ctx.send(embed=embed)
+    await send_with_typing(ctx, embed)
 
 # ==============================
 # RUN BOT
