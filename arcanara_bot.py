@@ -231,9 +231,9 @@ await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="daily")
 async def three_card(ctx):
     positions = [f"Past {E['clock']}", f"Present {E['moon']}", f"Future {E['star']}"]
     cards = draw_unique_cards(3)
-   intent_text = user_intentions.get(ctx.author.id)
-desc = "Past • Present • Future"
-if intent_text:
+    intent_text = user_intentions.get(ctx.author.id)
+    desc = "Past • Present • Future"
+    if intent_text:
     desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
 
 embed = discord.Embed(
