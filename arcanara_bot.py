@@ -350,7 +350,7 @@ async def insight(ctx):
 
     embed.add_field(
         name=f"{E['book']} **Draws & Spreads**",
-        value=("• `!cardoftheday` — Reveal the card that guides your day.\n• `!threecard` — Explore Past, Present, and Future energies.\n• `!celtic` — Perform a full 10-card Celtic Cross spread."),
+        value=("• `!cardoftheday` — Reveal the card that guides your day.\n• `!threecard` — Explore Past, Present, and Future energies.\n• `!celtic` — Perform a full 10-card Celtic Cross spread.\n• `!mystery` — Pull a mystery card and reflect without the meaning. \n• `!reveal` — Reveal the meanings of the mystery card."),
         inline=False
     )
 
@@ -376,6 +376,71 @@ async def insight(ctx):
 
     await ctx.send(embed=embed)
 
+# ==============================
+# MYSTERY + REVEAL COMMANDS
+# ==============================
+mystery_draws = {}  # Temporary storage of mystery cards per user
+
+@bot.command(name="mystery")
+async def mystery(ctx):
+    """Draws a silent card for intuitive reflection."""
+    card, orientation, meaning = draw_card()
+    tone = E["sun"] if orientation == "Upright" else E["moon"]
+    suit_symbol = suit_emoji(card["suit"])
+
+    # Store the hidden card for later reveal
+    mystery_draws[ctx.author.id] = {
+        "card": card,
+        "orientation": orientation,
+        "meaning": meaning
+    }
+
+    embed = discord.Embed(
+        title=f"{E['moon']} The Mystery Card {E['moon']}",
+        description=(
+            f"**{card['name']} ({orientation} {tone})**\n\n"
+            f"{suit_symbol} *The meaning of this card is hidden.*\n"
+            "Close your eyes, breathe deeply, and let your intuition speak before seeking its written meaning."
+        ),
+        color=suit_color(card["suit"])
+    )
+
+    embed.set_footer(
+        text=f"{E['crystal']} When you're ready, whisper `!reveal` to learn what the card truly meant."
+    )
+
+    await send_with_typing(ctx, embed, delay_range=(2.0, 3.5), mood="deep")
+
+
+@bot.command(name="reveal")
+async def reveal(ctx):
+    """Reveals the meaning of the last mystery card drawn."""
+    data = mystery_draws.get(ctx.author.id)
+    if not data:
+        await ctx.send(f"{E['warn']} You have no mystery card waiting to be revealed. Use `!mystery` first.")
+        return
+
+    card = data["card"]
+    orientation = data["orientation"]
+    meaning = data["meaning"]
+    tone = E["sun"] if orientation == "Upright" else E["moon"]
+
+    embed = discord.Embed(
+        title=f"{E['light']} The Mystery Revealed {E['light']}",
+        description=(
+            f"**{card['name']} ({orientation} {tone})**\n\n"
+            f"{meaning}"
+        ),
+        color=suit_color(card["suit"])
+    )
+
+    embed.set_footer(text=f"{E['crystal']} The veil lifts — may the message settle where it’s meant to.")
+
+    # Clear the stored card after reveal
+    del mystery_draws[ctx.author.id]
+
+    await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="deep")
+    
 # ==============================
 # RUN BOT
 # ==============================
