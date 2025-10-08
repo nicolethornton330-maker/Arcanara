@@ -412,19 +412,20 @@ async def insight(ctx):
         color=0xB28DFF
     )
 
-    embed.add_field(
+        embed.add_field(
         name=f"{E['light']} **Intent & Focus**",
-        value=("• `!intent <your focus>` — Set or view your current intention.\n• `!clarify` — Draw a clarifier for your most recent reading."),
+        value=("• `!intent <your focus>` — Set or view your current intention.\n"
+               "• `!clarify` — Draw a clarifier for your most recent reading."),
         inline=False
     )
 
-   embed.add_field(
-    name=f"{E['book']} **Draws & Spreads**",
-    value=("• `!cardoftheday` — Reveal the card that guides your day.\n"
-           "• `!threecard` — Explore Past, Present, and Future energies.\n"
-           "• `!read <focus>` — Receive a three-card reading (Situation, Obstacle, Guidance).\n"
-           "• `!celtic` — Perform a full 10-card Celtic Cross spread."),
-    inline=False
+    embed.add_field(
+        name=f"{E['book']} **Draws & Spreads**",
+        value=("• `!cardoftheday` — Reveal the card that guides your day.\n"
+               "• `!threecard` — Explore Past, Present, and Future energies.\n"
+               "• `!read <focus>` — Receive a three-card reading (Situation, Obstacle, Guidance).\n"
+               "• `!celtic` — Perform a full 10-card Celtic Cross spread."),
+        inline=False
     )
 
    embed.add_field(
