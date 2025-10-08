@@ -1,5 +1,3 @@
-There was a duplicate response still. Is it something in my coding?
-
 # -*- coding: utf-8 -*-
 import discord
 from discord.ext import commands
