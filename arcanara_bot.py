@@ -226,10 +226,13 @@ async def clarify(ctx):
 
 @bot.command(name="meaning")
 async def meaning(ctx, *, query: str):
+    """Look up a tarot card meaning (without in-character response)."""
     matches = [c for c in tarot_cards if query.lower() in c["name"].lower()]
+
     if not matches:
         await ctx.send(f"{E['warn']} I searched the deck but found no card named **{query}**.")
         return
+
     card = matches[0]
     embed = discord.Embed(
         title=f"{E['book']} {card['name']} Meanings",
@@ -238,22 +241,35 @@ async def meaning(ctx, *, query: str):
     )
     embed.add_field(name=f"Upright {E['sun']}", value=card.get("upright", "—"), inline=False)
     embed.add_field(name=f"Reversed {E['moon']}", value=card.get("reversed", "—"), inline=False)
-    await send_with_typing(ctx, embed, delay_range=(2.0, 3.5), mood="general")
+    embed.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
+    # short, simple typing animation (1–2 seconds)
+    async with ctx.typing():
+        await asyncio.sleep(random.uniform(1.0, 2.0))
+
+    await ctx.send(embed=embed)
+)
 @bot.command(name="insight")
 async def insight(ctx):
+    """Provides a quick, low-delay command overview."""
     embed = discord.Embed(
-        title=f"{E['spark']} Arcanara Commands",
+        title=f"{E['spark']} Arcanara Insight Menu",
         color=0x9370DB,
         description="Here are the paths you can walk with me:"
     )
-    embed.add_field(name="!cardoftheday", value="Draw a daily tarot card.", inline=False)
-    embed.add_field(name="!threecard", value="Past, Present, and Future spread.", inline=False)
+    embed.add_field(name="!cardoftheday", value="Draw your daily tarot card.", inline=False)
+    embed.add_field(name="!threecard", value="Explore your Past, Present, and Future.", inline=False)
     embed.add_field(name="!celtic", value="Perform a full Celtic Cross spread.", inline=False)
-    embed.add_field(name="!clarify", value="Draw a clarifier card.", inline=False)
-    embed.add_field(name="!meaning <card>", value="See the upright and reversed meanings.", inline=False)
+    embed.add_field(name="!clarify", value="Draw a clarifier for your last reading.", inline=False)
+    embed.add_field(name="!meaning <card>", value="See upright and reversed meanings.", inline=False)
+    embed.add_field(name="!shuffle", value="Cleanse and reset the deck’s energy.", inline=False)
     embed.set_footer(text=f"{E['light']} Trust your intuition • Arcanara Tarot Bot")
-    await send_with_typing(ctx, embed, delay_range=(1.0, 2.0), mood="general")
+
+    # short, gentle typing animation (1–1.5 seconds)
+    async with ctx.typing():
+        await asyncio.sleep(random.uniform(1.0, 1.5))
+
+    await ctx.send(embed=embed)
 
 # ==============================
 # RUN BOT
