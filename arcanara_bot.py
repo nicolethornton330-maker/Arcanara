@@ -30,6 +30,29 @@ tarot_cards = load_tarot_json()
 print(f"✅ Loaded {len(tarot_cards)} tarot cards successfully!")
 
 # ==============================
+# SEEKER MEMORY SYSTEM
+# ==============================
+KNOWN_SEEKERS_FILE = Path("known_seekers.json")
+
+# Load known seekers from file (if exists)
+def load_known_seekers():
+    if KNOWN_SEEKERS_FILE.exists():
+        try:
+            with KNOWN_SEEKERS_FILE.open("r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+# Save known seekers to file
+def save_known_seekers(data):
+    with KNOWN_SEEKERS_FILE.open("w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+# Global memory store
+known_seekers = load_known_seekers()
+
+# ==============================
 # BOT SETUP
 # ==============================
 intents = discord.Intents.default()
@@ -190,26 +213,34 @@ async def shuffle(ctx):
     )
     await send_with_typing(ctx, embed, delay_range=(1.0, 2.0), mood="shuffle")
 
-@bot.command(name="cardoftheday")
-async def card_of_the_day(ctx):
-    card, orientation, meaning = draw_card()
-    tone = E["sun"] if orientation == "Upright" else E["moon"]
-    embed = discord.Embed(
-        title=f"{E['crystal']} Card of the Day",
-        description=f"**{card['name']} ({orientation} {tone})**\n\n{meaning}",
-        color=suit_color(card["suit"])
-    )
-    await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="daily")
+intent_text = user_intentions.get(ctx.author.id)
+
+desc = f"**{card['name']} ({orientation} {tone})**\n\n{meaning}"
+if intent_text:
+    desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
+
+embed = discord.Embed(
+    title=f"{E['crystal']} Card of the Day",
+    description=desc,
+    color=suit_color(card["suit"])
+)
+
+await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="daily")
 
 @bot.command(name="threecard")
 async def three_card(ctx):
     positions = [f"Past {E['clock']}", f"Present {E['moon']}", f"Future {E['star']}"]
     cards = draw_unique_cards(3)
-    embed = discord.Embed(
-        title=f"{E['crystal']} Three-Card Spread",
-        description="Past • Present • Future",
-        color=0xA020F0
-    )
+   intent_text = user_intentions.get(ctx.author.id)
+desc = "Past • Present • Future"
+if intent_text:
+    desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
+
+embed = discord.Embed(
+    title=f"{E['crystal']} Three-Card Spread",
+    description=desc,
+    color=0xA020F0
+)
     for pos, (card, orientation, meaning) in zip(positions, cards):
         embed.add_field(name=f"{pos}: {card['name']} ({orientation})", value=meaning, inline=False)
     await send_with_typing(ctx, embed, delay_range=(2.5, 4.0), mood="spread")
@@ -271,26 +302,92 @@ async def meaning(ctx, *, query: str):
         await asyncio.sleep(random.uniform(1.0, 2.0))
 
     await ctx.send(embed=embed)
-    
+    user_intentions = {}
+
+@bot.command(name="intent")
+async def intent(ctx, *, message: str = None):
+    """Set or view your current intention."""
+    if not message:
+        current = user_intentions.get(ctx.author.id)
+        if current:
+            await ctx.send(f"{E['light']} Your current intention is: *{current}*")
+        else:
+            await ctx.send(f"{E['warn']} You haven’t set an intention yet. Use `!intent your focus`.")
+        return
+
+    user_intentions[ctx.author.id] = message
+    await ctx.send(f"{E['spark']} Intention set to: *{message}*")
+
 @bot.command(name="insight")
 async def insight(ctx):
-    """Provides a quick, low-delay command overview."""
-    embed = discord.Embed(
-        title=f"{E['spark']} Arcanara Insight Menu",
-        color=0x9370DB,
-        description="Here are the paths you can walk with me:"
-    )
-    embed.add_field(name="!cardoftheday", value="Draw your daily tarot card.", inline=False)
-    embed.add_field(name="!threecard", value="Explore your Past, Present, and Future.", inline=False)
-    embed.add_field(name="!celtic", value="Perform a full Celtic Cross spread.", inline=False)
-    embed.add_field(name="!clarify", value="Draw a clarifier for your last reading.", inline=False)
-    embed.add_field(name="!meaning <card>", value="See upright and reversed meanings.", inline=False)
-    embed.add_field(name="!shuffle", value="Cleanse and reset the deck’s energy.", inline=False)
-    embed.set_footer(text=f"{E['light']} Trust your intuition • Arcanara Tarot Bot")
+    """Shows a modern, personalized command guide with memory."""
+    user_id = str(ctx.author.id)
+    user_name = ctx.author.display_name
 
-    # short, gentle typing animation (1–1.5 seconds)
+    # Check if user is known
+    first_time = user_id not in known_seekers
+    if first_time:
+        greeting = f"{E['spark']} **Welcome, {user_name}.**\nThe deck senses a new presence — your journey begins here."
+        known_seekers[user_id] = {"name": user_name}
+        save_known_seekers(known_seekers)
+    else:
+        greeting = f"{E['spark']} **Welcome back, {user_name}.**\nYour energy feels familiar — shall we continue?"
+
+    embed = discord.Embed(
+        title=f"{E['crystal']} Arcanara Insight Menu {E['crystal']}",
+        description=(
+            f"{greeting}\n\n"
+            "Your intuition is your compass — here are the paths you may travel:\n\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━"
+        ),
+        color=0xB28DFF
+    )
+
+    embed.add_field(
+        name=f"{E['light']} **Intent & Focus**",
+        value=(
+            f"• `!intent <your focus>` — Set or view your current intention.\n"
+            f"• `!clarify` — Draw a clarifier for your most recent reading."
+        ),
+        inline=False
+    )
+
+    embed.add_field(
+        name=f"{E['book']} **Draws & Spreads**",
+        value=(
+            f"• `!cardoftheday` — Reveal the card that guides your day.\n"
+            f"• `!threecard` — Explore Past, Present, and Future energies.\n"
+            f"• `!celtic` — Perform a full 10-card Celtic Cross spread."
+        ),
+        inline=False
+    )
+
+    embed.add_field(
+        name=f"{E['spark']} **Knowledge & Reflection**",
+        value=(
+            f"• `!meaning <card>` — Uncover upright and reversed meanings.\n"
+            f"• `!shuffle` — Cleanse and reset the deck’s energy.\n"
+            f"• `!insight` — Return to this sacred index anytime."
+        ),
+        inline=False
+    )
+
+    embed.add_field(
+        name=f"{E['moon']} **Coming Soon**",
+        value=(
+            f"• `!reflect` — Journal your readings for personal insight.\n"
+            f"• `!mystery` — Draw a silent card that speaks only through intuition."
+        ),
+        inline=False
+    )
+
+    embed.set_footer(
+        text=f"{E['light']} Trust your intuition • Arcanara Tarot Bot",
+        icon_url="https://cdn-icons-png.flaticon.com/512/686/686589.png"
+    )
+
     async with ctx.typing():
-        await asyncio.sleep(random.uniform(1.0, 1.5))
+        await asyncio.sleep(random.uniform(0.8, 1.2))
 
     await ctx.send(embed=embed)
 
