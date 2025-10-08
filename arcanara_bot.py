@@ -320,7 +320,7 @@ async def arcanara(ctx):
     current_intent = get_intent_text(user_id)
 
     embed = discord.Embed(
-        title=f"{E['crystal']} Arcanara’s Grimoire of Commands {E['crystal']}",
+        title=f"{E['crystal']} Arcanara’s Commands {E['crystal']}",
         description=(
             f"{E['spark']} *Your current intention:* **{current_intent}**\n\n"
             "Invoke my magic using these commands. Each begins with `!`"
