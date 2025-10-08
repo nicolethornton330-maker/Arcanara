@@ -266,20 +266,29 @@ async def celtic_cross(ctx):
         description="A deep, archetypal exploration of your path.",
         color=0xA020F0
     )
-    for pos, (card, orientation, meaning) in zip(positions, cards):
-        embed.add_field(name=f"{pos}: {card['name']} ({orientation})", value=meaning, inline=False)
-    await send_with_typing(ctx, embed, delay_range=(3.5, 5.0), mood="deep")
 
-@bot.command(name="clarify")
-async def clarify(ctx):
-    card, orientation, meaning = draw_card()
-    tone = E["sun"] if orientation == "Upright" else E["moon"]
-    embed = discord.Embed(
-        title=f"{E['light']} Clarifier Card",
-        description=f"**{card['name']} ({orientation} {tone})**\n\n{meaning}",
-        color=suit_color(card["suit"])
-    )
-    await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="general")
+    total_length = len(embed.title) + len(embed.description)
+    fields_buffer = []
+
+    for pos, (card, orientation, meaning) in zip(positions, cards):
+        field_name = f"{pos}: {card['name']} ({orientation})"
+        field_value = meaning if len(meaning) < 1000 else meaning[:997] + "..."
+        field_length = len(field_name) + len(field_value)
+
+        # Check if adding this field would exceed Discord's limit
+        if total_length + field_length > 5800:
+            # Send current embed and start a new one
+            await send_with_typing(ctx, embed, delay_range=(3.0, 4.0), mood="deep")
+            embed = discord.Embed(
+                title=f"{E['crystal']} Celtic Cross Spread (Continued)",
+                color=0xA020F0
+            )
+            total_length = len(embed.title)
+
+        embed.add_field(name=field_name, value=field_value, inline=False)
+        total_length += field_length
+
+    await send_with_typing(ctx, embed, delay_range=(3.0, 4.0), mood="deep")
 
 @bot.command(name="meaning")
 async def meaning(ctx, *, query: str):
