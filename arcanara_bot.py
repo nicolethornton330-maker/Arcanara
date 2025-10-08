@@ -318,6 +318,29 @@ async def meaning(ctx, *, query: str):
         await asyncio.sleep(random.uniform(1.0, 2.0))
 
     await ctx.send(embed=embed)
+    
+@bot.command(name="clarify")
+async def clarify(ctx):
+    """Draws a clarifying card related to your most recent reading or focus."""
+    card, orientation, meaning = draw_card()
+    tone = E["sun"] if orientation == "Upright" else E["moon"]
+    intent_text = user_intentions.get(ctx.author.id)
+
+    desc = f"**{card['name']} ({orientation} {tone})**\n\n{meaning}"
+    if intent_text:
+        desc += f"\n\n{E['light']} **Clarifying Focus:** *{intent_text}*"
+
+    embed = discord.Embed(
+        title=f"{E['light']} Clarifier Card {E['light']}",
+        description=desc,
+        color=suit_color(card["suit"])
+    )
+
+    embed.set_footer(
+        text=f"{E['spark']} A clarifier shines a smaller light within your larger spread."
+    )
+
+    await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="general")
 
 @bot.command(name="intent")
 async def intent(ctx, *, message: str = None):
