@@ -327,18 +327,24 @@ async def insight(ctx):
     # Check if user is known
     first_time = user_id not in known_seekers
     if first_time:
-        greeting = f"{E['spark']} **Welcome, {user_name}.**\nThe deck senses a new presence — your journey begins here."
+        greeting = (
+            f"{E['spark']} **Welcome, {user_name}.**\n"
+            "The deck senses a new presence — your journey begins here."
+        )
         known_seekers[user_id] = {"name": user_name}
         save_known_seekers(known_seekers)
     else:
-        greeting = f"{E['spark']} **Welcome back, {user_name}.**\nYour energy feels familiar — shall we continue?"
+        greeting = (
+            f"{E['spark']} **Welcome back, {user_name}.**\n"
+            "Your energy feels familiar — shall we continue?"
+        )
 
     embed = discord.Embed(
         title=f"{E['crystal']} Arcanara Insight Menu {E['crystal']}",
         description=(
             f"{greeting}\n\n"
             "Your intuition is your compass — here are the paths you may travel:\n\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━"
+            "━━━━━━━━━━━━━━━━━━━━━━━"
         ),
         color=0xB28DFF
     )
@@ -346,8 +352,8 @@ async def insight(ctx):
     embed.add_field(
         name=f"{E['light']} **Intent & Focus**",
         value=(
-            f"• `!intent <your focus>` — Set or view your current intention.\n"
-            f"• `!clarify` — Draw a clarifier for your most recent reading."
+            "• `!intent <your focus>` — Set or view your current intention.\n"
+            "• `!clarify` — Draw a clarifier for your most recent reading."
         ),
         inline=False
     )
@@ -355,9 +361,9 @@ async def insight(ctx):
     embed.add_field(
         name=f"{E['book']} **Draws & Spreads**",
         value=(
-            f"• `!cardoftheday` — Reveal the card that guides your day.\n"
-            f"• `!threecard` — Explore Past, Present, and Future energies.\n"
-            f"• `!celtic` — Perform a full 10-card Celtic Cross spread."
+            "• `!cardoftheday` — Reveal the card that guides your day.\n"
+            "• `!threecard` — Explore Past, Present, and Future energies.\n"
+            "• `!celtic` — Perform a full 10-card Celtic Cross spread."
         ),
         inline=False
     )
@@ -365,9 +371,9 @@ async def insight(ctx):
     embed.add_field(
         name=f"{E['spark']} **Knowledge & Reflection**",
         value=(
-            f"• `!meaning <card>` — Uncover upright and reversed meanings.\n"
-            f"• `!shuffle` — Cleanse and reset the deck’s energy.\n"
-            f"• `!insight` — Return to this sacred index anytime."
+            "• `!meaning <card>` — Uncover upright and reversed meanings.\n"
+            "• `!shuffle` — Cleanse and reset the deck’s energy.\n"
+            "• `!insight` — Return to this sacred index anytime."
         ),
         inline=False
     )
@@ -375,8 +381,8 @@ async def insight(ctx):
     embed.add_field(
         name=f"{E['moon']} **Coming Soon**",
         value=(
-            f"• `!reflect` — Journal your readings for personal insight.\n"
-            f"• `!mystery` — Draw a silent card that speaks only through intuition."
+            "• `!reflect` — Journal your readings for personal insight.\n"
+            "• `!mystery` — Draw a silent card that speaks only through intuition."
         ),
         inline=False
     )
