@@ -350,13 +350,13 @@ async def insight(ctx):
 
     embed.add_field(
         name=f"{E['book']} **Draws & Spreads**",
-        value=("• `!cardoftheday` — Reveal the card that guides your day.\n• `!threecard` — Explore Past, Present, and Future energies.\n• `!celtic` — Perform a full 10-card Celtic Cross spread.\n• `!mystery` — Pull a mystery card and reflect without the meaning. \n• `!reveal` — Reveal the meanings of the mystery card."),
+        value=("• `!cardoftheday` — Reveal the card that guides your day.\n• `!threecard` — Explore Past, Present, and Future energies.\n• `!celtic` — Perform a full 10-card Celtic Cross spread.),
         inline=False
     )
 
     embed.add_field(
         name=f"{E['spark']} **Knowledge & Reflection**",
-        value=("• `!meaning <card>` — Uncover upright and reversed meanings.\n• `!shuffle` — Cleanse and reset the deck’s energy.\n• `!insight` — Return to this sacred index anytime."),
+        value=("• `!meaning <card>` — Uncover upright and reversed meanings.\n• `!shuffle` — Cleanse and reset the deck’s energy.\n• `!insight` — Return to this sacred index anytime.\n• `!mystery` — Pull a mystery card and reflect without the meaning. \n• `!reveal` — Reveal the meanings of the mystery card."),
         inline=False
     )
 
