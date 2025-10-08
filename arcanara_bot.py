@@ -418,7 +418,7 @@ async def insight(ctx):
         inline=False
     )
 
-  embed.add_field(
+   embed.add_field(
     name=f"{E['book']} **Draws & Spreads**",
     value=("• `!cardoftheday` — Reveal the card that guides your day.\n"
            "• `!threecard` — Explore Past, Present, and Future energies.\n"
@@ -427,7 +427,7 @@ async def insight(ctx):
     inline=False
 )
 
-    embed.add_field(
+   embed.add_field(
         name=f"{E['spark']} **Knowledge & Reflection**",
         value=("• `!meaning <card>` — Uncover upright and reversed meanings.\n• `!shuffle` — Cleanse and reset the deck’s energy.\n• `!insight` — Return to this sacred index anytime.\n• `!mystery` — Pull a mystery card and reflect without the meaning. \n• `!reveal` — Reveal the meanings of the mystery card."),
         inline=False
