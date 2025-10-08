@@ -18,22 +18,13 @@ RESTRICT_TO_CHANNEL = False       # set to False if you want commands anywhere
 # LOAD TAROT JSON
 # ==============================
 def load_tarot_json():
-    # Dynamically find the Tarot JSON file in the same folder as this script
-    base_dir = Path(__file__).resolve().parent
-    json_path = base_dir / "Tarot_Official.JSON"
-
+    json_path = Path(r"C:\Users\Nicole\Tarot\Tarot_Official.JSON")
     if not json_path.exists():
-        raise FileNotFoundError(
-            f"❌ Tarot JSON not found at {json_path}. "
-            "Make sure 'Tarot_Official.JSON' is in the same directory as this file."
-        )
-
-    print(f"🔮 Loading tarot data from: {json_path}")
+        raise FileNotFoundError(f"Tarot JSON not found at {json_path}.")
     with json_path.open("r", encoding="utf-8") as fh:
         return json.load(fh)
 
 tarot_cards = load_tarot_json()
-print(f"✅ Loaded {len(tarot_cards)} tarot cards successfully!")
 
 # ==============================
 # BOT SETUP
@@ -488,9 +479,6 @@ async def wisdom(ctx):
     embed.add_field(name="!meaning <card>", value="Show meanings, numerology, and guidance for a card.", inline=False)
     embed.set_footer(text=f"{E['light']} Stay intuitive and trust your inner wisdom.")
     embed.add_field(
-    name=f"{E['book']} `!meaning`, `!lookup`, `!info`",
-    value="Look up a card’s Upright/Reversed meanings from the grimoire.",
-    inline=False
 )
     await ctx.send(embed=embed)
 
