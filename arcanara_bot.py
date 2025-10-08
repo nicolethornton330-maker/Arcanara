@@ -11,7 +11,17 @@ import unicodedata
 # ==============================
 # CONFIGURATION
 # ==============================
-BOT_TOKEN = ""
+import os
+
+# Load your bot token securely from an environment variable
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+if not BOT_TOKEN:
+    raise ValueError(
+        "❌ BOT_TOKEN environment variable not found.\n"
+        "Please set it in your Render/host environment settings."
+    )
+
 RESTRICT_TO_CHANNEL = False  # set to False if you want commands anywhere
 
 # ==============================
