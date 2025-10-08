@@ -158,7 +158,7 @@ async def shuffle(ctx):
             description="Energy reset complete. The cards are ready to speak again.",
             color=0x9370DB
         )
-        embed.set_footer(text=f"{E['spark']} Intention renewed • Arcanara Tarot Bot")
+        embed.set_footer(text=f"{E['spark']} Intention renewed • !arcanara")
     await ctx.send(embed=embed)
 
 
