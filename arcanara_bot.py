@@ -360,12 +360,6 @@ async def insight(ctx):
         inline=False
     )
 
-    embed.add_field(
-        name=f"{E['moon']} **Coming Soon**",
-        value=("• `!reflect` — Journal your readings for personal insight.\n• `!mystery` — Draw a silent card that speaks only through intuition."),
-        inline=False
-    )
-
     embed.set_footer(
         text=f"{E['light']} Trust your intuition • Arcanara Tarot Bot",
         icon_url="https://cdn-icons-png.flaticon.com/512/686/686589.png"
