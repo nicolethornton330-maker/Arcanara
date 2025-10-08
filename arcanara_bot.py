@@ -46,6 +46,24 @@ E = {
     "fire": "🔥", "water": "💧", "sword": "⚔️",
     "leaf": "🌿", "arcana": "🌌", "shuffle": "🔁"
 }
+import re
+
+# Convert number words ↔ digits for flexible matching
+NUM_WORDS = {
+    "one": "1", "two": "2", "three": "3", "four": "4", "five": "5",
+    "six": "6", "seven": "7", "eight": "8", "nine": "9", "ten": "10",
+}
+NUM_WORDS_RE = re.compile(r"\b(" + "|".join(NUM_WORDS.keys()) + r")\b")
+
+def normalize_card_name(name: str) -> str:
+    """Normalize card names and queries for flexible matching."""
+    s = name.lower().strip()
+    # Replace number words with digits (e.g., 'two' → '2')
+    s = NUM_WORDS_RE.sub(lambda m: NUM_WORDS[m.group(1)], s)
+    # Remove extra spaces and punctuation
+    s = re.sub(r"[^a-z0-9\s]", "", s)
+    s = re.sub(r"\s+", " ", s)
+    return s
 
 # ==============================
 # HELPERS
@@ -227,7 +245,13 @@ async def clarify(ctx):
 @bot.command(name="meaning")
 async def meaning(ctx, *, query: str):
     """Look up a tarot card meaning (without in-character response)."""
-    matches = [c for c in tarot_cards if query.lower() in c["name"].lower()]
+    norm_query = normalize_card_name(query)
+
+    matches = [
+        c for c in tarot_cards
+        if normalize_card_name(c["name"]) == norm_query
+        or norm_query in normalize_card_name(c["name"])
+    ]
 
     if not matches:
         await ctx.send(f"{E['warn']} I searched the deck but found no card named **{query}**.")
@@ -243,7 +267,6 @@ async def meaning(ctx, *, query: str):
     embed.add_field(name=f"Reversed {E['moon']}", value=card.get("reversed", "—"), inline=False)
     embed.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
-    # short, simple typing animation (1–2 seconds)
     async with ctx.typing():
         await asyncio.sleep(random.uniform(1.0, 2.0))
 
