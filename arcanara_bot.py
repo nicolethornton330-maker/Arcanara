@@ -228,6 +228,44 @@ async def card_of_the_day(ctx):
 
     await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="daily")
 
+@bot.command(name="read")
+async def read(ctx, *, message: str = None):
+    """Performs a focused three-card reading based on the user's question or theme."""
+    if not message:
+        await ctx.send(f"{E['warn']} Please include a question or focus after the command. Example: `!read my career path`")
+        return
+
+    # Store or reuse user's focus
+    user_intentions[ctx.author.id] = message
+
+    cards = draw_unique_cards(3)
+    positions = [
+        f"Situation {E['sun']}",
+        f"Obstacle {E['sword']}",
+        f"Guidance {E['star']}"
+    ]
+
+    desc = f"{E['light']} **Focus:** *{message}*\n\nThree cards emerge to illuminate your path:"
+
+    embed = discord.Embed(
+        title=f"{E['crystal']} Intuitive Reading {E['crystal']}",
+        description=desc,
+        color=0x9370DB
+    )
+
+    for pos, (card, orientation, meaning) in zip(positions, cards):
+        embed.add_field(
+            name=f"{pos}: {card['name']} ({orientation})",
+            value=meaning,
+            inline=False
+        )
+
+    embed.set_footer(
+        text=f"{E['spark']} Let these cards guide your awareness, not dictate your choices."
+    )
+
+    await send_with_typing(ctx, embed, delay_range=(2.5, 4.0), mood="spread")
+
 @bot.command(name="threecard")
 async def three_card(ctx):
     positions = [f"Past {E['clock']}", f"Present {E['moon']}", f"Future {E['star']}"]
@@ -380,11 +418,14 @@ async def insight(ctx):
         inline=False
     )
 
-    embed.add_field(
-        name=f"{E['book']} **Draws & Spreads**",
-        value=("`!cardoftheday` — Reveal the card that guides your day.\n• `!threecard` — Explore Past, Present, and Future energies.\n• `!celtic` — Perform a full 10-card Celtic Cross spread."),
-        inline=False
-    )
+  embed.add_field(
+    name=f"{E['book']} **Draws & Spreads**",
+    value=("• `!cardoftheday` — Reveal the card that guides your day.\n"
+           "• `!threecard` — Explore Past, Present, and Future energies.\n"
+           "• `!read <focus>` — Receive a three-card reading (Situation, Obstacle, Guidance).\n"
+           "• `!celtic` — Perform a full 10-card Celtic Cross spread."),
+    inline=False
+)
 
     embed.add_field(
         name=f"{E['spark']} **Knowledge & Reflection**",
