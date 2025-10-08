@@ -423,53 +423,9 @@ async def clarify(ctx):
     # Send message
     await ctx.send(embed=embed)
 
-@bot.command(name="meaning")
-async def meaning(ctx, *, card_name: str):
-    if not await channel_check(ctx): 
-        return
 
-    matches = find_cards(card_name)
-
-    # No matches -> show suggestions
-    if not matches:
-        # suggest the closest 5 names to help the user
-        all_names = [c["name"] for c in tarot_cards]
-        suggestions = difflib.get_close_matches(card_name, all_names, n=5, cutoff=0.0)
-        if suggestions:
-            pretty = "\n".join(f"• {s}" for s in suggestions)
-            await ctx.send(f"{E['warn']} I couldn’t find **{card_name}**.\nTry one of these:\n{pretty}")
-        else:
-            await ctx.send(f"{E['warn']} I couldn’t find **{card_name}**.")
-        return
-
-    # Multiple matches -> don’t guess; ask for specificity
-    if len(matches) > 1:
-        options = "\n".join(f"• {c['name']}" for c in matches[:10])
-        await ctx.send(
-            f"{E['warn']} That’s a bit vague—did you mean one of these?\n{options}\n\n"
-            f"Tip: include the suit (e.g., `!meaning five of cups`)."
-        )
-        return
-
-    # Exactly one match -> show the embed
-    card = matches[0]
-    num_text = get_numerology_text(card.get("numerology"))
-    embed = discord.Embed(
-        title=f"{E['book']} {card['name']} Meanings",
-        color=suit_color(card["suit"])
-    )
-    embed.add_field(name="Suit", value=f"{suit_emoji(card['suit'])} {card['suit']}", inline=True)
-    embed.add_field(name="Numerology", value=num_text, inline=False)
-    embed.add_field(name="Theme", value=card.get("theme", "—"), inline=False)
-    embed.add_field(name=f"Upright {E['sun']}", value=card["upright"], inline=False)
-    embed.add_field(name=f"Reversed {E['moon']}", value=card["reversed"], inline=False)
-    embed.add_field(name=f"Guidance {E['light']}", value=card.get("guidance", "—"), inline=False)
-    embed.add_field(name=f"Call to Action {E['crystal']}", value=card.get("call_to_action", "—"), inline=False)
-    embed.set_footer(text=f"{E['spark']} Arcanara Tarot Bot")
-    await ctx.send(embed=embed)
-
-@bot.command(name="wisdom")
-async def wisdom(ctx):
+@bot.command(name="arcanara")
+async def arcanara(ctx):
     if not await channel_check(ctx): return
     embed = discord.Embed(
         title=f"{E['spark']} Arcanara Tarot Bot Commands",
@@ -487,8 +443,7 @@ async def wisdom(ctx):
     embed.add_field(name="!meaning <card>", value="Show meanings, numerology, and guidance for a card.", inline=False)
     embed.set_footer(text=f"{E['light']} Stay intuitive and trust your inner wisdom.")
     embed.add_field(
-    name=f"{E['book']} `!meaning`, `!lookup`, `!info`",
-    value="Look up a card’s Upright/Reversed meanings from the grimoire.",
+        
     inline=False
 )
     await ctx.send(embed=embed)
