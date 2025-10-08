@@ -248,7 +248,7 @@ async def meaning(ctx, *, query: str):
         await asyncio.sleep(random.uniform(1.0, 2.0))
 
     await ctx.send(embed=embed)
-)
+    
 @bot.command(name="insight")
 async def insight(ctx):
     """Provides a quick, low-delay command overview."""
