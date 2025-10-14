@@ -2,13 +2,13 @@
 import discord
 from discord.ext import commands
 import re
-import random
+import random, time
 import json
 import asyncio
 from pathlib import Path
 import os
 from card_images import make_image_attachment # uses assets/cards/rws_stx/ etc.
-
+MYSTERY_STATE: dict[int, dict] = {}
 # ==============================
 # CONFIGURATION
 # ==============================
@@ -485,63 +485,64 @@ mystery_draws = {}  # Temporary storage of mystery cards per user
 
 @bot.command(name="mystery")
 async def mystery(ctx):
-    """Draws a silent card for intuitive reflection."""
-    card, orientation, meaning = draw_card()
-    tone = E["sun"] if orientation == "Upright" else E["moon"]
-    suit_symbol = suit_emoji(card["suit"])
+    # pick a random card + orientation
+    card = random.choice(tarot_cards)
+    is_reversed = random.random() < 0.5
 
-    # Store the hidden card for later reveal
-    mystery_draws[ctx.author.id] = {
-        "card": card,
-        "orientation": orientation,
-        "meaning": meaning
+    # remember it for this user (one active mystery per user)
+    MYSTERY_STATE[ctx.author.id] = {
+        "name": card["name"],
+        "is_reversed": is_reversed,
+        "ts": time.time(),
     }
 
-    embed = discord.Embed(
-        title=f"{E['moon']} The Mystery Card {E['moon']}",
-        description=(
-            f"**{card['name']} ({orientation} {tone})**\n\n"
-            f"{suit_symbol} *The meaning of this card is hidden.*\n"
-            "Close your eyes, breathe deeply, and let your intuition speak before seeking its written meaning."
-        ),
+    # Embed A: title + image (no meanings yet)
+    embed_top = discord.Embed(
+        title=f"{E['crystal']} {card['name']}" + (" — Reversed" if is_reversed else ""),
         color=suit_color(card["suit"])
     )
+    file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
+    if attach_url:
+        embed_top.set_image(url=attach_url)
 
-    embed.set_footer(
-        text=f"{E['crystal']} When you're ready, whisper `!reveal` to learn what the card truly meant."
-    )
+    # little nudge to the user
+    embed_top.set_footer(text=f"Type !reveal to see the meaning")
 
-    await send_with_typing(ctx, embed, delay_range=(2.0, 3.5), mood="deep")
-
+    # send it
+    if file_obj:
+        await ctx.send(embed=embed_top, file=file_obj)
+    else:
+        await ctx.send(embed=embed_top)
 
 @bot.command(name="reveal")
 async def reveal(ctx):
-    """Reveals the meaning of the last mystery card drawn."""
-    data = mystery_draws.get(ctx.author.id)
-    if not data:
-        await ctx.send(f"{E['warn']} You have no mystery card waiting to be revealed. Use `!mystery` first.")
+    # fetch the user's last mystery draw
+    state = MYSTERY_STATE.get(ctx.author.id)
+    if not state:
+        await ctx.send(f"{E['warn']} No mystery card on file. Use **!mystery** first.")
         return
 
-    card = data["card"]
-    orientation = data["orientation"]
-    meaning = data["meaning"]
-    tone = E["sun"] if orientation == "Upright" else E["moon"]
+    # find the card object by name
+    name = state["name"]
+    is_reversed = state["is_reversed"]
+    card = next((c for c in tarot_cards if c["name"] == name), None)
+    if not card:
+        await ctx.send(f"{E['warn']} I lost track of that card, sorry. Try **!mystery** again.")
+        return
 
+    # Build the meaning embed: show ONLY the relevant orientation
+    meaning = card.get("reversed" if is_reversed else "upright", "—")
     embed = discord.Embed(
-        title=f"{E['light']} The Mystery Revealed {E['light']}",
-        description=(
-            f"**{card['name']} ({orientation} {tone})**\n\n"
-            f"{meaning}"
-        ),
+        title=f"{E['book']} Reveal: {card['name']} " + ("(Reversed)" if is_reversed else "(Upright)"),
+        description=meaning,
         color=suit_color(card["suit"])
     )
+    embed.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
-    embed.set_footer(text=f"{E['crystal']} The veil lifts — may the message settle where it’s meant to.")
+    await ctx.send(embed=embed)
 
-    # Clear the stored card after reveal
-    del mystery_draws[ctx.author.id]
-
-    await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="deep")
+    # one-time reveal: clear stored draw
+    del MYSTERY_STATE[ctx.author.id]
     
 # ==============================
 # RUN BOT
