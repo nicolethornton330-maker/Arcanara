@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 import discord
 from discord.ext import commands
+import re
 import random
 import json
 import asyncio
 from pathlib import Path
 import os
-import re
+from card_images import make_image_attachment # uses assets/cards/rws_stx/ etc.
+
 # ==============================
 # CONFIGURATION
 # ==============================
@@ -90,40 +92,8 @@ def normalize_card_name(name: str) -> str:
 def draw_card():
     card = random.choice(tarot_cards)
     orientation = random.choice(["Upright", "Reversed"])
-    meaning_block = card["upright"] if orientation == "Upright" else card["reversed"]
-
-    numerology_info = card.get("numerology", {})
-    numerology_text = ""
-    if isinstance(numerology_info, dict):
-        num = numerology_info.get("number")
-        meaning = numerology_info.get("meaning")
-        if num and meaning:
-            numerology_text = f"**Numerology {num}:** {meaning}\n\n"
-
-    # Handle new nested meaning format
-    if isinstance(meaning_block, dict):
-        description = meaning_block.get("description", "")
-        guidance = meaning_block.get("guidance", "")
-        call = meaning_block.get("call_to_action", "")
-        theme = meaning_block.get("theme", "")
-
-        parts = []
-        if theme:
-            parts.append(f"**Theme:** {theme}")
-        if numerology_text:
-            parts.append(numerology_text.strip())
-        if description:
-            parts.append(description)
-        if guidance:
-            parts.append(f"\n{E['light']} **Guidance:** {guidance}")
-        if call:
-            parts.append(f"{E['spark']} **Call to Action:** {call}")
-
-        meaning_text = "\n\n".join(parts)
-    else:
-        meaning_text = str(meaning_block)
-
-    return card, orientation, meaning_text
+    meaning = card["upright"] if orientation == "Upright" else card["reversed"]
+    return card, orientation, meaning
 
 def draw_unique_cards(num_cards: int):
     deck = tarot_cards.copy()
@@ -132,39 +102,8 @@ def draw_unique_cards(num_cards: int):
     for _ in range(min(num_cards, len(deck))):
         card = deck.pop()
         orientation = random.choice(["Upright", "Reversed"])
-        meaning_block = card["upright"] if orientation == "Upright" else card["reversed"]
-
-        numerology_info = card.get("numerology", {})
-        numerology_text = ""
-        if isinstance(numerology_info, dict):
-            num = numerology_info.get("number")
-            meaning = numerology_info.get("meaning")
-            if num and meaning:
-                numerology_text = f"**Numerology {num}:** {meaning}\n\n"
-
-        if isinstance(meaning_block, dict):
-            description = meaning_block.get("description", "")
-            guidance = meaning_block.get("guidance", "")
-            call = meaning_block.get("call_to_action", "")
-            theme = meaning_block.get("theme", "")
-
-            parts = []
-            if theme:
-                parts.append(f"**Theme:** {theme}")
-            if numerology_text:
-                parts.append(numerology_text.strip())
-            if description:
-                parts.append(description)
-            if guidance:
-                parts.append(f"\n{E['light']} **Guidance:** {guidance}")
-            if call:
-                parts.append(f"{E['spark']} **Call to Action:** {call}")
-
-            meaning_text = "\n\n".join(parts)
-        else:
-            meaning_text = str(meaning_block)
-
-        drawn.append((card, orientation, meaning_text))
+        meaning = card["upright"] if orientation == "Upright" else card["reversed"]
+        drawn.append((card, orientation, meaning))
     return drawn
 
 def suit_color(suit):
@@ -178,56 +117,6 @@ def suit_emoji(suit):
         "Wands": E["fire"], "Cups": E["water"], "Swords": E["sword"],
         "Pentacles": E["leaf"], "Major Arcana": E["arcana"]
     }.get(suit, E["crystal"])
-
-def format_card_meaning(card, orientation):
-    """Formats a tarot card meaning, including numerology and extra guidance."""
-    meaning_block = card["upright"] if orientation == "Upright" else card["reversed"]
-
-    # Pull numerology info
-    num_info = card.get("numerology")
-    numerology_section = ""
-    if isinstance(num_info, dict):
-        num = num_info.get("number")
-        meaning = num_info.get("meaning")
-        if num and meaning:
-            numerology_section = f"**Numerology {num}:** {meaning}\n\n"
-
-    # Handle dictionary-style meaning blocks
-    if isinstance(meaning_block, dict):
-        theme = meaning_block.get("theme")
-        desc = meaning_block.get("description")
-        guide = meaning_block.get("guidance")
-        call = meaning_block.get("call_to_action")
-
-        parts = []
-        if theme:
-            parts.append(f"**Theme:** {theme}")
-        if numerology_section:
-            parts.append(numerology_section.strip())
-        if desc:
-            # Bold the card name at the start of the description,
-            # even if it begins with "The <Card Name> ..."
-            card_name = card.get("name", "")
-            if card_name:
-                pat = re.compile(rf"^(\s*)(?:([Tt]he)\s+)?({re.escape(card_name)})\b")
-                desc = pat.sub(
-                    lambda m: f"{m.group(1)}{(m.group(2) + ' ') if m.group(2) else ''}**{card_name}**",
-                    desc,
-                    count=1
-                )
-            parts.append(desc)
-        if guide:
-            parts.append(f"{E['light']} **Guidance:** {guide}")
-        if call:
-            parts.append(f"{E['spark']} **Call to Action:** {call}")
-
-        return "\n\n".join(parts)
-
-    # Handle legacy string meanings
-    text = str(meaning_block)
-    if numerology_section:
-        text = numerology_section + text
-    return text
 
 # ==============================
 # IN-CHARACTER RESPONSES
@@ -324,13 +213,11 @@ async def shuffle(ctx):
 
 @bot.command(name="cardoftheday")
 async def card_of_the_day(ctx):
-    card, orientation, _ = draw_card()
+    card, orientation, meaning = draw_card()
     tone = E["sun"] if orientation == "Upright" else E["moon"]
     intent_text = user_intentions.get(ctx.author.id)
 
-    meaning_text = format_card_meaning(card, orientation)
-
-    desc = f"**{card['name']} ({orientation} {tone})**\n\n{meaning_text}"
+    desc = f"**{card['name']} ({orientation} {tone})**\n\n{meaning}"
     if intent_text:
         desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
 
@@ -367,13 +254,12 @@ async def read(ctx, *, message: str = None):
         color=0x9370DB
     )
 
-    for pos, (card, orientation, _) in zip(positions, cards):
-        meaning_text = format_card_meaning(card, orientation)
+    for pos, (card, orientation, meaning) in zip(positions, cards):
         embed.add_field(
             name=f"{pos}: {card['name']} ({orientation})",
-            value=meaning_text,
+            value=meaning,
             inline=False
-    )
+        )
 
     embed.set_footer(
         text=f"{E['spark']} Let these cards guide your awareness, not dictate your choices."
@@ -395,16 +281,14 @@ async def three_card(ctx):
         title=f"{E['crystal']} Three-Card Spread",
         description=desc,
         color=0xA020F0
-        )
+    )
 
-    for pos, (card, orientation, _) in zip(positions, cards):
-        meaning_text = format_card_meaning(card, orientation)
+    for pos, (card, orientation, meaning) in zip(positions, cards):
         embed.add_field(
             name=f"{pos}: {card['name']} ({orientation})",
-            value=meaning_text,
+            value=meaning,
             inline=False
         )
-
 
     await send_with_typing(ctx, embed, delay_range=(2.5, 4.0), mood="spread")
 
@@ -427,8 +311,7 @@ async def celtic_cross(ctx):
 
     for pos, (card, orientation, meaning) in zip(positions, cards):
         field_name = f"{pos}: {card['name']} ({orientation})"
-        meaning_text = format_card_meaning(card, orientation)
-        field_value = meaning_text if len(meaning_text) < 1000 else meaning_text[:997] + "..."
+        field_value = meaning if len(meaning) < 1000 else meaning[:997] + "..."
         field_length = len(field_name) + len(field_value)
 
         # Check if adding this field would exceed Discord's limit
@@ -448,10 +331,12 @@ async def celtic_cross(ctx):
 
 @bot.command(name="meaning")
 async def meaning(ctx, *, query: str):
-    """Displays a detailed meaning for a specific Tarot card, including numerology and guidance."""
-    norm_query = normalize_card_name(query)
+    # Detect "reversed" in the query (image rotation only)
+    is_reversed = bool(re.search(r"\brev(?:ersed)?\b", query, re.I))
+    clean_query = re.sub(r"\brev(?:ersed)?\b", "", query, flags=re.I).strip()
 
-    # Find card match
+    norm_query = normalize_card_name(clean_query)
+
     matches = [
         c for c in tarot_cards
         if normalize_card_name(c["name"]) == norm_query
@@ -463,90 +348,53 @@ async def meaning(ctx, *, query: str):
         return
 
     card = matches[0]
-    numerology_info = card.get("numerology", {})
-    numerology_text = ""
-    if isinstance(numerology_info, dict):
-        num = numerology_info.get("number")
-        meaning = numerology_info.get("meaning")
-        if num and meaning:
-            numerology_text = f"**Numerology {num}:** {meaning}"
 
-    # Function to format upright/reversed text cleanly
-    def format_meaning(block):
-        if isinstance(block, dict):
-            parts = []
-            theme = block.get("theme")
-            desc = block.get("description")
-            guide = block.get("guidance")
-            call = block.get("call_to_action")
-
-            if theme:
-                parts.append(f"**Theme:** {theme}")
-            if desc:
-                parts.append(desc)
-            if guide:
-                parts.append(f"{E['light']} **Guidance:** {guide}")
-            if call:
-                parts.append(f"{E['spark']} **Call to Action:** {call}")
-            return "\n\n".join(parts)
-        return str(block)
-
-    upright_text = format_card_meaning(card, "Upright")
-    reversed_text = format_card_meaning(card, "Reversed")
-
-    embed = discord.Embed(
-        title=f"{E['book']} {card['name']}",
-        description=f"**Suit:** {card.get('suit', 'Unknown')}\n**Theme:** {card.get('theme', '—')}",
+    # ---- Embed A: title + image (image ends up right under the title) ----
+    embed_top = discord.Embed(
+        title=f"{E['book']} {card['name']}" + (" — Reversed" if is_reversed else ""),
         color=suit_color(card["suit"])
     )
-    embed.add_field(name=f"Upright {E['sun']}", value=upright_text, inline=False)
-    embed.add_field(name=f"Reversed {E['moon']}", value=reversed_text, inline=False)
-    embed.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara's Wisdom")
+    from card_images import make_image_attachment
+    file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
+    if attach_url:
+        embed_top.set_image(url=attach_url)
+
+    # ---- Embed B: meanings + footer ----
+    embed_body = discord.Embed(
+        description=f"**{card['name']}** reveals both sides of its nature:",
+        color=suit_color(card["suit"])
+    )
+    embed_body.add_field(name=f"Upright {E['sun']}",   value=card.get("upright", "—"),  inline=False)
+    embed_body.add_field(name=f"Reversed {E['moon']}", value=card.get("reversed", "—"), inline=False)
+    embed_body.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
     async with ctx.typing():
         await asyncio.sleep(random.uniform(1.0, 2.0))
 
-    await ctx.send(embed=embed)
+    # ---- Send both embeds together (v2) or fallback to two messages (v1) ----
+    try:
+        # discord.py v2 supports sending multiple embeds in one call
+        if file_obj:
+            await ctx.send(embeds=[embed_top, embed_body], file=file_obj)
+        else:
+            await ctx.send(embeds=[embed_top, embed_body])
+    except TypeError:
+        # Older discord.py: send as two messages
+        if file_obj:
+            await ctx.send(embed=embed_top, file=file_obj)
+        else:
+            await ctx.send(embed=embed_top)
+        await ctx.send(embed=embed_body)
+
     
 @bot.command(name="clarify")
 async def clarify(ctx):
-    """Draws a clarifying card related to your most recent reading or focus, with full numerology and guidance."""
-    card, orientation, meaning_block = draw_card()
+    """Draws a clarifying card related to your most recent reading or focus."""
+    card, orientation, meaning = draw_card()
     tone = E["sun"] if orientation == "Upright" else E["moon"]
     intent_text = user_intentions.get(ctx.author.id)
 
-    # Numerology section
-    numerology_info = card.get("numerology", {})
-    numerology_text = ""
-    if isinstance(numerology_info, dict):
-        num = numerology_info.get("number")
-        meaning = numerology_info.get("meaning")
-        if num and meaning:
-            numerology_text = f"**Numerology {num}:** {meaning}\n\n"
-
-    # Format meaning structure
-    def format_block(block):
-        if isinstance(block, dict):
-            parts = []
-            theme = block.get("theme")
-            desc = block.get("description")
-            guide = block.get("guidance")
-            call = block.get("call_to_action")
-            if theme:
-                parts.append(f"**Theme:** {theme}")
-            if desc:
-                parts.append(desc)
-            if guide:
-                parts.append(f"{E['light']} **Guidance:** {guide}")
-            if call:
-                parts.append(f"{E['spark']} **Call to Action:** {call}")
-            return "\n\n".join(parts)
-        return str(block)
-
-    meaning_text = format_block(meaning_block)
-
-    desc = f"**{card['name']} ({orientation} {tone})**\n\n{numerology_text}{meaning_text}"
-
+    desc = f"**{card['name']} ({orientation} {tone})**\n\n{meaning}"
     if intent_text:
         desc += f"\n\n{E['light']} **Clarifying Focus:** *{intent_text}*"
 
@@ -668,7 +516,7 @@ async def mystery(ctx):
 
 @bot.command(name="reveal")
 async def reveal(ctx):
-    """Reveals the meaning of the last mystery card drawn, including numerology and guidance."""
+    """Reveals the meaning of the last mystery card drawn."""
     data = mystery_draws.get(ctx.author.id)
     if not data:
         await ctx.send(f"{E['warn']} You have no mystery card waiting to be revealed. Use `!mystery` first.")
@@ -676,59 +524,24 @@ async def reveal(ctx):
 
     card = data["card"]
     orientation = data["orientation"]
-    meaning_block = data["meaning"]
+    meaning = data["meaning"]
     tone = E["sun"] if orientation == "Upright" else E["moon"]
-
-    # Numerology
-    numerology_info = card.get("numerology", {})
-    numerology_text = ""
-    if isinstance(numerology_info, dict):
-        num = numerology_info.get("number")
-        meaning = numerology_info.get("meaning")
-        if num and meaning:
-            numerology_text = f"**Numerology {num}:** {meaning}\n\n"
-
-    # Format meaning section
-    def format_block(block):
-        if isinstance(block, dict):
-            parts = []
-            theme = block.get("theme")
-            desc = block.get("description")
-            guide = block.get("guidance")
-            call = block.get("call_to_action")
-            if theme:
-                parts.append(f"**Theme:** {theme}")
-            if desc:
-                parts.append(desc)
-            if guide:
-                parts.append(f"{E['light']} **Guidance:** {guide}")
-            if call:
-                parts.append(f"{E['spark']} **Call to Action:** {call}")
-            return "\n\n".join(parts)
-        return str(block)
-
-    meaning_text = format_block(meaning_block)
-
-    desc = (
-        f"**{card['name']} ({orientation} {tone})**\n\n"
-        f"{numerology_text}{meaning_text}"
-    )
 
     embed = discord.Embed(
         title=f"{E['light']} The Mystery Revealed {E['light']}",
-        description=desc,
+        description=(
+            f"**{card['name']} ({orientation} {tone})**\n\n"
+            f"{meaning}"
+        ),
         color=suit_color(card["suit"])
     )
 
-    embed.set_footer(
-        text=f"{E['crystal']} The veil lifts — may the message settle where it’s meant to."
-    )
+    embed.set_footer(text=f"{E['crystal']} The veil lifts — may the message settle where it’s meant to.")
 
-    # Clear stored card after reveal
+    # Clear the stored card after reveal
     del mystery_draws[ctx.author.id]
 
     await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="deep")
-
     
 # ==============================
 # RUN BOT
