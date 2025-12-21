@@ -13,7 +13,7 @@ import psycopg
 import traceback
 from psycopg.types.json import Json
 from psycopg.rows import dict_row
-from typing import Dict, Any, List, Optional)
+from typing import Dict, Any, List, Optional
 from card_images import make_image_attachment  # uses assets/cards/rws_stx/ etc.
 print("✅ Arcanara boot: VERSION 2025-12-21-TopGG-1")
 
@@ -890,7 +890,6 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 # SLASH COMMANDS (EPHEMERAL)
 # ==============================
 @bot.tree.command(name="shuffle", description="Cleanse the deck and reset your intention + tone.")
-@app_commands.checks.cooldown(3, 60.0)
 async def shuffle_slash(interaction: discord.Interaction):
     if not await safe_defer(interaction, ephemeral=True):
         return
@@ -973,9 +972,49 @@ async def cardoftheday_slash(interaction: discord.Interaction):
 @bot.tree.command(name="read", description="Three-card reading: Situation • Obstacle • Guidance.")
 @app_commands.describe(intention="Your question or intention (example: my career path)")
 async def read_slash(interaction: discord.Interaction, intention: str):
-    # NOTE: decorator arg name must match parameter name exactly (fixed)
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    @bot.tree.command(name="read", description="Three-card reading: Situation • Obstacle • Guidance.")
+@app_commands.describe(intention="Your question or intention (example: my career path)")
+async def read_slash(interaction: discord.Interaction, intention: str):
+    if not await safe_defer(interaction, ephemeral=True):
+        return
+
+    user_intentions[interaction.user.id] = intention
+    tone = get_effective_tone(interaction.user.id)
+
+    cards = draw_unique_cards(3)
+    positions = ["Situation", "Obstacle", "Guidance"]
+
+    log_history_if_opted_in(
+        interaction.user.id,
+        command="read",
+        tone=tone,
+        payload={
+            "intention": intention,
+            "spread": "situation_obstacle_guidance",
+            "cards": [
+                {"position": pos, "name": card["name"], "orientation": orientation}
+                for pos, (card, orientation) in zip(positions, cards)
+            ],
+        },
+    )
+
+    embed = discord.Embed(
+        title=f"{E['crystal']} Intuitive Reading {E['crystal']}",
+        description=f"{E['light']} **Intention:** *{intention}*\n\n**How I’ll read this:** {tone_label(tone)}",
+        color=0x9370DB,
+    )
+
+    pretty_positions = [f"Situation {E['sun']}", f"Obstacle {E['sword']}", f"Guidance {E['star']}"]
+    for pos, (card, orientation) in zip(pretty_positions, cards):
+        meaning = render_card_text(card, orientation, tone)
+        embed.add_field(
+            name=f"{pos}: {card['name']} ({orientation})",
+            value=meaning if len(meaning) < 1000 else meaning[:997] + "...",
+            inline=False,
+        )
+
+    embed.set_footer(text=f"{E['spark']} Let these cards guide your awareness, not dictate your choices.")
+    await send_ephemeral(interaction, embed=embed, mood="spread")
 
     user_intentions[interaction.user.id] = intention
     tone = get_effective_tone(interaction.user.id)
@@ -1018,8 +1057,8 @@ async def read_slash(interaction: discord.Interaction, intention: str):
 
 @bot.tree.command(name="threecard", description="Past • Present • Future spread.")
 async def threecard_slash(interaction: discord.Interaction):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
 
     positions = ["Past", "Present", "Future"]
     cards = draw_unique_cards(3)
@@ -1063,24 +1102,15 @@ async def threecard_slash(interaction: discord.Interaction):
 
     await send_ephemeral(interaction, embed=embed, mood="spread")
 
-
 @bot.tree.command(name="celtic", description="Full 10-card Celtic Cross spread.")
 @app_commands.checks.cooldown(1, 120.0)
 async def celtic_slash(interaction: discord.Interaction):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
 
     positions = [
-        "Present Situation",
-        "Challenge",
-        "Root Cause",
-        "Past",
-        "Conscious Goal",
-        "Near Future",
-        "Self",
-        "External Influence",
-        "Hopes & Fears",
-        "Outcome",
+        "Present Situation", "Challenge", "Root Cause", "Past", "Conscious Goal",
+        "Near Future", "Self", "External Influence", "Hopes & Fears", "Outcome",
     ]
     cards = draw_unique_cards(10)
     tone = get_effective_tone(interaction.user.id)
@@ -1104,20 +1134,11 @@ async def celtic_slash(interaction: discord.Interaction):
         description=f"A deep, archetypal exploration of your path.\n\n**How I’ll read this:** {tone_label(tone)}",
         color=0xA020F0,
     )
-
     total_length = len(embed.title) + len(embed.description)
 
     pretty_positions = [
-        "1️⃣ Present Situation",
-        "2️⃣ Challenge",
-        "3️⃣ Root Cause",
-        "4️⃣ Past",
-        "5️⃣ Conscious Goal",
-        "6️⃣ Near Future",
-        "7️⃣ Self",
-        "8️⃣ External Influence",
-        "9️⃣ Hopes & Fears",
-        "🔟 Outcome",
+        "1️⃣ Present Situation", "2️⃣ Challenge", "3️⃣ Root Cause", "4️⃣ Past", "5️⃣ Conscious Goal",
+        "6️⃣ Near Future", "7️⃣ Self", "8️⃣ External Influence", "9️⃣ Hopes & Fears", "🔟 Outcome",
     ]
 
     for pos, (card, orientation) in zip(pretty_positions, cards):
@@ -1140,12 +1161,12 @@ async def celtic_slash(interaction: discord.Interaction):
 
     embeds_to_send.append(embed)
 
-    # IMPORTANT FIX:
-    # We deferred already, so we must use followups (send_ephemeral handles that cleanly).
+    # First embed via send_ephemeral
     await send_ephemeral(interaction, embed=embeds_to_send[0], mood="deep")
+
+    # Remaining embeds must be followups (interaction already acknowledged)
     for e in embeds_to_send[1:]:
         await interaction.followup.send(embeds=[e], ephemeral=True)
-
 
 @bot.tree.command(name="tone", description="Choose Arcanara’s reading tone (your default lens).")
 @app_commands.choices(
@@ -1161,8 +1182,8 @@ async def celtic_slash(interaction: discord.Interaction):
     ]
 )
 async def tone_slash(interaction: discord.Interaction, tone: app_commands.Choice[str]):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
         
     chosen = set_user_tone(interaction.user.id, tone.value)
     await send_ephemeral(
@@ -1216,8 +1237,8 @@ async def resendwelcome_slash(interaction: discord.Interaction, where: app_comma
 @bot.tree.command(name="meaning", description="Show upright and reversed meanings for a card (using your current tone).")
 @app_commands.describe(card="Card name (example: The Lovers)")
 async def meaning_slash(interaction: discord.Interaction, card: str):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
 
     norm_query = normalize_card_name(card)
 
@@ -1285,8 +1306,8 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
 
 @bot.tree.command(name="clarify", description="Draw a clarifier card for your current intention.")
 async def clarify_slash(interaction: discord.Interaction):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
 
     card, orientation = draw_card()
     tone_emoji = E["sun"] if orientation == "Upright" else E["moon"]
@@ -1320,8 +1341,8 @@ async def clarify_slash(interaction: discord.Interaction):
 @bot.tree.command(name="intent", description="Set (or view) your current intention.")
 @app_commands.describe(intention="Leave blank to view your current intention.")
 async def intent_slash(interaction: discord.Interaction, intention: Optional[str] = None):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
 
     if not intention:
         current = user_intentions.get(interaction.user.id)
@@ -1334,11 +1355,10 @@ async def intent_slash(interaction: discord.Interaction, intention: Optional[str
     user_intentions[interaction.user.id] = intention
     await send_ephemeral(interaction, content=f"{E['spark']} Intention set to: *{intention}*")
 
-
 @bot.tree.command(name="mystery", description="Pull a mystery card (image only). Use /reveal to see the meaning.")
 async def mystery_slash(interaction: discord.Interaction):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
 
     card = random.choice(tarot_cards)
     is_reversed = random.random() < 0.5
@@ -1396,8 +1416,8 @@ async def mystery_slash(interaction: discord.Interaction):
 
 @bot.tree.command(name="reveal", description="Reveal the meaning of your last mystery card.")
 async def reveal_slash(interaction: discord.Interaction):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
 
     state = MYSTERY_STATE.get(interaction.user.id)
     if not state:
@@ -1453,8 +1473,8 @@ async def reveal_slash(interaction: discord.Interaction):
 
 @bot.tree.command(name="insight", description="A guided intro to Arcanara (and a full list of commands).")
 async def insight_slash(interaction: discord.Interaction):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
     user_id_str = str(interaction.user.id)
     user_name = interaction.user.display_name
 
@@ -1553,8 +1573,8 @@ async def privacy_slash(interaction: discord.Interaction):
 
 @bot.tree.command(name="forgetme", description="Delete your stored Arcanara data.")
 async def forgetme_slash(interaction: discord.Interaction):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
         
     uid = interaction.user.id
 
@@ -1576,6 +1596,8 @@ async def forgetme_slash(interaction: discord.Interaction):
     images=[app_commands.Choice(name="on", value="on"), app_commands.Choice(name="off", value="off")],
 )
 async def settings_slash(
+    if not await safe_defer(interaction, ephemeral=True):
+        return
     interaction: discord.Interaction,
     history: Optional[app_commands.Choice[str]] = None,
     images: Optional[app_commands.Choice[str]] = None,
