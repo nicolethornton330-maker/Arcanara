@@ -2,3 +2,4 @@ discord.py==2.4.0
 python-dotenv
 discord.py>=2.3
 Pillow>=10.0.0
+psycopg[binary]==3.2.1
