@@ -13,9 +13,9 @@ import psycopg
 import traceback
 from psycopg.types.json import Json
 from psycopg.rows import dict_row
-from typing import Dict, Any, List, Optional
-
+from typing import Dict, Any, List, Optional)
 from card_images import make_image_attachment  # uses assets/cards/rws_stx/ etc.
+print("✅ Arcanara boot: VERSION 2025-12-21-TopGG-1")
 
 MYSTERY_STATE: Dict[int, Dict[str, Any]] = {}
 
@@ -196,12 +196,8 @@ def _clip(text: str, max_len: int = 3800) -> str:
 
 
 def render_card_text(card: Dict[str, Any], orientation: str, tone: str) -> str:
-    """
-    orientation: "Upright" or "Reversed"
-    tone: one of TONE_SPECS keys
-    """
     tone = normalize_tone(tone)
-    spec = TONE_SPECS.get(tone, TONE_SPECS[DEFAULT_TONE])
+    spec = TONE_SPECS.get(tone, TONE_SPECS[DEFAULT_TONE])  # <-- FIX: uses TONE_SPECS
 
     is_rev = (orientation.lower() == "reversed")
     meaning = card.get("reversed" if is_rev else "upright", "—")
@@ -578,6 +574,21 @@ def _chunk_lines(lines: List[str], max_len: int = 950) -> List[str]:
     if buf:
         chunks.append("\n".join(buf))
     return chunks
+    
+async def safe_defer(interaction: discord.Interaction, *, ephemeral: bool = True) -> bool:
+    """Defer safely. Returns False if the interaction is no longer valid."""
+    try:
+        if not interaction.response.is_done():
+            await interaction.response.defer(ephemeral=ephemeral)
+        return True
+    except (discord.NotFound, NotFound):
+        # 10062 Unknown interaction
+        return False
+    except discord.HTTPException as e:
+        # 40060 already acknowledged (not fatal)
+        if getattr(e, "code", None) == 40060:
+            return True
+        raise
 
 
 # ==============================
@@ -881,8 +892,9 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 @bot.tree.command(name="shuffle", description="Cleanse the deck and reset your intention + tone.")
 @app_commands.checks.cooldown(3, 60.0)
 async def shuffle_slash(interaction: discord.Interaction):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
+           
     # Reset user state
     user_intentions.pop(interaction.user.id, None)
     MYSTERY_STATE.pop(interaction.user.id, None)
@@ -905,8 +917,8 @@ async def shuffle_slash(interaction: discord.Interaction):
 
 @bot.tree.command(name="cardoftheday", description="Reveal the card that guides your day.")
 async def cardoftheday_slash(interaction: discord.Interaction):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
 
     card, orientation = draw_card()
     tone = get_effective_tone(interaction.user.id)
