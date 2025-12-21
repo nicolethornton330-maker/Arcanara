@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import discord
 from discord.ext import commands
+from discord import app_commands
 import re
 import random, time
 import json
@@ -278,7 +279,8 @@ user_intentions = {}
 # BOT SETUP
 # ==============================
 intents = discord.Intents.default()
-intents.message_content = True
+intents.guilds = True
+intents.message_content = True  # can be True or False; slash commands don't need it
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # ==============================
@@ -377,50 +379,52 @@ in_character_lines = {
 }
 
 # ==============================
-# TYPING SIMULATION
+# TYPING SIMULATION (ephemeral helper)
 # ==============================
-async def send_with_typing(ctx, embed, delay_range=(1.5, 3.0), mood="general", file_obj=None):
-    thinking_lines = {
-        "shuffle": [
-            "🔮 Arcanara breathes deeply and stirs the deck...",
-            "✨ The cards realign under unseen hands...",
-            "🌬️ She scatters stardust across the table..."
-        ],
-        "daily": [
-            "🌙 Arcanara turns a single card beneath the morning light...",
-            "☀️ The deck whispers — one truth for today...",
-            "🍃 The veil shimmers softly; a daily omen forms..."
-        ],
-        "spread": [
-            "🪶 The cards slide into a pattern, each glowing faintly...",
-            "🌌 A gentle rustle — the spread begins to reveal its order...",
-            "🔮 Energy ripples through the layout..."
-        ],
-        "deep": [
-            "🔥 The atmosphere thickens — this one reaches deep...",
-            "💫 The circle tightens; symbols stir in the air...",
-            "🌒 The ancient rhythm of the cards awakens..."
-        ],
-        "general": [
-            "✨ Arcanara shuffles the cards and listens...",
-            "🌙 The veil stirs with quiet anticipation...",
-            "🔮 The energy turns — something wants to be said..."
-        ]
-    }
+def _prepend_in_character(embed: discord.Embed, mood: str) -> discord.Embed:
+    line = random.choice(in_character_lines.get(mood, in_character_lines["general"]))
+    if embed.description:
+        embed.description = f"*{line}*\n\n{embed.description}"
+    else:
+        embed.description = f"*{line}*"
+    return embed
 
-    thought = random.choice(thinking_lines.get(mood, thinking_lines["general"]))
-    message = await ctx.send(thought)
-    async with ctx.typing():
-        await asyncio.sleep(random.uniform(*delay_range))
-        await message.delete()
-        line = random.choice(in_character_lines.get(mood, in_character_lines["general"]))
-        await ctx.send(f"*{line}*")
-        await asyncio.sleep(0.5)
 
-        if file_obj:
-            await ctx.send(embed=embed, file=file_obj)
-        else:
-            await ctx.send(embed=embed)
+async def _send_ephemeral(interaction: discord.Interaction, **kwargs):
+    """
+    Safely send an ephemeral message whether or not the interaction
+    has already been responded to.
+    """
+    kwargs.setdefault("ephemeral", True)
+
+    if interaction.response.is_done():
+        return await interaction.followup.send(**kwargs)
+
+    return await interaction.response.send_message(**kwargs)
+
+
+async def send_ephemeral(
+    interaction: discord.Interaction,
+    *,
+    embed: Optional[discord.Embed] = None,
+    embeds: Optional[List[discord.Embed]] = None,
+    content: Optional[str] = None,
+    mood: str = "general",
+    file_obj: Optional[discord.File] = None,
+):
+    # Apply in-character line to the first embed only
+    if embed is not None:
+        embed = _prepend_in_character(embed, mood)
+        await _send_ephemeral(interaction, content=content, embed=embed, file=file_obj)
+        return
+
+    if embeds is not None and len(embeds) > 0:
+        embeds = list(embeds)
+        embeds[0] = _prepend_in_character(embeds[0], mood)
+        await _send_ephemeral(interaction, content=content, embeds=embeds, file=file_obj)
+        return
+
+    await _send_ephemeral(interaction, content=content or "—")
 
 # ==============================
 # EVENTS
@@ -432,35 +436,43 @@ async def on_ready():
         ensure_tables()
         _DB_READY = True
 
+    try:
+        await bot.tree.sync()
+        print("✅ Slash commands synced.")
+    except Exception as e:
+        print(f"⚠️ Slash sync failed: {e}")
+
     print(f"{E['crystal']} Arcanara is awake and shimmering as {bot.user}")
 
+
 # ==============================
-# COMMANDS
+# SLASH COMMANDS (EPHEMERAL)
 # ==============================
-@bot.command(name="shuffle")
-async def shuffle(ctx):
+
+@bot.tree.command(name="shuffle", description="Cleanse and reset the deck’s energy.")
+async def shuffle_slash(interaction: discord.Interaction):
     random.shuffle(tarot_cards)
     embed = discord.Embed(
         title=f"{E['shuffle']} The Deck Has Been Cleansed {E['shuffle']}",
         description="Energy reset complete. The cards are ready to speak again.",
         color=0x9370DB
     )
-    await send_with_typing(ctx, embed, delay_range=(1.0, 2.0), mood="shuffle")
+    await send_ephemeral(interaction, embed=embed, mood="shuffle")
 
-@bot.command(name="cardoftheday")
-async def card_of_the_day(ctx):
+
+@bot.tree.command(name="cardoftheday", description="Reveal the card that guides your day.")
+async def cardoftheday_slash(interaction: discord.Interaction):
     card, orientation = draw_card()
-    mode = get_effective_mode(ctx.author.id)
+    mode = get_effective_mode(interaction.user.id)
     meaning = render_card_text(card, orientation, mode)
 
     is_reversed = (orientation == "Reversed")
     file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
-
     if not attach_url and file_obj is not None:
         attach_url = f"attachment://{file_obj.filename}"
 
     tone = E["sun"] if orientation == "Upright" else E["moon"]
-    intent_text = user_intentions.get(ctx.author.id)
+    intent_text = user_intentions.get(interaction.user.id)
 
     desc = f"**{card['name']} ({orientation} {tone}) • mode: {mode}**\n\n{meaning}"
     if intent_text:
@@ -471,29 +483,24 @@ async def card_of_the_day(ctx):
         description=desc,
         color=suit_color(card["suit"])
     )
-
     if attach_url:
         embed.set_image(url=attach_url)
 
-    await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="daily", file_obj=file_obj)
+    await send_ephemeral(interaction, embed=embed, mood="daily", file_obj=file_obj)
 
-@bot.command(name="read")
-async def read(ctx, *, message: str = None):
-    if not message:
-        await ctx.send(f"{E['warn']} Please include a question or focus after the command. Example: `!read my career path`")
-        return
 
-    user_intentions[ctx.author.id] = message
-    mode = get_effective_mode(ctx.author.id)
+@bot.tree.command(name="read", description="Three-card reading: Situation • Obstacle • Guidance.")
+@app_commands.describe(focus="Your question or focus (example: my career path)")
+async def read_slash(interaction: discord.Interaction, focus: str):
+    user_intentions[interaction.user.id] = focus
+    mode = get_effective_mode(interaction.user.id)
 
     cards = draw_unique_cards(3)
     positions = [f"Situation {E['sun']}", f"Obstacle {E['sword']}", f"Guidance {E['star']}"]
 
-    desc = f"{E['light']} **Focus:** *{message}*\n\nThree cards emerge to illuminate your path:\n\n**Mode:** {mode}"
-
     embed = discord.Embed(
         title=f"{E['crystal']} Intuitive Reading {E['crystal']}",
-        description=desc,
+        description=f"{E['light']} **Focus:** *{focus}*\n\n**Mode:** {mode}",
         color=0x9370DB
     )
 
@@ -506,15 +513,16 @@ async def read(ctx, *, message: str = None):
         )
 
     embed.set_footer(text=f"{E['spark']} Let these cards guide your awareness, not dictate your choices.")
-    await send_with_typing(ctx, embed, delay_range=(2.5, 4.0), mood="spread")
+    await send_ephemeral(interaction, embed=embed, mood="spread")
 
-@bot.command(name="threecard")
-async def three_card(ctx):
+
+@bot.tree.command(name="threecard", description="Past • Present • Future spread.")
+async def threecard_slash(interaction: discord.Interaction):
     positions = [f"Past {E['clock']}", f"Present {E['moon']}", f"Future {E['star']}"]
     cards = draw_unique_cards(3)
-    intent_text = user_intentions.get(ctx.author.id)
 
-    mode = get_effective_mode(ctx.author.id)
+    mode = get_effective_mode(interaction.user.id)
+    intent_text = user_intentions.get(interaction.user.id)
 
     desc = "Past • Present • Future"
     if intent_text:
@@ -535,18 +543,21 @@ async def three_card(ctx):
             inline=False
         )
 
-    await send_with_typing(ctx, embed, delay_range=(2.5, 4.0), mood="spread")
+    await send_ephemeral(interaction, embed=embed, mood="spread")
 
-@bot.command(name="celtic")
-async def celtic_cross(ctx):
+
+@bot.tree.command(name="celtic", description="Full 10-card Celtic Cross spread.")
+async def celtic_slash(interaction: discord.Interaction):
     positions = [
         "1️⃣ Present Situation", "2️⃣ Challenge", "3️⃣ Root Cause", "4️⃣ Past",
         "5️⃣ Conscious Goal", "6️⃣ Near Future", "7️⃣ Self", "8️⃣ External Influence",
         "9️⃣ Hopes & Fears", "🔟 Outcome"
     ]
     cards = draw_unique_cards(10)
-    mode = get_effective_mode(ctx.author.id)
+    mode = get_effective_mode(interaction.user.id)
 
+    # We may need multiple messages due to embed limits.
+    embeds_to_send: List[discord.Embed] = []
     embed = discord.Embed(
         title=f"{E['crystal']} Celtic Cross Spread {E['crystal']}",
         description=f"A deep, archetypal exploration of your path.\n\n**Mode:** {mode}",
@@ -562,9 +573,9 @@ async def celtic_cross(ctx):
         field_length = len(field_name) + len(field_value)
 
         if total_length + field_length > 5800:
-            await send_with_typing(ctx, embed, delay_range=(3.0, 4.0), mood="deep")
+            embeds_to_send.append(embed)
             embed = discord.Embed(
-                title=f"{E['crystal']} Celtic Cross Spread (Continued)",
+                title=f"{E['crystal']} Celtic Cross (Continued)",
                 description=f"**Mode:** {mode}",
                 color=0xA020F0
             )
@@ -573,15 +584,20 @@ async def celtic_cross(ctx):
         embed.add_field(name=field_name, value=field_value, inline=False)
         total_length += field_length
 
-    await send_with_typing(ctx, embed, delay_range=(3.0, 4.0), mood="deep")
+    embeds_to_send.append(embed)
 
-@bot.command(name="meaning")
-async def meaning(ctx, *, query: str):
-    # Detect "reversed" in the query (image rotation only)
-    is_reversed = bool(re.search(r"\brev(?:ersed)?\b", query, re.I))
-    clean_query = re.sub(r"\brev(?:ersed)?\b", "", query, flags=re.I).strip()
+    # Send first response + followups, all ephemeral
+    embeds_to_send[0] = _prepend_in_character(embeds_to_send[0], "deep")
+    await interaction.response.send_message(embeds=[embeds_to_send[0]], ephemeral=True)
 
-    norm_query = normalize_card_name(clean_query)
+    for e in embeds_to_send[1:]:
+        await interaction.followup.send(embeds=[e], ephemeral=True)
+
+
+@bot.tree.command(name="meaning", description="Show upright and reversed meanings for a card (using your current mode).")
+@app_commands.describe(card="Card name (example: The Lovers)")
+async def meaning_slash(interaction: discord.Interaction, card: str):
+    norm_query = normalize_card_name(card)
 
     matches = [
         c for c in tarot_cards
@@ -590,65 +606,57 @@ async def meaning(ctx, *, query: str):
     ]
 
     if not matches:
-        await ctx.send(f"{E['warn']} I searched the deck but found no card named **{query}**.")
+        await interaction.response.send_message(f"{E['warn']} I searched the deck but found no card named **{card}**.", ephemeral=True)
         return
 
-    card = matches[0]
-    mode = get_effective_mode(ctx.author.id)  # ✅ define mode BEFORE using it
+    chosen = matches[0]
+    mode = get_effective_mode(interaction.user.id)
 
-    # ---- Embed A: title + image ----
-    embed_top = discord.Embed(
-        title=f"{E['book']} {card['name']} • mode: {mode}",
-        color=suit_color(card["suit"])
-    )
-
-    file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
-
-    # If helper didn't give attach_url but did give a file, build the attachment URL
+    # default upright image
+    file_obj, attach_url = make_image_attachment(chosen["name"], is_reversed=False)
     if not attach_url and file_obj is not None:
         attach_url = f"attachment://{file_obj.filename}"
 
+    embed_top = discord.Embed(
+        title=f"{E['book']} {chosen['name']} • mode: {mode}",
+        description="",
+        color=suit_color(chosen["suit"])
+    )
     if attach_url:
         embed_top.set_image(url=attach_url)
 
-    # ---- Embed B: meanings (mode-rendered) ----
     embed_body = discord.Embed(
-        description=f"**{card['name']}** reveals both sides of its nature:",
-        color=suit_color(card["suit"])
+        description=f"**{chosen['name']}** reveals both sides of its nature:",
+        color=suit_color(chosen["suit"])
     )
 
-    upright_text = clip_field(render_card_text(card, "Upright", mode), 1024)
-    reversed_text = clip_field(render_card_text(card, "Reversed", mode), 1024)
+    upright_text = clip_field(render_card_text(chosen, "Upright", mode), 1024)
+    reversed_text = clip_field(render_card_text(chosen, "Reversed", mode), 1024)
 
     embed_body.add_field(name=f"Upright {E['sun']} • {mode}", value=upright_text, inline=False)
     embed_body.add_field(name=f"Reversed {E['moon']} • {mode}", value=reversed_text, inline=False)
     embed_body.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
-    async with ctx.typing():
-        await asyncio.sleep(random.uniform(1.0, 2.0))
+    await send_ephemeral(interaction, embeds=[embed_top, embed_body], mood="general", file_obj=file_obj)
 
-    # ---- Send both embeds together ----
-    try:
-        if file_obj:
-            await ctx.send(embeds=[embed_top, embed_body], file=file_obj)
-        else:
-            await ctx.send(embeds=[embed_top, embed_body])
-    except TypeError:
-        # Fallback for older discord.py
-        if file_obj:
-            await ctx.send(embed=embed_top, file=file_obj)
-        else:
-            await ctx.send(embed=embed_top)
-        await ctx.send(embed=embed_body)
 
-    
-@bot.command(name="clarify")
-async def clarify(ctx):
+async def card_name_autocomplete(interaction: discord.Interaction, current: str):
+    current = (current or "").lower()
+    hits = [c["name"] for c in tarot_cards if current in c["name"].lower()]
+    return [app_commands.Choice(name=name, value=name) for name in hits[:25]]
+
+@meaning_slash.autocomplete("card")
+async def meaning_card_autocomplete(interaction: discord.Interaction, current: str):
+    return await card_name_autocomplete(interaction, current)
+
+
+@bot.tree.command(name="clarify", description="Draw a clarifier card for your current focus.")
+async def clarify_slash(interaction: discord.Interaction):
     card, orientation = draw_card()
     tone = E["sun"] if orientation == "Upright" else E["moon"]
-    intent_text = user_intentions.get(ctx.author.id)
+    intent_text = user_intentions.get(interaction.user.id)
 
-    mode = get_effective_mode(ctx.author.id)
+    mode = get_effective_mode(interaction.user.id)
     meaning = render_card_text(card, orientation, mode)
 
     desc = f"**{card['name']} ({orientation} {tone}) • mode: {mode}**\n\n{meaning}"
@@ -662,146 +670,88 @@ async def clarify(ctx):
     )
     embed.set_footer(text=f"{E['spark']} A clarifier shines a smaller light within your larger spread.")
 
-    await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="general")
+    await send_ephemeral(interaction, embed=embed, mood="general")
 
-@bot.command(name="intent")
-async def intent(ctx, *, message: str = None):
-    if not message:
-        current = user_intentions.get(ctx.author.id)
+
+@bot.tree.command(name="intent", description="Set (or view) your current intention/focus.")
+@app_commands.describe(focus="Leave blank to view your current intention.")
+async def intent_slash(interaction: discord.Interaction, focus: Optional[str] = None):
+    if not focus:
+        current = user_intentions.get(interaction.user.id)
         if current:
-            await ctx.send(f"{E['light']} Your current intention is: *{current}*")
+            await interaction.response.send_message(f"{E['light']} Your current intention is: *{current}*", ephemeral=True)
         else:
-            await ctx.send(f"{E['warn']} You haven’t set an intention yet. Use `!intent your focus`.")
+            await interaction.response.send_message(f"{E['warn']} You haven’t set an intention yet. Use `/intent focus: ...`", ephemeral=True)
         return
 
-    user_intentions[ctx.author.id] = message
-    await ctx.send(f"{E['spark']} Intention set to: *{message}*")
+    user_intentions[interaction.user.id] = focus
+    await interaction.response.send_message(f"{E['spark']} Intention set to: *{focus}*", ephemeral=True)
 
-@bot.command(name="insight")
-async def insight(ctx):
-    user_id = str(ctx.author.id)
-    user_name = ctx.author.display_name
 
-    first_time = user_id not in known_seekers
-    if first_time:
-        greeting = f"{E['spark']} **Welcome, {user_name}.**\nThe deck senses a new presence — your journey begins here."
-        known_seekers[user_id] = {"name": user_name}
-        save_known_seekers(known_seekers)
-    else:
-        greeting = f"{E['spark']} **Welcome back, {user_name}.**\nYour energy feels familiar — shall we continue?"
+@bot.tree.command(name="mode", description="Set your default tarot reading mode.")
+@app_commands.choices(mode=[
+    app_commands.Choice(name="full", value="full"),
+    app_commands.Choice(name="direct", value="direct"),
+    app_commands.Choice(name="shadow", value="shadow"),
+    app_commands.Choice(name="poetic", value="poetic"),
+    app_commands.Choice(name="quick", value="quick"),
+    app_commands.Choice(name="love", value="love"),
+    app_commands.Choice(name="work", value="work"),
+    app_commands.Choice(name="money", value="money"),
+])
+async def mode_slash(interaction: discord.Interaction, mode: app_commands.Choice[str]):
+    chosen = set_user_mode(interaction.user.id, mode.value)
+    await interaction.response.send_message(f"✅ Default tarot mode set to **{chosen}**.", ephemeral=True)
 
-    embed = discord.Embed(
-        title=f"{E['crystal']} Arcanara Insight Menu {E['crystal']}",
-        description=(f"{greeting}\n\nYour intuition is your compass — here are the paths you may travel:\n\n━━━━━━━━━━━━━━━━━━━━━━━"),
-        color=0xB28DFF
-    )
 
-    embed.add_field(
-        name=f"{E['light']} **Intent & Focus**",
-        value=("• `!intent <your focus>` — Set or view your current intention.\n"
-               "• `!clarify` — Draw a clarifier for your most recent reading."),
-        inline=False
-    )
+@bot.tree.command(name="mode_reset", description="Reset your mode back to the default.")
+async def mode_reset_slash(interaction: discord.Interaction):
+    chosen = reset_user_mode(interaction.user.id)
+    await interaction.response.send_message(f"✅ Mode reset. Default tarot mode is **{chosen}**.", ephemeral=True)
 
-    embed.add_field(
-        name=f"{E['book']} **Draws & Spreads**",
-        value=("• `!cardoftheday` — Reveal the card that guides your day.\n"
-               "• `!threecard` — Explore Past, Present, and Future energies.\n"
-               "• `!read <focus>` — Receive a three-card reading (Situation, Obstacle, Guidance).\n"
-               "• `!celtic` — Perform a full 10-card Celtic Cross spread."),
-        inline=False
-    )
-    
-    embed.add_field(
-        name=f"{E['spark']} **Knowledge & Reflection**",
-        value=("• `!meaning <card>` — Uncover upright and reversed meanings.\n"
-               "• `!shuffle` — Cleanse and reset the deck’s energy.\n"
-               "• `!insight` — Return to this sacred index anytime.\n"
-               "• `!mystery` — Pull a mystery card and reflect without the meaning.\n"
-               "• `!reveal` — Reveal the meanings of the mystery card."),
-        inline=False
-    )
 
-    embed.set_footer(
-        text=f"{E['light']} Trust your intuition • Arcanara Tarot Bot",
-        icon_url="https://cdn-icons-png.flaticon.com/512/686/686589.png"
-    )
-
-    async with ctx.typing():
-        await asyncio.sleep(random.uniform(0.8, 1.2))
-
-    await ctx.send(embed=embed)
-
-@bot.command(name="mode")
-async def mode(ctx, *, mode: str = None):
-    """Set your default tarot reading mode."""
-    if not mode:
-        current = get_user_mode(ctx.author.id)
-        await ctx.send(f"{E['light']} Your current mode is **{current}**.")
-        return
-
-    chosen = set_user_mode(ctx.author.id, mode)
-    await ctx.send(f"✅ Default tarot mode set to **{chosen}**.")
-
-@bot.command(name="mode_reset")
-async def mode_reset(ctx):
-    chosen = reset_user_mode(ctx.author.id)
-    await ctx.send(f"✅ Mode reset. Default tarot mode is **{chosen}**.")
-
-# ==============================
-# MYSTERY + REVEAL COMMANDS
-# ==============================
-mystery_draws = {}  # Temporary storage of mystery cards per user
-
-@bot.command(name="mystery")
-async def mystery(ctx):
-    # pick a random card + orientation
+@bot.tree.command(name="mystery", description="Pull a mystery card (image only). Use /reveal to see the meaning.")
+async def mystery_slash(interaction: discord.Interaction):
     card = random.choice(tarot_cards)
     is_reversed = random.random() < 0.5
 
-    # remember it for this user (one active mystery per user)
-    MYSTERY_STATE[ctx.author.id] = {
+    MYSTERY_STATE[interaction.user.id] = {
         "name": card["name"],
         "is_reversed": is_reversed,
         "ts": time.time(),
     }
 
-    # Embed A: title + image (no meanings yet)
     embed_top = discord.Embed(
         title=f"{E['crystal']} {card['name']}" + (" — Reversed" if is_reversed else ""),
+        description="Type **/reveal** to see the meaning.",
         color=suit_color(card["suit"])
     )
+
     file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
+    if not attach_url and file_obj is not None:
+        attach_url = f"attachment://{file_obj.filename}"
     if attach_url:
         embed_top.set_image(url=attach_url)
 
-    # little nudge to the user
-    embed_top.set_footer(text=f"Type !reveal to see the meaning")
+    await send_ephemeral(interaction, embed=embed_top, mood="general", file_obj=file_obj)
 
-    # send it
-    if file_obj:
-        await ctx.send(embed=embed_top, file=file_obj)
-    else:
-        await ctx.send(embed=embed_top)
 
-@bot.command(name="reveal")
-async def reveal(ctx):
-    # fetch the user's last mystery draw
-    state = MYSTERY_STATE.get(ctx.author.id)
+@bot.tree.command(name="reveal", description="Reveal the meaning of your last mystery card.")
+async def reveal_slash(interaction: discord.Interaction):
+    state = MYSTERY_STATE.get(interaction.user.id)
     if not state:
-        await ctx.send(f"{E['warn']} No mystery card on file. Use **!mystery** first.")
+        await interaction.response.send_message(f"{E['warn']} No mystery card on file. Use **/mystery** first.", ephemeral=True)
         return
 
-    # find the card object by name
     name = state["name"]
     is_reversed = state["is_reversed"]
+
     card = next((c for c in tarot_cards if c["name"] == name), None)
     if not card:
-        await ctx.send(f"{E['warn']} I lost track of that card, sorry. Try **!mystery** again.")
+        await interaction.response.send_message(f"{E['warn']} I lost track of that card. Try **/mystery** again.", ephemeral=True)
         return
 
-    # Build the meaning embed: show ONLY the relevant orientation
-    mode = get_effective_mode(ctx.author.id)
+    mode = get_effective_mode(interaction.user.id)
     orientation = "Reversed" if is_reversed else "Upright"
     meaning = render_card_text(card, orientation, mode)
 
@@ -812,10 +762,69 @@ async def reveal(ctx):
     )
     embed.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
-    await ctx.send(embed=embed)
+    del MYSTERY_STATE[interaction.user.id]
+    await send_ephemeral(interaction, embed=embed, mood="general")
 
-    # one-time reveal: clear stored draw
-    del MYSTERY_STATE[ctx.author.id]
+
+@bot.tree.command(name="insight", description="Show Arcanara’s command index and your current settings.")
+async def insight_slash(interaction: discord.Interaction):
+    user_id = str(interaction.user.id)
+    user_name = interaction.user.display_name
+
+    first_time = user_id not in known_seekers
+    if first_time:
+        greeting = f"{E['spark']} **Welcome, {user_name}.**\nThe deck senses a new presence — your journey begins here."
+        known_seekers[user_id] = {"name": user_name}
+        save_known_seekers(known_seekers)
+    else:
+        greeting = f"{E['spark']} **Welcome back, {user_name}.**\nYour energy feels familiar — shall we continue?"
+
+    current_mode = get_effective_mode(interaction.user.id)
+    current_intent = user_intentions.get(interaction.user.id, "—")
+
+    # Dynamically list all slash commands
+    cmds = [c for c in bot.tree.get_commands() if isinstance(c, app_commands.Command)]
+    cmds = sorted(cmds, key=lambda c: c.name)
+
+    # Build a readable list
+    lines = []
+    for c in cmds:
+        desc = (c.description or "").strip()
+        lines.append(f"• `/{c.name}` — {desc}" if desc else f"• `/{c.name}`")
+
+    # Split if necessary to avoid field limits
+    chunk = "\n".join(lines)
+    if len(chunk) > 900:
+        # rough chunking
+        chunks = []
+        buf = []
+        size = 0
+        for line in lines:
+            if size + len(line) + 1 > 900:
+                chunks.append("\n".join(buf))
+                buf = [line]
+                size = len(line) + 1
+            else:
+                buf.append(line)
+                size += len(line) + 1
+        if buf:
+            chunks.append("\n".join(buf))
+    else:
+        chunks = [chunk]
+
+    embed = discord.Embed(
+        title=f"{E['crystal']} Arcanara Insight Menu {E['crystal']}",
+        description=f"{greeting}\n\n**Mode:** `{current_mode}`\n**Intention:** *{current_intent}*\n\n━━━━━━━━━━━━━━━━━━━━━━━",
+        color=0xB28DFF
+    )
+
+    embed.add_field(name="📜 Available Commands", value=chunks[0] or "—", inline=False)
+    for i, part in enumerate(chunks[1:], start=2):
+        embed.add_field(name=f"📜 Available Commands (cont. {i})", value=part, inline=False)
+
+    embed.set_footer(text=f"{E['light']} Trust your intuition • Arcanara Tarot Bot")
+    await send_ephemeral(interaction, embed=embed, mood="general")
+
 
 # ==============================
 # RUN BOT
