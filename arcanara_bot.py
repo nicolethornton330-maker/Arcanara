@@ -49,7 +49,7 @@ def ensure_tables():
 # ==============================
 # TAROT MODES (DB-backed)
 # ==============================
-DEFAULT_MODE = "direct"
+DEFAULT_MODE = "full"
 
 MODE_SPECS = {
     "quick":  ["quick", "call_to_action"],
@@ -61,6 +61,11 @@ MODE_SPECS = {
     "money":  ["money", "next_24h", "do", "call_to_action"],
     "full":   ["meaning", "mantra", "do_dont", "watch_for", "shadow", "questions", "next_24h", "call_to_action"],
 }
+
+def get_effective_mode(user_id: int, mode_override: Optional[str] = None) -> str:
+    if mode_override:
+        return normalize_mode(mode_override)
+    return get_user_mode(user_id)
 
 def normalize_mode(mode: str) -> str:
     mode = (mode or "").lower().strip()
@@ -391,22 +396,17 @@ async def card_of_the_day(ctx):
 
 @bot.command(name="read")
 async def read(ctx, *, message: str = None):
-    """Performs a focused three-card reading based on the user's question or theme."""
     if not message:
         await ctx.send(f"{E['warn']} Please include a question or focus after the command. Example: `!read my career path`")
         return
 
-    # Store or reuse user's focus
     user_intentions[ctx.author.id] = message
+    mode = get_effective_mode(ctx.author.id)
 
     cards = draw_unique_cards(3)
-    positions = [
-        f"Situation {E['sun']}",
-        f"Obstacle {E['sword']}",
-        f"Guidance {E['star']}"
-    ]
+    positions = [f"Situation {E['sun']}", f"Obstacle {E['sword']}", f"Guidance {E['star']}"]
 
-    desc = f"{E['light']} **Focus:** *{message}*\n\nThree cards emerge to illuminate your path:"
+    desc = f"{E['light']} **Focus:** *{message}*\n\nThree cards emerge to illuminate your path:\n\n**Mode:** {mode}"
 
     embed = discord.Embed(
         title=f"{E['crystal']} Intuitive Reading {E['crystal']}",
@@ -414,17 +414,15 @@ async def read(ctx, *, message: str = None):
         color=0x9370DB
     )
 
-    for pos, (card, orientation, meaning) in zip(positions, cards):
+    for pos, (card, orientation) in zip(positions, cards):
+        meaning = render_card_text(card, orientation, mode)
         embed.add_field(
             name=f"{pos}: {card['name']} ({orientation})",
-            value=meaning,
+            value=meaning if len(meaning) < 1000 else meaning[:997] + "...",
             inline=False
         )
 
-    embed.set_footer(
-        text=f"{E['spark']} Let these cards guide your awareness, not dictate your choices."
-    )
-
+    embed.set_footer(text=f"{E['spark']} Let these cards guide your awareness, not dictate your choices.")
     await send_with_typing(ctx, embed, delay_range=(2.5, 4.0), mood="spread")
 
 @bot.command(name="threecard")
@@ -433,9 +431,12 @@ async def three_card(ctx):
     cards = draw_unique_cards(3)
     intent_text = user_intentions.get(ctx.author.id)
 
+    mode = get_effective_mode(ctx.author.id)
+
     desc = "Past • Present • Future"
     if intent_text:
         desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
+    desc += f"\n\n**Mode:** {mode}"
 
     embed = discord.Embed(
         title=f"{E['crystal']} Three-Card Spread",
@@ -443,10 +444,11 @@ async def three_card(ctx):
         color=0xA020F0
     )
 
-    for pos, (card, orientation, meaning) in zip(positions, cards):
+    for pos, (card, orientation) in zip(positions, cards):
+        meaning = render_card_text(card, orientation, mode)
         embed.add_field(
             name=f"{pos}: {card['name']} ({orientation})",
-            value=meaning,
+            value=meaning if len(meaning) < 1000 else meaning[:997] + "...",
             inline=False
         )
 
@@ -460,29 +462,30 @@ async def celtic_cross(ctx):
         "9️⃣ Hopes & Fears", "🔟 Outcome"
     ]
     cards = draw_unique_cards(10)
+    mode = get_effective_mode(ctx.author.id)
+
     embed = discord.Embed(
         title=f"{E['crystal']} Celtic Cross Spread {E['crystal']}",
-        description="A deep, archetypal exploration of your path.",
+        description=f"A deep, archetypal exploration of your path.\n\n**Mode:** {mode}",
         color=0xA020F0
     )
 
     total_length = len(embed.title) + len(embed.description)
-    fields_buffer = []
 
-    for pos, (card, orientation, meaning) in zip(positions, cards):
+    for pos, (card, orientation) in zip(positions, cards):
+        meaning = render_card_text(card, orientation, mode)
         field_name = f"{pos}: {card['name']} ({orientation})"
         field_value = meaning if len(meaning) < 1000 else meaning[:997] + "..."
         field_length = len(field_name) + len(field_value)
 
-        # Check if adding this field would exceed Discord's limit
         if total_length + field_length > 5800:
-            # Send current embed and start a new one
             await send_with_typing(ctx, embed, delay_range=(3.0, 4.0), mood="deep")
             embed = discord.Embed(
                 title=f"{E['crystal']} Celtic Cross Spread (Continued)",
+                description=f"**Mode:** {mode}",
                 color=0xA020F0
             )
-            total_length = len(embed.title)
+            total_length = len(embed.title) + len(embed.description)
 
         embed.add_field(name=field_name, value=field_value, inline=False)
         total_length += field_length
@@ -511,9 +514,10 @@ async def meaning(ctx, *, query: str):
 
     # ---- Embed A: title + image (image ends up right under the title) ----
     embed_top = discord.Embed(
-        title=f"{E['book']} {card['name']}" + (" — Reversed" if is_reversed else ""),
+        title=f"{E['book']} {card['name']} • mode: {mode}",
         color=suit_color(card["suit"])
     )
+
     from card_images import make_image_attachment
     file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
     if attach_url:
@@ -524,8 +528,13 @@ async def meaning(ctx, *, query: str):
         description=f"**{card['name']}** reveals both sides of its nature:",
         color=suit_color(card["suit"])
     )
-    embed_body.add_field(name=f"Upright {E['sun']}",   value=card.get("upright", "—"),  inline=False)
-    embed_body.add_field(name=f"Reversed {E['moon']}", value=card.get("reversed", "—"), inline=False)
+    mode = get_effective_mode(ctx.author.id)
+
+    upright_text = render_card_text(card, "Upright", mode)
+    reversed_text = render_card_text(card, "Reversed", mode)
+
+    embed_body.add_field(name=f"Upright {E['sun']} • {mode}",   value=upright_text if len(upright_text) < 1000 else upright_text[:997] + "...",  inline=False)
+    embed_body.add_field(name=f"Reversed {E['moon']} • {mode}", value=reversed_text if len(reversed_text) < 1000 else reversed_text[:997] + "...", inline=False)
     embed_body.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
     async with ctx.typing():
@@ -549,12 +558,14 @@ async def meaning(ctx, *, query: str):
     
 @bot.command(name="clarify")
 async def clarify(ctx):
-    """Draws a clarifying card related to your most recent reading or focus."""
-    card, orientation, meaning = draw_card()
+    card, orientation = draw_card()
     tone = E["sun"] if orientation == "Upright" else E["moon"]
     intent_text = user_intentions.get(ctx.author.id)
 
-    desc = f"**{card['name']} ({orientation} {tone})**\n\n{meaning}"
+    mode = get_effective_mode(ctx.author.id)
+    meaning = render_card_text(card, orientation, mode)
+
+    desc = f"**{card['name']} ({orientation} {tone}) • mode: {mode}**\n\n{meaning}"
     if intent_text:
         desc += f"\n\n{E['light']} **Clarifying Focus:** *{intent_text}*"
 
@@ -563,10 +574,7 @@ async def clarify(ctx):
         description=desc,
         color=suit_color(card["suit"])
     )
-
-    embed.set_footer(
-        text=f"{E['spark']} A clarifier shines a smaller light within your larger spread."
-    )
+    embed.set_footer(text=f"{E['spark']} A clarifier shines a smaller light within your larger spread.")
 
     await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="general")
 
@@ -707,9 +715,12 @@ async def reveal(ctx):
         return
 
     # Build the meaning embed: show ONLY the relevant orientation
-    meaning = card.get("reversed" if is_reversed else "upright", "—")
+    mode = get_effective_mode(ctx.author.id)
+    orientation = "Reversed" if is_reversed else "Upright"
+    meaning = render_card_text(card, orientation, mode)
+
     embed = discord.Embed(
-        title=f"{E['book']} Reveal: {card['name']} " + ("(Reversed)" if is_reversed else "(Upright)"),
+        title=f"{E['book']} Reveal: {card['name']} ({orientation}) • mode: {mode}",
         description=meaning,
         color=suit_color(card["suit"])
     )
@@ -719,7 +730,7 @@ async def reveal(ctx):
 
     # one-time reveal: clear stored draw
     del MYSTERY_STATE[ctx.author.id]
-    
+
 # ==============================
 # RUN BOT
 # ==============================
