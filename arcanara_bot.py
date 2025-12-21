@@ -911,8 +911,8 @@ async def shuffle_slash(interaction: discord.Interaction):
         color=0x9370DB
     )
 
-    # Since we deferred, send as followup
-    await interaction.followup.send(embeds=[_prepend_in_character(embed, "shuffle")], ephemeral=True)
+    await send_ephemeral(interaction, embeds=[embed], mood="shuffle")
+
 
 @bot.tree.command(name="cardoftheday", description="Reveal the card that guides your day.")
 async def cardoftheday_slash(interaction: discord.Interaction):
@@ -969,10 +969,8 @@ async def cardoftheday_slash(interaction: discord.Interaction):
     await send_ephemeral(interaction, embed=embed, mood="daily", file_obj=file_obj)
 
 
+
 @bot.tree.command(name="read", description="Three-card reading: Situation • Obstacle • Guidance.")
-@app_commands.describe(intention="Your question or intention (example: my career path)")
-async def read_slash(interaction: discord.Interaction, intention: str):
-    @bot.tree.command(name="read", description="Three-card reading: Situation • Obstacle • Guidance.")
 @app_commands.describe(intention="Your question or intention (example: my career path)")
 async def read_slash(interaction: discord.Interaction, intention: str):
     if not await safe_defer(interaction, ephemeral=True):
@@ -1202,9 +1200,10 @@ async def tone_slash(interaction: discord.Interaction, tone: app_commands.Choice
         app_commands.Choice(name="post here", value="here"),
     ]
 )
+
 async def resendwelcome_slash(interaction: discord.Interaction, where: app_commands.Choice[str]):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
 
     guild = interaction.guild
     if guild is None:
@@ -1596,21 +1595,19 @@ async def forgetme_slash(interaction: discord.Interaction):
     images=[app_commands.Choice(name="on", value="on"), app_commands.Choice(name="off", value="off")],
 )
 async def settings_slash(
-    if not await safe_defer(interaction, ephemeral=True):
-        return
     interaction: discord.Interaction,
     history: Optional[app_commands.Choice[str]] = None,
     images: Optional[app_commands.Choice[str]] = None,
 ):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    if not await safe_defer(interaction, ephemeral=True):
+        return
 
     h = None if history is None else (history.value == "on")
     i = None if images is None else (images.value == "on")
 
     set_user_settings(interaction.user.id, history_opt_in=h, images_enabled=i)
-
     s = get_user_settings(interaction.user.id)
+
     await send_ephemeral(
         interaction,
         content=(
