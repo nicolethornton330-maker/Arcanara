@@ -53,13 +53,17 @@ DEFAULT_MODE = "full"
 
 MODE_SPECS = {
     "quick":  ["quick", "call_to_action"],
-    "direct": ["do_dont", "watch_for", "next_24h", "questions", "call_to_action"],
-    "poetic": ["meaning", "mantra", "call_to_action"],
-    "shadow": ["shadow", "watch_for", "questions", "call_to_action"],
-    "love":   ["relationships", "do_dont", "questions", "call_to_action"],
-    "work":   ["work", "next_24h", "do", "call_to_action"],
-    "money":  ["money", "next_24h", "do", "call_to_action"],
-    "full":   ["meaning", "mantra", "do_dont", "watch_for", "shadow", "questions", "next_24h", "call_to_action"],
+    "poetic": ["poetic_hint", "meaning", "mantra", "call_to_action"],
+
+    "direct": ["reader_voice", "tell", "do_dont", "prescription", "watch_for", "pitfall", "questions", "next_24h", "call_to_action"],
+    "shadow": ["reader_voice", "tell", "shadow", "watch_for", "pitfall", "questions", "call_to_action"],
+
+    "love":   ["reader_voice", "tell", "relationships", "green_red", "pitfall", "questions", "call_to_action"],
+    "work":   ["reader_voice", "tell", "work", "prescription", "watch_for", "next_24h", "call_to_action"],
+    "money":  ["reader_voice", "tell", "money", "prescription", "watch_for", "next_24h", "call_to_action"],
+
+    "full":   ["reader_voice", "tell", "meaning", "mantra", "do_dont", "prescription", "watch_for", "pitfall",
+               "shadow", "green_red", "questions", "next_24h", "call_to_action"],
 }
 
 def get_effective_mode(user_id: int, mode_override: Optional[str] = None) -> str:
@@ -135,42 +139,103 @@ def render_card_text(card: Dict[str, Any], orientation: str, mode: str) -> str:
     for token in spec:
         if token == "meaning":
             blocks.append(meaning)
+
         elif token == "mantra":
             m = dg.get("mantra", "")
-            if m: blocks.append(f"**Mantra:** {m}")
+            if m:
+                blocks.append(f"**Mantra:** {m}")
+
         elif token == "quick":
             q = dg.get("quick", "")
-            if q: blocks.append(q)
+            if q:
+                blocks.append(q)
+
         elif token == "do":
             d = dg.get("do", "")
-            if d: blocks.append(f"**Do:** {d}")
+            if d:
+                blocks.append(f"**Do:** {d}")
+
         elif token == "do_dont":
             dd = do_dont()
-            if dd: blocks.append(dd)
+            if dd:
+                blocks.append(dd)
+
         elif token == "watch_for":
             w = dg.get("watch_for", "")
-            if w: blocks.append(f"**Watch for:** {w}")
+            if w:
+                blocks.append(f"**Watch for:** {w}")
+
         elif token == "shadow":
             s = dg.get("shadow", "")
-            if s: blocks.append(f"**Shadow:** {s}")
+            if s:
+                blocks.append(f"**Shadow:** {s}")
+
         elif token == "questions":
             qs = questions()
-            if qs: blocks.append(qs)
+            if qs:
+                blocks.append(qs)
+
         elif token == "next_24h":
             n = dg.get("next_24h", "")
-            if n: blocks.append(f"**Next 24h:** {n}")
+            if n:
+                blocks.append(f"**Next 24h:** {n}")
+
         elif token == "relationships":
             txt = lenses.get("relationships") or dg.get("relationships", "")
-            if txt: blocks.append(f"**Love/People:** {txt}")
+            if txt:
+                blocks.append(f"**Love/People:** {txt}")
+
         elif token == "work":
             txt = lenses.get("work") or dg.get("work", "")
-            if txt: blocks.append(f"**Work:** {txt}")
+            if txt:
+                blocks.append(f"**Work:** {txt}")
+
         elif token == "money":
             txt = lenses.get("money") or dg.get("money", "")
-            if txt: blocks.append(f"**Money:** {txt}")
+            if txt:
+                blocks.append(f"**Money:** {txt}")
+
+        # ---- v2 fields ----
+        elif token == "tell":
+            t = dg.get("tell", "")
+            if t:
+                blocks.append(f"**The truth:** {t}")
+
+        elif token == "prescription":
+            p = dg.get("prescription", "")
+            if p:
+                blocks.append(f"**Do this:** {p}")
+
+        elif token == "pitfall":
+            p = dg.get("pitfall", "")
+            if p:
+                blocks.append(f"**Pitfall:** {p}")
+
+        elif token == "green_red":
+            gf = dg.get("green_flag", "")
+            rf = dg.get("red_flag", "")
+            if gf or rf:
+                line = []
+                if gf:
+                    line.append(f"**Green flag:** {gf}")
+                if rf:
+                    line.append(f"**Red flag:** {rf}")
+                blocks.append("\n".join(line))
+
+        elif token == "reader_voice":
+            rv = dg.get("reader_voice", "")
+            if rv:
+                blocks.append(f"*{rv}*")
+
+        elif token == "poetic_hint":
+            ph = dg.get("poetic_hint", "")
+            if ph:
+                blocks.append(f"*{ph}*")
+
         elif token == "call_to_action":
             a = card.get("call_to_action", "")
-            if a: blocks.append(f"**Action:** {a}")
+            if a:
+                blocks.append(f"**Action:** {a}")
 
     return _clip("\n\n".join(blocks))
 
