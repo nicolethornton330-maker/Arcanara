@@ -10,7 +10,7 @@ import os
 import psycopg
 import traceback
 from psycopg.types.json import Json
-from discord.errors import HTTPException
+from discord.errors import HTTPException, NotFound
 from psycopg.rows import dict_row
 from typing import Dict, Any, List, Optional
 from card_images import make_image_attachment # uses assets/cards/rws_stx/ etc.
@@ -490,81 +490,85 @@ def _chunk_lines(lines: List[str], max_len: int = 950) -> List[str]:
     if buf:
         chunks.append("\n".join(buf))
     return chunks
-
-
+    
 def build_onboarding_embeds(guild: discord.Guild) -> List[discord.Embed]:
-    # --- 1) Mystical + confident welcome ---
+    # --- 1) Mystical + confident welcome (more human voice) ---
     intro = discord.Embed(
         title="🔮 Arcanara has crossed the threshold",
         description=(
-            f"I have anchored to **{guild.name}**.\n\n"
-            "I don’t snoop in messages. I don’t read DMs.\n"
-            "I *do* translate symbols into decisions — clean, sharp, and a little enchanted.\n\n"
-            "Use me for:\n"
-            "• **Daily clarity** when your mind is loud\n"
-            "• **Decision support** (not destiny) when choices stack up\n"
-            "• **Relationship & work lenses** when you need a different angle\n"
-            "• **Deep dives** when you’re ready to face the real story\n\n"
-            "**Fast start:** try `/insight` (it shows everything you can do)."
+            f"I’ve anchored to **{guild.name}**.\n\n"
+            "I’m not here to spy — I don’t read messages, and I don’t rummage through DMs.\n"
+            "I *am* here to translate symbols into **clean choices**… with a little shimmer on the edges.\n\n"
+            "Think of me as a steady hand on the lantern:\n"
+            "• when your mind is loud\n"
+            "• when decisions stack up\n"
+            "• when you need a different lens on love, work, or money\n"
+            "• when you’re ready for the deeper story (the kind you can’t unsee — in a good way)\n\n"
+            "When you’re ready, start with `/cardoftheday` — it’s the gentlest doorway."
         ),
         color=0xB28DFF,
     )
-    intro.set_footer(text="✨ Ephemeral by default — most readings are private to the requester.")
+    intro.set_footer(text="✨ Readings are ephemeral by default — private to the requester.")
 
-    # --- 2) Practical “how to use” guide (short + punchy) ---
-    howto = discord.Embed(
-        title="🕯️ How to work with the deck",
+    # --- 2) Setup checklist (clear, confident, and *actually useful*) ---
+    checklist = discord.Embed(
+        title="🧭 Setup Checklist (two minutes, no incense required)",
         description=(
-            "**Suggested rituals (no robes required):**\n"
-            "• Set a focus with `/intent` (example: “my next career move”)\n"
-            "• Choose your voice with `/mode` (quick, poetic, direct, shadow, love, work, money)\n"
-            "• Pull a spread:\n"
-            "  – `/cardoftheday` for a single thread\n"
-            "  – `/read` for Situation • Obstacle • Guidance\n"
-            "  – `/threecard` for Past • Present • Future\n"
-            "  – `/celtic` when you want the *whole map*\n\n"
-            "**Mystery mode:** `/mystery` shows the card image only… then `/reveal` when you’re ready."
+            "**1) Choose your reading voice:** `/mode`\n"
+            "• *full* = layered + expansive\n"
+            "• *direct* = “tell me straight”\n"
+            "• *poetic* = intuitive + lyrical\n"
+            "• *shadow* = deeper truths\n"
+            "• *love / work / money* = focused lenses\n\n"
+            "**2) Set your thread (intention):** `/intent`\n"
+            "Example: `my next career move` or `how to handle this friendship`.\n\n"
+            "**3) Tune your experience:** `/settings`\n"
+            "Toggle images, and choose whether you want history saved (**opt-in only**).\n\n"
+            "**4) Need a clean slate?** `/reset`\n"
+            "This clears your current intention so we’re not dragging yesterday’s storyline into today."
         ),
         color=0x9370DB,
     )
 
-    # --- 3) Auto-generated command index ---
+    # --- 3) How to use (playful guidance + highlights) ---
+    howto = discord.Embed(
+        title="🕯️ How to work with me (a gentle ritual)",
+        description=(
+            "Here are the quickest ways to get real value fast:\n\n"
+            "• `/cardoftheday` — one clear signal for the day\n"
+            "• `/read` — **Situation • Obstacle • Guidance** (my favorite for quick clarity)\n"
+            "• `/threecard` — Past • Present • Future (zoom out and breathe)\n"
+            "• `/clarify` — one clarifier when you already *mostly* know\n"
+            "• `/meaning` — upright + reversed meanings in your current mode\n\n"
+            "**Mystery mode (dramatic pause included):**\n"
+            "`/mystery` shows the card image only… then `/reveal` when you’re ready.\n\n"
+            "If your focus changes midstream, use `/reset` and we begin again — clean and honest."
+        ),
+        color=0x6A5ACD,
+    )
+
+    # --- 4) Auto-generated command index ---
     cmds = [c for c in bot.tree.get_commands() if isinstance(c, app_commands.Command)]
     cmds = sorted(cmds, key=lambda c: c.name)
 
     lines: List[str] = []
     for c in cmds:
         desc = (c.description or "").strip()
-        if desc:
-            lines.append(f"• `/{c.name}` — {desc}")
-        else:
-            lines.append(f"• `/{c.name}`")
+        lines.append(f"• `/{c.name}` — {desc}" if desc else f"• `/{c.name}`")
 
     chunks = _chunk_lines(lines, max_len=950)
 
     index = discord.Embed(
         title="📜 Command Index",
-        description="Every door I can open, listed plainly:",
-        color=0x6A5ACD,
+        description="Every door I can open — listed plainly.",
+        color=0x2E8B57,
     )
     index.add_field(name="Commands", value=chunks[0] if chunks else "—", inline=False)
     for i, part in enumerate(chunks[1:], start=2):
         index.add_field(name=f"Commands (cont. {i})", value=part, inline=False)
 
-    # --- 4) Privacy + control (short, confident) ---
-    privacy = discord.Embed(
-        title="🔒 Privacy & Control",
-        description=(
-            "You hold the keys.\n\n"
-            "• `/privacy` — what I store (minimal, optional)\n"
-            "• `/settings` — toggle **images** and **history opt-in**\n"
-            "• `/forgetme` — delete your stored data\n\n"
-            "Default behavior is cautious: history is **off** unless a user opts in."
-        ),
-        color=0x2E8B57,
-    )
-
-    return [intro, howto, index, privacy]
+    # Return order matters: this reads like a guided welcome.
+    return [intro, checklist, howto, index]
 
 
 async def find_bot_inviter(guild: discord.Guild, bot_user: discord.ClientUser) -> Optional[discord.User]:
@@ -677,50 +681,55 @@ async def send_ephemeral(
     mood: str = "general",
     file_obj: Optional[discord.File] = None,
 ):
-    # Choose response channel (first response vs followup)
-    send_fn = interaction.followup.send if interaction.response.is_done() else interaction.response.send_message
+    def _kwargs(**extra):
+        kw = {"ephemeral": True}
+        if content is not None:
+            kw["content"] = content
+        kw.update(extra)
+        if file_obj is not None:
+            kw["file"] = file_obj
+        return kw
 
-    # Build payload WITHOUT file unless it's real
-    payload: Dict[str, Any] = {"ephemeral": True}
-
-    if content is not None:
-        payload["content"] = content
-
-    if embed is not None:
-        payload["embed"] = _prepend_in_character(embed, mood)
-    elif embeds:
-        embeds = list(embeds)
-        embeds[0] = _prepend_in_character(embeds[0], mood)
-        payload["embeds"] = embeds
-    elif content is None:
-        payload["content"] = "—"
-
-    if file_obj is not None:
-        payload["file"] = file_obj
+    # choose response channel (first response vs followup)
+    first_send = interaction.response.send_message
+    followup_send = interaction.followup.send
 
     try:
-        await send_fn(**payload)
-        return
+        if embed is not None:
+            embed = _prepend_in_character(embed, mood)
+            if interaction.response.is_done():
+                await followup_send(**_kwargs(embed=embed))
+            else:
+                await first_send(**_kwargs(embed=embed))
+            return
+
+        if embeds is not None and len(embeds) > 0:
+            embeds = list(embeds)
+            embeds[0] = _prepend_in_character(embeds[0], mood)
+            if interaction.response.is_done():
+                await followup_send(**_kwargs(embeds=embeds))
+            else:
+                await first_send(**_kwargs(embeds=embeds))
+            return
+
+        # content-only
+        if interaction.response.is_done():
+            await followup_send(**_kwargs(content=content or "—"))
+        else:
+            await first_send(**_kwargs(content=content or "—"))
 
     except HTTPException as e:
-        # 40060 = already acknowledged (use followup)
-        if getattr(e, "code", None) == 40060:
-            try:
-                payload.pop("ephemeral", None)  # followup still supports ephemeral, but keep clean
-                payload["ephemeral"] = True
-                await interaction.followup.send(**payload)
-                return
-            except Exception as e2:
-                print(f"⚠️ followup.send failed after 40060: {type(e2).__name__}: {e2}")
-                return
-
-        raise
+        # If the interaction was already acknowledged, try followup
+        try:
+            await followup_send(**_kwargs(content=content or "—"))
+        except (NotFound, HTTPException):
+            # Interaction expired/invalid — nothing else we can do
+            print(f"⚠️ send_ephemeral failed: {type(e).__name__}: {e}")
 
     except NotFound as e:
-        # 10062 = unknown interaction (usually responded too late)
-        if getattr(e, "code", None) == 10062:
-            print("⚠️ Interaction expired (10062). Could not respond.")
-            return
+        # Interaction expired/unknown
+        print(f"⚠️ send_ephemeral expired: {type(e).__name__}: {e}")
+                return
         raise
 # ==============================
 # EVENTS
@@ -993,6 +1002,71 @@ async def celtic_slash(interaction: discord.Interaction):
 
     for e in embeds_to_send[1:]:
         await interaction.followup.send(embeds=[e], ephemeral=True)
+        
+@bot.tree.command(name="resendwelcome", description="Resend Arcanara’s onboarding message (admin).")
+@app_commands.checks.has_permissions(manage_guild=True)
+@app_commands.guild_only()
+@app_commands.choices(where=[
+    app_commands.Choice(name="dm (owner/inviter)", value="dm"),
+    app_commands.Choice(name="post here", value="here"),
+])
+async def resendwelcome_slash(
+    interaction: discord.Interaction,
+    where: app_commands.Choice[str],
+):
+    # Acknowledge immediately so Discord doesn’t time out while we DM/post embeds
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
+
+    guild = interaction.guild
+    if guild is None:
+        await interaction.followup.send("⚠️ This command can only be used in a server.", ephemeral=True)
+        return
+
+    embeds = build_onboarding_embeds(guild)
+
+    try:
+        if where.value == "here":
+            ch = interaction.channel
+            if isinstance(ch, (discord.TextChannel, discord.Thread)):
+                await ch.send(embeds=embeds)
+                await interaction.followup.send("✅ Welcome message posted here.", ephemeral=True)
+            else:
+                await interaction.followup.send("⚠️ I can’t post in this channel type.", ephemeral=True)
+        else:
+            await send_onboarding_message(guild)
+            await interaction.followup.send("✅ Welcome message sent (DM owner/inviter, with channel fallback).", ephemeral=True)
+
+    except Exception as e:
+        print(f"⚠️ resendwelcome failed: {type(e).__name__}: {e}")
+        await interaction.followup.send("⚠️ A thread snagged while sending the welcome. Check permissions/logs.", ephemeral=True)
+
+@bot.tree.command(name="reset", description="Clear your current intention/focus (clean slate).")
+async def reset_slash(interaction: discord.Interaction):
+    user_intentions.pop(interaction.user.id, None)
+    MYSTERY_STATE.pop(interaction.user.id, None)  # optional but nice: clears mystery card too
+    await send_ephemeral(
+        interaction,
+        content="✨ Clean slate. Your intention thread is cleared.",
+        mood="general",
+    )
+
+@bot.tree.command(name="resetall", description="Reset your mode + clear your intention (full refresh).")
+async def resetall_slash(interaction: discord.Interaction):
+    user_intentions.pop(interaction.user.id, None)
+    MYSTERY_STATE.pop(interaction.user.id, None)
+    chosen = reset_user_mode(interaction.user.id)
+
+    await send_ephemeral(
+        interaction,
+        content=(
+            "🕯️ Done.\n"
+            "• Intention cleared\n"
+            f"• Mode reset to **{chosen}**"
+        ),
+        mood="general",
+    )
+        
 @bot.tree.command(name="meaning", description="Show upright and reversed meanings for a card (using your current mode).")
 @app_commands.describe(card="Card name (example: The Lovers)")
 async def meaning_slash(interaction: discord.Interaction, card: str):
@@ -1272,7 +1346,7 @@ async def insight_slash(interaction: discord.Interaction):
         f"• Got a situation with teeth? Use **/read** and give me your focus.\n"
         f"• Want the timeline vibe? **/threecard** (past • present • future).\n"
         f"• Need the *deep* dive? **/celtic** — it pulls the whole pattern.\n"
-        f"• Not sure what a card means in *your* mode? Ask **/meaning**.\n"
+        f"• Not sure what a card means? Ask **/meaning**.\n"
         f"• Feeling uncertain? **/clarify** will pull one more lantern from the dark.\n\n"
         "And if you’re in the mood for a little mischief:\n"
         f"• **/mystery** (image only) … then **/reveal** when you’re ready."
