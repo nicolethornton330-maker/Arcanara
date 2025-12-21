@@ -1014,44 +1014,6 @@ async def read_slash(interaction: discord.Interaction, intention: str):
     embed.set_footer(text=f"{E['spark']} Let these cards guide your awareness, not dictate your choices.")
     await send_ephemeral(interaction, embed=embed, mood="spread")
 
-    user_intentions[interaction.user.id] = intention
-    tone = get_effective_tone(interaction.user.id)
-
-    cards = draw_unique_cards(3)
-    positions = ["Situation", "Obstacle", "Guidance"]
-
-    log_history_if_opted_in(
-        interaction.user.id,
-        command="read",
-        tone=tone,
-        payload={
-            "intention": intention,
-            "spread": "situation_obstacle_guidance",
-            "cards": [
-                {"position": pos, "name": card["name"], "orientation": orientation}
-                for pos, (card, orientation) in zip(positions, cards)
-            ],
-        },
-    )
-
-    embed = discord.Embed(
-        title=f"{E['crystal']} Intuitive Reading {E['crystal']}",
-        description=f"{E['light']} **Intention:** *{intention}*\n\n**How I’ll read this:** {tone_label(tone)}",
-        color=0x9370DB,
-    )
-
-    pretty_positions = [f"Situation {E['sun']}", f"Obstacle {E['sword']}", f"Guidance {E['star']}"]
-    for pos, (card, orientation) in zip(pretty_positions, cards):
-        meaning = render_card_text(card, orientation, tone)
-        embed.add_field(
-            name=f"{pos}: {card['name']} ({orientation})",
-            value=meaning if len(meaning) < 1000 else meaning[:997] + "...",
-            inline=False,
-        )
-
-    embed.set_footer(text=f"{E['spark']} Let these cards guide your awareness, not dictate your choices.")
-    await send_ephemeral(interaction, embed=embed, mood="spread")
-
 
 @bot.tree.command(name="threecard", description="Past • Present • Future spread.")
 async def threecard_slash(interaction: discord.Interaction):
