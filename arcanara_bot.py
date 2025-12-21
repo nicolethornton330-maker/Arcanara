@@ -4,6 +4,7 @@ from discord.ext import commands
 from discord import app_commands
 import re
 import random
+from discord.errors import NotFound
 import time
 import json
 from pathlib import Path
@@ -94,7 +95,7 @@ def ensure_tables():
 
 
 # ==============================
-# TAROT TONES (DB-backed)  — you’re calling this "tone" in UI
+# TAROT TONES (DB-backed)
 # ==============================
 DEFAULT_TONE = "full"
 
@@ -124,55 +125,44 @@ TONE_LABELS = {
     "money":  "Money Lens (resources + decisions)",
 }
 
-
 def normalize_tone(tone: str) -> str:
-    tone = (tone or "").lower().strip()
-    return tone if tone in tone_SPECS else DEFAULT_tone
-
+    t = (tone or "").lower().strip()
+    return t if t in TONE_SPECS else DEFAULT_TONE
 
 def tone_label(tone: str) -> str:
-    m = normalize_tone(tone)
-    return tone_LABELS.get(m, tone_LABELS[DEFAULT_tone])
-
+    t = normalize_tone(tone)
+    return TONE_LABELS.get(t, TONE_LABELS[DEFAULT_TONE])
 
 def get_effective_tone(user_id: int, tone_override: Optional[str] = None) -> str:
-    if tone_override:
-        return normalize_tone(tone_override)
-    return get_user_tone(user_id)
-
+    return normalize_tone(tone_override) if tone_override else get_user_tone(user_id)
 
 def get_user_tone(user_id: int) -> str:
     with db_connect() as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT tone FROM tarot_user_prefs WHERE user_id=%s", (user_id,))
             row = cur.fetchone()
-    return normalize_tone(row["tone"]) if row else DEFAULT_tone
-
+    return normalize_tone(row["tone"]) if row else DEFAULT_TONE
 
 def set_user_tone(user_id: int, tone: str) -> str:
-    tone = normalize_tone(tone)
+    t = normalize_tone(tone)
     with db_connect() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
+            cur.execute("""
                 INSERT INTO tarot_user_prefs (user_id, tone)
                 VALUES (%s, %s)
                 ON CONFLICT (user_id) DO UPDATE SET
                     tone = EXCLUDED.tone,
                     updated_at = NOW()
-                """,
-                (user_id, tone),
-            )
+            """, (user_id, t))
         conn.commit()
-    return tone
-
+    return t
 
 def reset_user_tone(user_id: int) -> str:
     with db_connect() as conn:
         with conn.cursor() as cur:
             cur.execute("DELETE FROM tarot_user_prefs WHERE user_id=%s", (user_id,))
         conn.commit()
-    return DEFAULT_tone
+    return DEFAULT_TONE
 
 
 def _clip(text: str, max_len: int = 3800) -> str:
@@ -796,6 +786,10 @@ async def send_ephemeral(
             return
 
         await send_fn(**_send_kwargs(content=content or "—", ephemeral=True))
+        
+    except (discord.NotFound, NotFound) as e:
+        # Interaction expired / unknown; nothing we can do
+        return
 
     except discord.HTTPException as e:
         # If Discord says “already acknowledged”, fall back to followup
@@ -864,9 +858,10 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 @bot.tree.command(name="shuffle", description="Cleanse the deck and reset your intention + tone.")
 @app_commands.checks.cooldown(3, 60.0)
 async def shuffle_slash(interaction: discord.Interaction):
+    # Reset user state
     user_intentions.pop(interaction.user.id, None)
     MYSTERY_STATE.pop(interaction.user.id, None)
-    reset_user_tone(interaction.user.id)  # resets stored “tone” back to default
+    reset_user_mode(interaction.user.id)  # resets stored tone/mode to default
     random.shuffle(tarot_cards)
 
     embed = discord.Embed(
@@ -874,13 +869,14 @@ async def shuffle_slash(interaction: discord.Interaction):
         description=(
             "The deck is cleared.\n\n"
             f"• **Intention**: reset\n"
-            f"• **Tone**: reset to **{DEFAULT_tone}**\n\n"
+            f"• **Tone**: reset to **{DEFAULT_MODE}**\n\n"
             "Set a fresh intention with `/intent`, then draw with `/cardoftheday` or `/read`."
         ),
-        color=0x9370DB,
+        color=0x9370DB
     )
-    await send_ephemeral(interaction, embed=embed, mood="shuffle")
 
+    # Since we deferred, send as followup
+    await interaction.followup.send(embeds=[_prepend_in_character(embed, "shuffle")], ephemeral=True)
 
 @bot.tree.command(name="cardoftheday", description="Reveal the card that guides your day.")
 async def cardoftheday_slash(interaction: discord.Interaction):
@@ -1470,6 +1466,12 @@ async def insight_slash(interaction: discord.Interaction):
 
     embed.set_footer(text="A tarot reading is a mirror, not a cage. You steer.")
     await send_ephemeral(interaction, embed=embed, mood="general")
+    
+if not interaction.response.is_done():
+    try:
+        await interaction.response.defer(ephemeral=True)
+    except discord.NotFound:
+        return
 
 
 @bot.tree.command(name="privacy", description="What Arcanara stores and how to delete it.")
