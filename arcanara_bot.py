@@ -455,32 +455,104 @@ def suit_emoji(suit):
         "Pentacles": E["leaf"], "Major Arcana": E["arcana"]
     }.get(suit, E["crystal"])
 
-def build_onboarding_embed(guild: discord.Guild) -> discord.Embed:
-    return discord.Embed(
-        title="🔮 Arcanara has arrived",
+def _chunk_lines(lines: List[str], max_len: int = 950) -> List[str]:
+    """Chunk lines into strings that fit comfortably in an embed field."""
+    chunks: List[str] = []
+    buf: List[str] = []
+    size = 0
+    for line in lines:
+        add = len(line) + 1
+        if buf and size + add > max_len:
+            chunks.append("\n".join(buf))
+            buf = [line]
+            size = add
+        else:
+            buf.append(line)
+            size += add
+    if buf:
+        chunks.append("\n".join(buf))
+    return chunks
+
+
+def build_onboarding_embeds(guild: discord.Guild) -> List[discord.Embed]:
+    # --- 1) Mystical + confident welcome ---
+    intro = discord.Embed(
+        title="🔮 Arcanara has crossed the threshold",
         description=(
-            f"Thanks for inviting me to **{guild.name}**.\n\n"
-            "**Quick start:**\n"
-            "• `/insight` — see all commands + your current settings\n"
-            "• `/cardoftheday` — one card, one message\n"
-            "• `/read` — Situation • Obstacle • Guidance\n"
-            "• `/threecard` — Past • Present • Future\n"
-            "• `/celtic` — full Celtic Cross\n\n"
-            "**Your controls:**\n"
-            "• `/mode` — set your default reading style\n"
-            "• `/settings` — toggle images + history opt-in\n"
-            "• `/privacy` — what I store and how to delete it\n"
-            "• `/forgetme` — delete your stored data\n\n"
-            "FYI: Most responses are **ephemeral** (only you can see them)."
+            f"I have anchored to **{guild.name}**.\n\n"
+            "I don’t snoop in messages. I don’t read DMs.\n"
+            "I *do* translate symbols into decisions — clean, sharp, and a little enchanted.\n\n"
+            "Use me for:\n"
+            "• **Daily clarity** when your mind is loud\n"
+            "• **Decision support** (not destiny) when choices stack up\n"
+            "• **Relationship & work lenses** when you need a different angle\n"
+            "• **Deep dives** when you’re ready to face the real story\n\n"
+            "**Fast start:** try `/insight` (it shows everything you can do)."
         ),
         color=0xB28DFF,
     )
+    intro.set_footer(text="✨ Ephemeral by default — most readings are private to the requester.")
+
+    # --- 2) Practical “how to use” guide (short + punchy) ---
+    howto = discord.Embed(
+        title="🕯️ How to work with the deck",
+        description=(
+            "**Suggested rituals (no robes required):**\n"
+            "• Set a focus with `/intent` (example: “my next career move”)\n"
+            "• Choose your voice with `/mode` (quick, poetic, direct, shadow, love, work, money)\n"
+            "• Pull a spread:\n"
+            "  – `/cardoftheday` for a single thread\n"
+            "  – `/read` for Situation • Obstacle • Guidance\n"
+            "  – `/threecard` for Past • Present • Future\n"
+            "  – `/celtic` when you want the *whole map*\n\n"
+            "**Mystery mode:** `/mystery` shows the card image only… then `/reveal` when you’re ready."
+        ),
+        color=0x9370DB,
+    )
+
+    # --- 3) Auto-generated command index ---
+    cmds = [c for c in bot.tree.get_commands() if isinstance(c, app_commands.Command)]
+    cmds = sorted(cmds, key=lambda c: c.name)
+
+    lines: List[str] = []
+    for c in cmds:
+        desc = (c.description or "").strip()
+        if desc:
+            lines.append(f"• `/{c.name}` — {desc}")
+        else:
+            lines.append(f"• `/{c.name}`")
+
+    chunks = _chunk_lines(lines, max_len=950)
+
+    index = discord.Embed(
+        title="📜 Command Index",
+        description="Every door I can open, listed plainly:",
+        color=0x6A5ACD,
+    )
+    index.add_field(name="Commands", value=chunks[0] if chunks else "—", inline=False)
+    for i, part in enumerate(chunks[1:], start=2):
+        index.add_field(name=f"Commands (cont. {i})", value=part, inline=False)
+
+    # --- 4) Privacy + control (short, confident) ---
+    privacy = discord.Embed(
+        title="🔒 Privacy & Control",
+        description=(
+            "You hold the keys.\n\n"
+            "• `/privacy` — what I store (minimal, optional)\n"
+            "• `/settings` — toggle **images** and **history opt-in**\n"
+            "• `/forgetme` — delete your stored data\n\n"
+            "Default behavior is cautious: history is **off** unless a user opts in."
+        ),
+        color=0x2E8B57,
+    )
+
+    return [intro, howto, index, privacy]
+
 
 async def find_bot_inviter(guild: discord.Guild, bot_user: discord.ClientUser) -> Optional[discord.User]:
     """
     Attempts to find who added the bot by checking the guild audit log.
-    Requires the bot to have 'View Audit Log' permission in that server.
-    Returns None if unavailable.
+    Requires 'View Audit Log' permission.
     """
     try:
         async for entry in guild.audit_logs(limit=10, action=discord.AuditLogAction.bot_add):
@@ -491,56 +563,50 @@ async def find_bot_inviter(guild: discord.Guild, bot_user: discord.ClientUser) -
         return None
     return None
 
-async def send_onboarding_message(guild: discord.Guild):
-    embed = build_onboarding_embed(guild)
 
-    # 1) Try DM the inviter (if audit logs are accessible)
-    recipient = None
-    inviter = await find_bot_inviter(guild, bot.user)
-    if inviter:
-        recipient = inviter
-    else:
-        # 2) Fall back to server owner
+async def send_onboarding_message(guild: discord.Guild):
+    embeds = build_onboarding_embeds(guild)
+
+    # 1) Prefer inviter (audit log), else owner
+    recipient = await find_bot_inviter(guild, bot.user)
+    if recipient is None:
         recipient = guild.owner
 
-    # Try DM
+    # Try DM recipient
     if recipient:
         try:
-            await recipient.send(embed=embed)
+            await recipient.send(embeds=embeds)
             return
-        except discord.Forbidden:
-            pass
-        except discord.HTTPException:
+        except (discord.Forbidden, discord.HTTPException):
             pass
 
-    # 3) Fall back to posting in a channel if DMs are blocked
-    # Prefer system channel
+    # Fallback: post in system channel / first available text channel
+    me = guild.me
     channel = guild.system_channel
-    if channel and channel.permissions_for(guild.me).send_messages:
+    if channel and me and channel.permissions_for(me).send_messages:
         try:
-            await channel.send(embed=embed)
+            await channel.send(embeds=embeds)
             return
         except discord.HTTPException:
             pass
 
-    # Otherwise find first text channel we can post in
     for ch in guild.text_channels:
-        perms = ch.permissions_for(guild.me)
-        if perms.send_messages:
+        if me and ch.permissions_for(me).send_messages:
             try:
-                await ch.send(embed=embed)
+                await ch.send(embeds=embeds)
                 return
             except discord.HTTPException:
                 continue
 
+
 @bot.event
 async def on_guild_join(guild: discord.Guild):
-    # Keep it non-blocking and resilient
     try:
         await send_onboarding_message(guild)
-        print(f"✅ Onboarding message sent for guild: {guild.name} ({guild.id})")
+        print(f"✅ Onboarding sent for guild: {guild.name} ({guild.id})")
     except Exception as e:
         print(f"⚠️ Onboarding failed for guild {guild.id}: {type(e).__name__}: {e}")
+
 
 # ==============================
 # IN-CHARACTER RESPONSES
