@@ -456,6 +456,9 @@ async def card_of_the_day(ctx):
     is_reversed = (orientation == "Reversed")
     file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
 
+    if not attach_url and file_obj is not None:
+        attach_url = f"attachment://{file_obj.filename}"
+
     tone = E["sun"] if orientation == "Upright" else E["moon"]
     intent_text = user_intentions.get(ctx.author.id)
 
@@ -468,6 +471,7 @@ async def card_of_the_day(ctx):
         description=desc,
         color=suit_color(card["suit"])
     )
+
     if attach_url:
         embed.set_image(url=attach_url)
 
@@ -590,44 +594,47 @@ async def meaning(ctx, *, query: str):
         return
 
     card = matches[0]
+    mode = get_effective_mode(ctx.author.id)  # ✅ define mode BEFORE using it
 
-    # ---- Embed A: title + image (image ends up right under the title) ----
+    # ---- Embed A: title + image ----
     embed_top = discord.Embed(
         title=f"{E['book']} {card['name']} • mode: {mode}",
         color=suit_color(card["suit"])
     )
 
-    from card_images import make_image_attachment
     file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
+
+    # If helper didn't give attach_url but did give a file, build the attachment URL
+    if not attach_url and file_obj is not None:
+        attach_url = f"attachment://{file_obj.filename}"
+
     if attach_url:
         embed_top.set_image(url=attach_url)
 
-    # ---- Embed B: meanings + footer ----
+    # ---- Embed B: meanings (mode-rendered) ----
     embed_body = discord.Embed(
         description=f"**{card['name']}** reveals both sides of its nature:",
         color=suit_color(card["suit"])
     )
-    mode = get_effective_mode(ctx.author.id)
 
-    upright_text = render_card_text(card, "Upright", mode), 1024)
-    reversed_text = render_card_text(card, "Reversed", mode), 1024)
+    upright_text = clip_field(render_card_text(card, "Upright", mode), 1024)
+    reversed_text = clip_field(render_card_text(card, "Reversed", mode), 1024)
 
-    embed_body.add_field(name=f"Upright {E['sun']} • {mode}",   value=upright_text if len(upright_text) < 1000 else upright_text[:997] + "...",  inline=False)
-    embed_body.add_field(name=f"Reversed {E['moon']} • {mode}", value=reversed_text if len(reversed_text) < 1000 else reversed_text[:997] + "...", inline=False)
+    embed_body.add_field(name=f"Upright {E['sun']} • {mode}", value=upright_text, inline=False)
+    embed_body.add_field(name=f"Reversed {E['moon']} • {mode}", value=reversed_text, inline=False)
     embed_body.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
     async with ctx.typing():
         await asyncio.sleep(random.uniform(1.0, 2.0))
 
-    # ---- Send both embeds together (v2) or fallback to two messages (v1) ----
+    # ---- Send both embeds together ----
     try:
-        # discord.py v2 supports sending multiple embeds in one call
         if file_obj:
             await ctx.send(embeds=[embed_top, embed_body], file=file_obj)
         else:
             await ctx.send(embeds=[embed_top, embed_body])
     except TypeError:
-        # Older discord.py: send as two messages
+        # Fallback for older discord.py
         if file_obj:
             await ctx.send(embed=embed_top, file=file_obj)
         else:
