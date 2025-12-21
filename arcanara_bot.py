@@ -9,6 +9,7 @@ from pathlib import Path
 import os
 import psycopg
 from psycopg.types.json import Json
+from discord.errors import HTTPException
 from psycopg.rows import dict_row
 from typing import Dict, Any, List, Optional
 from card_images import make_image_attachment # uses assets/cards/rws_stx/ etc.
@@ -659,27 +660,35 @@ async def send_ephemeral(
     mood: str = "general",
     file_obj: Optional[discord.File] = None,
 ):
-    # choose response channel (first response vs followup)
-    send_fn = (
-        interaction.followup.send
-        if interaction.response.is_done()
-        else interaction.response.send_message
-    )
+    def _prepare():
+        nonlocal embed, embeds
+        if embed is not None:
+            embed = _prepend_in_character(embed, mood)
+            return {"content": content, "embed": embed, "ephemeral": True, "file": file_obj}
+        if embeds is not None and len(embeds) > 0:
+            embeds = list(embeds)
+            embeds[0] = _prepend_in_character(embeds[0], mood)
+            return {"content": content, "embeds": embeds, "ephemeral": True, "file": file_obj}
+        return {"content": content or "—", "ephemeral": True}
 
-    if embed is not None:
-        embed = _prepend_in_character(embed, mood)
-        await send_fn(content=content, embed=embed, ephemeral=True, file=file_obj)
+    payload = _prepare()
+
+    # First try: respond if not done, otherwise followup
+    try:
+        if interaction.response.is_done():
+            await interaction.followup.send(**payload)
+        else:
+            await interaction.response.send_message(**payload)
         return
-
-    if embeds is not None and len(embeds) > 0:
-        embeds = list(embeds)
-        embeds[0] = _prepend_in_character(embeds[0], mood)
-        await send_fn(content=content, embeds=embeds, ephemeral=True, file=file_obj)
-        return
-
-    await send_fn(content=content or "—", ephemeral=True)
-
-
+    except HTTPException as e:
+        # Discord says we already acknowledged -> use followup instead
+        if getattr(e, "code", None) == 40060:
+            try:
+                await interaction.followup.send(**payload)
+                return
+            except Exception as e2:
+                print(f"⚠️ followup.send also failed: {type(e2).__name__}: {e2}")
+        raise
 # ==============================
 # EVENTS
 # ==============================
@@ -706,21 +715,30 @@ async def on_ready():
     
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-    if isinstance(error, app_commands.CommandOnCooldown):
-        await send_ephemeral(
-            interaction,
-            content=f"⏳ Slow your shuffle, seeker. Try again in **{error.retry_after:.0f}s**.",
-            mood="general",
-        )
+    orig = getattr(error, "original", error)
+
+    if isinstance(orig, app_commands.CommandOnCooldown):
+        try:
+            await send_ephemeral(
+                interaction,
+                content=f"⏳ Slow your shuffle, seeker. Try again in **{orig.retry_after:.0f}s**.",
+                mood="general",
+            )
+        except Exception as e:
+            print(f"⚠️ failed sending cooldown msg: {type(e).__name__}: {e}")
         return
 
-    # fallback: log + show friendly message
-    print(f"⚠️ Slash command error: {type(error).__name__}: {error}")
-    await send_ephemeral(
-        interaction,
-        content="⚠️ A thread snagged in the weave. Try again in a moment.",
-        mood="general",
-    )
+    print(f"⚠️ Slash command error: {type(orig).__name__}: {orig}")
+
+    try:
+        await send_ephemeral(
+            interaction,
+            content="⚠️ A thread snagged in the weave. Try again in a moment.",
+            mood="general",
+        )
+    except Exception as e:
+        print(f"⚠️ failed sending error msg: {type(e).__name__}: {e}")
+
 
 # ==============================
 # SLASH COMMANDS (EPHEMERAL)
