@@ -591,7 +591,7 @@ def build_onboarding_embeds(guild: discord.Guild) -> List[discord.Embed]:
     checklist = discord.Embed(
         title="🧭 Setup Checklist (two minutes, no incense required)",
         description=(
-            "**1) Choose your reading tone:** `/tone`\n"
+            "**1) Choose your reading voice:** `/tone`\n"
             "• *full* = layered + expansive\n"
             "• *direct* = “tell me straight”\n"
             "• *poetic* = intuitive + lyrical\n"
@@ -602,9 +602,28 @@ def build_onboarding_embeds(guild: discord.Guild) -> List[discord.Embed]:
             "**3) Tune your experience:** `/settings`\n"
             "Toggle images, and choose whether you want history saved (**opt-in only**).\n\n"
             "**4) Need a clean slate?** `/shuffle`\n"
-            "This clears your intention **and** resets your tone back to default — no lingering storyline."
+            "This clears your intention and resets your tone — so we’re not dragging yesterday’s storyline into today."
         ),
         color=0x9370DB,
+    )
+
+    # --- 3) Permissions (Arcanara voice, admin-clear) ---
+    perms = discord.Embed(
+        title="🛡️ A small offering: permissions (so I don’t faceplant in the temple)",
+        description=(
+            "I don’t ask for much — just a doorway and a place to set the lantern.\n\n"
+            "**In the channel you want me to speak in, I need:**\n"
+            "• **View Channel**\n"
+            "• **Send Messages**\n"
+            "• **Embed Links** *(required — my readings live in embeds)*\n"
+            "• **Attach Files** *(required for card images)*\n\n"
+            "**Nice-to-have:**\n"
+            "• **Read Message History** *(helps Discord behave; I still don’t read your conversations)*\n"
+            "• **View Audit Log** *(only if you want me to DM the person who invited me)*\n\n"
+            "**One more truth:** DMs are protected by *your* Discord privacy settings.\n"
+            "If your DMs are closed, I’ll try my best — and then I’ll leave this welcome in a server channel instead."
+        ),
+        color=0x4B0082,
     )
 
     howto = discord.Embed(
@@ -642,7 +661,7 @@ def build_onboarding_embeds(guild: discord.Guild) -> List[discord.Embed]:
     for i, part in enumerate(chunks[1:], start=2):
         index.add_field(name=f"Commands (cont. {i})", value=part, inline=False)
 
-    return [intro, checklist, howto, index]
+    return [intro, checklist, perms, howto, index]
 
 
 async def find_bot_inviter(guild: discord.Guild, bot_user: discord.ClientUser) -> Optional[discord.User]:
@@ -672,6 +691,15 @@ async def send_onboarding_message(guild: discord.Guild):
             return
         except (discord.Forbidden, discord.HTTPException):
             pass
+    # Prefer a private setup channel if it exists
+    preferred_names = {"arcanara-setup", "bot-setup", "admin", "mods"}
+    for ch in guild.text_channels:
+        if ch.name.lower() in preferred_names and me and ch.permissions_for(me).send_messages:
+            try:
+                await ch.send(embeds=embeds)
+                return
+            except discord.HTTPException:
+                pass
 
     # Fallback: post in system channel / first available text channel
     me = guild.me
