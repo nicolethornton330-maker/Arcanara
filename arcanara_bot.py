@@ -370,18 +370,16 @@ async def shuffle(ctx):
 
 @bot.command(name="cardoftheday")
 async def card_of_the_day(ctx):
-    card, orientation, meaning = draw_card()
     card, orientation = draw_card()
-    tone = E["sun"] if orientation == "Upright" else E["moon"]
-
     mode = get_user_mode(ctx.author.id)
     meaning = render_card_text(card, orientation, mode)
+    tone = E["sun"] if orientation == "Upright" else E["moon"]
+    intent_text = user_intentions.get(ctx.author.id)
 
     desc = f"**{card['name']} ({orientation} {tone}) • mode: {mode}**\n\n{meaning}"
-
-    desc = f"**{card['name']} ({orientation} {tone})**\n\n{meaning}"
     if intent_text:
         desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
+
 
     embed = discord.Embed(
         title=f"{E['crystal']} Card of the Day",
