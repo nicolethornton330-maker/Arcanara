@@ -918,9 +918,13 @@ async def cardoftheday_slash(interaction: discord.Interaction):
     file_obj, attach_url = None, None
 
     if settings.get("images_enabled", True):
-        file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
-        if not attach_url and file_obj is not None:
-            attach_url = f"attachment://{file_obj.filename}"
+        try:
+            file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
+            if not attach_url and file_obj is not None:
+                attach_url = f"attachment://{file_obj.filename}"
+        except Exception as e:
+            print(f"⚠️ make_image_attachment failed: {type(e).__name__}: {e}")
+            file_obj, attach_url = None, None
 
     tone_emoji = E["sun"] if orientation == "Upright" else E["moon"]
     intent_text = user_intentions.get(interaction.user.id)
@@ -1301,33 +1305,29 @@ async def clarify_slash(interaction: discord.Interaction):
     embed.set_footer(text=f"{E['spark']} A clarifier shines a smaller light within your larger spread.")
     await send_ephemeral(interaction, embed=embed, mood="general")
 
-
 @bot.tree.command(name="intent", description="Set (or view) your current intention.")
 @app_commands.describe(intention="Leave blank to view your current intention.")
 async def intent_slash(interaction: discord.Interaction, intention: Optional[str] = None):
     if not interaction.response.is_done():
         await interaction.response.defer(ephemeral=True)
-        
+
     if not intention:
         current = user_intentions.get(interaction.user.id)
         if current:
-            await interaction.response.send_message(f"{E['light']} Your current intention is: *{current}*", ephemeral=True)
+            await send_ephemeral(interaction, content=f"{E['light']} Your current intention is: *{current}*")
         else:
-            await interaction.response.send_message(
-                f"{E['warn']} You haven’t set an intention yet. Use `/intent intention: ...`",
-                ephemeral=True,
-            )
+            await send_ephemeral(interaction, content=f"{E['warn']} You haven’t set an intention yet. Use `/intent intention: ...`")
         return
 
     user_intentions[interaction.user.id] = intention
-    await interaction.response.send_message(f"{E['spark']} Intention set to: *{intention}*", ephemeral=True)
+    await send_ephemeral(interaction, content=f"{E['spark']} Intention set to: *{intention}*")
 
 
 @bot.tree.command(name="mystery", description="Pull a mystery card (image only). Use /reveal to see the meaning.")
 async def mystery_slash(interaction: discord.Interaction):
     if not interaction.response.is_done():
         await interaction.response.defer(ephemeral=True)
-        
+
     card = random.choice(tarot_cards)
     is_reversed = random.random() < 0.5
 
@@ -1346,12 +1346,32 @@ async def mystery_slash(interaction: discord.Interaction):
     )
 
     file_obj, attach_url = None, None
+
     if settings.get("images_enabled", True):
-        file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
-        if not attach_url and file_obj is not None:
-            attach_url = f"attachment://{file_obj.filename}"
-        if attach_url:
-            embed_top.set_image(url=attach_url)
+        try:
+            file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
+
+            # If make_image_attachment returns a File but no URL, use attachment://
+            if not attach_url and file_obj is not None:
+                attach_url = f"attachment://{file_obj.filename}"
+
+            if attach_url:
+                embed_top.set_image(url=attach_url)
+            else:
+                # No attachment produced (but command should still succeed)
+                embed_top.description = (
+                    "I drew a mystery card, but the image didn’t manifest.\n"
+                    "Type **/reveal** to see the meaning."
+                )
+
+        except Exception as e:
+            print(f"⚠️ make_image_attachment failed in /mystery: {type(e).__name__}: {e}")
+            file_obj, attach_url = None, None
+            embed_top.description = (
+                "I drew a mystery card, but the image thread snapped.\n"
+                "Type **/reveal** to see the meaning."
+            )
+
     else:
         embed_top.description = (
             "Images are currently **off**.\n"
@@ -1359,6 +1379,7 @@ async def mystery_slash(interaction: discord.Interaction):
         )
 
     await send_ephemeral(interaction, embed=embed_top, mood="general", file_obj=file_obj)
+
 
 
 @bot.tree.command(name="reveal", description="Reveal the meaning of your last mystery card.")
@@ -1537,22 +1558,22 @@ async def forgetme_slash(interaction: discord.Interaction):
 
     await send_ephemeral(interaction, content="✅ Your thread has been cut clean. Stored data deleted.", mood="general")
 
-
 @bot.tree.command(name="settings", description="Control history + images for your readings.")
 @app_commands.choices(
     history=[app_commands.Choice(name="on", value="on"), app_commands.Choice(name="off", value="off")],
     images=[app_commands.Choice(name="on", value="on"), app_commands.Choice(name="off", value="off")],
 )
 async def settings_slash(
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
-        
     interaction: discord.Interaction,
     history: Optional[app_commands.Choice[str]] = None,
     images: Optional[app_commands.Choice[str]] = None,
 ):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
+
     h = None if history is None else (history.value == "on")
     i = None if images is None else (images.value == "on")
+
     set_user_settings(interaction.user.id, history_opt_in=h, images_enabled=i)
 
     s = get_user_settings(interaction.user.id)
