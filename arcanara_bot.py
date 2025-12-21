@@ -47,12 +47,12 @@ def ensure_tables():
     """Create tables if they don't exist (safe to run on startup)."""
     with db_connect() as conn:
         with conn.cursor() as cur:
-            # Existing table: user mode preference
+            # Existing table: user tone preference
             cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS tarot_user_prefs (
                     user_id BIGINT PRIMARY KEY,
-                    mode TEXT NOT NULL,
+                    tone TEXT NOT NULL,
                     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
                 """
@@ -77,7 +77,7 @@ def ensure_tables():
                     id BIGSERIAL PRIMARY KEY,
                     user_id BIGINT NOT NULL,
                     command TEXT NOT NULL,
-                    mode TEXT NOT NULL,
+                    tone TEXT NOT NULL,
                     payload JSONB NOT NULL,
                     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
@@ -94,11 +94,11 @@ def ensure_tables():
 
 
 # ==============================
-# TAROT MODES (DB-backed)  — you’re calling this "tone" in UI
+# TAROT TONES (DB-backed)  — you’re calling this "tone" in UI
 # ==============================
-DEFAULT_MODE = "full"
+DEFAULT_TONE = "full"
 
-MODE_SPECS = {
+TONE_SPECS = {
     "quick":  ["quick", "call_to_action"],
     "poetic": ["poetic_hint", "meaning", "mantra", "call_to_action"],
 
@@ -113,7 +113,7 @@ MODE_SPECS = {
                "shadow", "green_red", "questions", "next_24h", "call_to_action"],
 }
 
-MODE_LABELS = {
+TONE_LABELS = {
     "full":   "Full Spectrum (deep + practical)",
     "direct": "Direct (straight talk, no fluff)",
     "shadow": "Shadow Work (truth + integration)",
@@ -125,54 +125,54 @@ MODE_LABELS = {
 }
 
 
-def normalize_mode(mode: str) -> str:
-    mode = (mode or "").lower().strip()
-    return mode if mode in MODE_SPECS else DEFAULT_MODE
+def normalize_tone(tone: str) -> str:
+    tone = (tone or "").lower().strip()
+    return tone if tone in tone_SPECS else DEFAULT_tone
 
 
-def mode_label(mode: str) -> str:
-    m = normalize_mode(mode)
-    return MODE_LABELS.get(m, MODE_LABELS[DEFAULT_MODE])
+def tone_label(tone: str) -> str:
+    m = normalize_tone(tone)
+    return tone_LABELS.get(m, tone_LABELS[DEFAULT_tone])
 
 
-def get_effective_mode(user_id: int, mode_override: Optional[str] = None) -> str:
-    if mode_override:
-        return normalize_mode(mode_override)
-    return get_user_mode(user_id)
+def get_effective_tone(user_id: int, tone_override: Optional[str] = None) -> str:
+    if tone_override:
+        return normalize_tone(tone_override)
+    return get_user_tone(user_id)
 
 
-def get_user_mode(user_id: int) -> str:
+def get_user_tone(user_id: int) -> str:
     with db_connect() as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT mode FROM tarot_user_prefs WHERE user_id=%s", (user_id,))
+            cur.execute("SELECT tone FROM tarot_user_prefs WHERE user_id=%s", (user_id,))
             row = cur.fetchone()
-    return normalize_mode(row["mode"]) if row else DEFAULT_MODE
+    return normalize_tone(row["tone"]) if row else DEFAULT_tone
 
 
-def set_user_mode(user_id: int, mode: str) -> str:
-    mode = normalize_mode(mode)
+def set_user_tone(user_id: int, tone: str) -> str:
+    tone = normalize_tone(tone)
     with db_connect() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO tarot_user_prefs (user_id, mode)
+                INSERT INTO tarot_user_prefs (user_id, tone)
                 VALUES (%s, %s)
                 ON CONFLICT (user_id) DO UPDATE SET
-                    mode = EXCLUDED.mode,
+                    tone = EXCLUDED.tone,
                     updated_at = NOW()
                 """,
-                (user_id, mode),
+                (user_id, tone),
             )
         conn.commit()
-    return mode
+    return tone
 
 
-def reset_user_mode(user_id: int) -> str:
+def reset_user_tone(user_id: int) -> str:
     with db_connect() as conn:
         with conn.cursor() as cur:
             cur.execute("DELETE FROM tarot_user_prefs WHERE user_id=%s", (user_id,))
         conn.commit()
-    return DEFAULT_MODE
+    return DEFAULT_tone
 
 
 def _clip(text: str, max_len: int = 3800) -> str:
@@ -182,13 +182,13 @@ def _clip(text: str, max_len: int = 3800) -> str:
     return text[: max_len - 1] + "…"
 
 
-def render_card_text(card: Dict[str, Any], orientation: str, mode: str) -> str:
+def render_card_text(card: Dict[str, Any], orientation: str, tone: str) -> str:
     """
     orientation: "Upright" or "Reversed"
-    mode: one of MODE_SPECS keys
+    tone: one of tone_SPECS keys
     """
-    mode = normalize_mode(mode)
-    spec = MODE_SPECS[mode]
+    tone = normalize_tone(tone)
+    spec = tone_SPECS[tone]
 
     is_rev = (orientation.lower() == "reversed")
     meaning = card.get("reversed" if is_rev else "upright", "—")
@@ -364,7 +364,7 @@ def set_user_settings(
 def log_history_if_opted_in(
     user_id: int,
     command: str,
-    mode: str,
+    tone: str,
     payload: dict,
     *,
     settings: Optional[Dict[str, Any]] = None,
@@ -385,10 +385,10 @@ def log_history_if_opted_in(
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    INSERT INTO tarot_reading_history (user_id, command, mode, payload)
+                    INSERT INTO tarot_reading_history (user_id, command, tone, payload)
                     VALUES (%s, %s, %s, %s)
                     """,
-                    (user_id, command, mode, Json(payload)),
+                    (user_id, command, tone, Json(payload)),
                 )
             conn.commit()
 
@@ -568,7 +568,7 @@ def _chunk_lines(lines: List[str], max_len: int = 950) -> List[str]:
 
 
 # ==============================
-# ONBOARDING (patched: /tone + /shuffle language, no /mode or /reset)
+# ONBOARDING (patched: /tone + /shuffle language, no /tone or /reset)
 # ==============================
 def _chunk_text(text: str, max_len: int = 1900) -> List[str]:
     """
@@ -622,63 +622,42 @@ def _chunk_text(text: str, max_len: int = 1900) -> List[str]:
 
 
 def build_onboarding_messages(guild: discord.Guild) -> List[str]:
-    # 1) Welcome
-    msg1 = (
+    # One message, Chronobot-style. Keep it under 2000 chars.
+    msg = (
         f"🔮 **Arcanara has crossed the threshold**\n"
-        f"I’ve anchored to **{guild.name}**.\n\n"
-        "I’m not here to spy — I don’t read messages, and I don’t rummage through DMs.\n"
-        "I *am* here to translate symbols into clean choices… with a little shimmer on the edges.\n\n"
-        "Use me for:\n"
-        "• **Daily clarity** when your mind is loud\n"
-        "• **Decision support** (not destiny) when choices stack up\n"
-        "• **Love / work / money lenses** when you need a different angle\n"
-        "• **Deep dives** when you’re ready for the whole pattern\n\n"
-        "Gentlest doorway: **/cardoftheday**.\n"
-        "Most readings are **private by default** (ephemeral)."
-    )
+        f"I’ve anchored to **{guild.name}**.\n"
+        "I don’t read messages. I don’t rummage through DMs.\n"
+        "I *do* translate symbols into clean choices — with a little shimmer on the edges.\n\n"
 
-    # 2) Setup checklist + permissions note
-    msg2 = (
-        "🧭 **Setup Checklist (two minutes, no incense required)**\n"
-        "1) Choose your reading voice: **/tone**\n"
-        "2) Set your thread (intention): **/intent**\n"
-        "3) Tune your experience: **/settings** (images + history opt-in)\n"
-        "4) Need a clean slate? **/shuffle** (resets intention + tone)\n\n"
-        "🛡️ **Permissions note (so I can speak):**\n"
-        "• **Send Messages** — required wherever you want me to post\n"
-        "• **Embed Links** — recommended (prettier formatting)\n"
-        "• **Attach Files** — recommended (card images)\n\n"
-        "If DMs are closed for server members, I may not be able to DM the welcome —\n"
-        "in that case I’ll post it in a channel I can access."
-    )
+        "🧭 **Quick Setup**\n"
+        "1) **/tone** — choose how I speak (full, direct, poetic, shadow, love, work, money)\n"
+        "2) **/intent** — set your intention (your focus / question)\n"
+        "3) **/settings** — images on/off + history opt-in (off by default)\n"
+        "4) **/shuffle** — reset intention + tone (fresh slate)\n\n"
 
-    # 3) Quick use guide
-    msg3 = (
-        "🕯️ **How to work with the deck (a gentle ritual)**\n"
-        "• **/cardoftheday** — one clear signal for the day\n"
+        "✨ **Start Here**\n"
+        "• **/cardoftheday** — one clear message for today\n"
         "• **/read** — Situation • Obstacle • Guidance (you provide an intention)\n"
         "• **/threecard** — Past • Present • Future\n"
         "• **/celtic** — full 10-card Celtic Cross\n"
-        "• **/clarify** — one clarifier for your current intention\n"
-        "• **/meaning** — look up a card (upright + reversed)\n\n"
-        "🎭 **Mystery mode:** **/mystery** (image only)… then **/reveal** when you’re ready.\n"
-        "And when the storyline changes: **/shuffle**."
+        "• **/clarify** — one extra card for your current intention\n"
+        "• **/meaning** — look up any card (upright + reversed)\n"
+        "• **/mystery** → **/reveal** — dramatic pause included\n\n"
+
+        "🔒 **Privacy**\n"
+        "History is **opt-in** only. Use **/forgetme** to delete stored data.\n\n"
+
+        "🛡️ **Permissions (so I can speak)**\n"
+        "• **Send Messages** (required)\n"
+        "• **Attach Files** (recommended for card images)\n"
+        "• **Embed Links** (optional)\n\n"
+
+        "Need the full guided help at any time? Use **/insight**.\n"
+        "Admins: **/resendwelcome** re-sends this welcome."
     )
 
-    # 4) Command index (auto-generated)
-    cmds = [c for c in bot.tree.get_commands() if isinstance(c, app_commands.Command)]
-    cmds = sorted(cmds, key=lambda c: c.name)
+    return [msg]
 
-    lines: List[str] = []
-    for c in cmds:
-        desc = (c.description or "").strip()
-        lines.append(f"• `/{c.name}` — {desc}" if desc else f"• `/{c.name}`")
-
-    index_text = "📜 **Command Index**\n" + ("\n".join(lines) if lines else "—")
-    msg4_chunks = _chunk_text(index_text, max_len=1900)
-
-    # Return as a list of separate Discord messages
-    return [msg1, msg2, msg3, *msg4_chunks]
 
 
 async def find_bot_inviter(guild: discord.Guild, bot_user: discord.ClientUser) -> Optional[discord.User]:
@@ -887,7 +866,7 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 async def shuffle_slash(interaction: discord.Interaction):
     user_intentions.pop(interaction.user.id, None)
     MYSTERY_STATE.pop(interaction.user.id, None)
-    reset_user_mode(interaction.user.id)  # resets stored “tone” back to default
+    reset_user_tone(interaction.user.id)  # resets stored “tone” back to default
     random.shuffle(tarot_cards)
 
     embed = discord.Embed(
@@ -895,7 +874,7 @@ async def shuffle_slash(interaction: discord.Interaction):
         description=(
             "The deck is cleared.\n\n"
             f"• **Intention**: reset\n"
-            f"• **Tone**: reset to **{DEFAULT_MODE}**\n\n"
+            f"• **Tone**: reset to **{DEFAULT_tone}**\n\n"
             "Set a fresh intention with `/intent`, then draw with `/cardoftheday` or `/read`."
         ),
         color=0x9370DB,
@@ -909,8 +888,8 @@ async def cardoftheday_slash(interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
 
     card, orientation = draw_card()
-    mode = get_effective_mode(interaction.user.id)
-    meaning = render_card_text(card, orientation, mode)
+    tone = get_effective_tone(interaction.user.id)
+    meaning = render_card_text(card, orientation, tone)
 
     settings = get_user_settings(interaction.user.id)
 
@@ -925,14 +904,14 @@ async def cardoftheday_slash(interaction: discord.Interaction):
     tone_emoji = E["sun"] if orientation == "Upright" else E["moon"]
     intent_text = user_intentions.get(interaction.user.id)
 
-    desc = f"**{card['name']} ({orientation} {tone_emoji}) • {mode_label(mode)}**\n\n{meaning}"
+    desc = f"**{card['name']} ({orientation} {tone_emoji}) • {tone_label(tone)}**\n\n{meaning}"
     if intent_text:
         desc += f"\n\n{E['light']} **Intention:** *{intent_text}*"
 
     log_history_if_opted_in(
         interaction.user.id,
         command="cardoftheday",
-        mode=mode,
+        tone=tone,
         payload={
             "card": card["name"],
             "orientation": orientation,
@@ -962,7 +941,7 @@ async def read_slash(interaction: discord.Interaction, intention: str):
         await interaction.response.defer(ephemeral=True)
 
     user_intentions[interaction.user.id] = intention
-    mode = get_effective_mode(interaction.user.id)
+    tone = get_effective_tone(interaction.user.id)
 
     cards = draw_unique_cards(3)
     positions = ["Situation", "Obstacle", "Guidance"]
@@ -970,7 +949,7 @@ async def read_slash(interaction: discord.Interaction, intention: str):
     log_history_if_opted_in(
         interaction.user.id,
         command="read",
-        mode=mode,
+        tone=tone,
         payload={
             "intention": intention,
             "spread": "situation_obstacle_guidance",
@@ -983,13 +962,13 @@ async def read_slash(interaction: discord.Interaction, intention: str):
 
     embed = discord.Embed(
         title=f"{E['crystal']} Intuitive Reading {E['crystal']}",
-        description=f"{E['light']} **Intention:** *{intention}*\n\n**How I’ll read this:** {mode_label(mode)}",
+        description=f"{E['light']} **Intention:** *{intention}*\n\n**How I’ll read this:** {tone_label(tone)}",
         color=0x9370DB,
     )
 
     pretty_positions = [f"Situation {E['sun']}", f"Obstacle {E['sword']}", f"Guidance {E['star']}"]
     for pos, (card, orientation) in zip(pretty_positions, cards):
-        meaning = render_card_text(card, orientation, mode)
+        meaning = render_card_text(card, orientation, tone)
         embed.add_field(
             name=f"{pos}: {card['name']} ({orientation})",
             value=meaning if len(meaning) < 1000 else meaning[:997] + "...",
@@ -1008,13 +987,13 @@ async def threecard_slash(interaction: discord.Interaction):
     positions = ["Past", "Present", "Future"]
     cards = draw_unique_cards(3)
 
-    mode = get_effective_mode(interaction.user.id)
+    tone = get_effective_tone(interaction.user.id)
     intent_text = user_intentions.get(interaction.user.id)
 
     log_history_if_opted_in(
         interaction.user.id,
         command="threecard",
-        mode=mode,
+        tone=tone,
         payload={
             "intention": intent_text,
             "spread": "past_present_future",
@@ -1028,7 +1007,7 @@ async def threecard_slash(interaction: discord.Interaction):
     desc = "Past • Present • Future"
     if intent_text:
         desc += f"\n\n{E['light']} **Intention:** *{intent_text}*"
-    desc += f"\n\n**How I’ll read this:** {mode_label(mode)}"
+    desc += f"\n\n**How I’ll read this:** {tone_label(tone)}"
 
     embed = discord.Embed(
         title=f"{E['crystal']} Three-Card Spread",
@@ -1038,7 +1017,7 @@ async def threecard_slash(interaction: discord.Interaction):
 
     pretty_positions = [f"Past {E['clock']}", f"Present {E['moon']}", f"Future {E['star']}"]
     for pos, (card, orientation) in zip(pretty_positions, cards):
-        meaning = render_card_text(card, orientation, mode)
+        meaning = render_card_text(card, orientation, tone)
         embed.add_field(
             name=f"{pos}: {card['name']} ({orientation})",
             value=meaning if len(meaning) < 1000 else meaning[:997] + "...",
@@ -1067,12 +1046,12 @@ async def celtic_slash(interaction: discord.Interaction):
         "Outcome",
     ]
     cards = draw_unique_cards(10)
-    mode = get_effective_mode(interaction.user.id)
+    tone = get_effective_tone(interaction.user.id)
 
     log_history_if_opted_in(
         interaction.user.id,
         command="celtic",
-        mode=mode,
+        tone=tone,
         payload={
             "spread": "celtic_cross",
             "cards": [
@@ -1085,7 +1064,7 @@ async def celtic_slash(interaction: discord.Interaction):
     embeds_to_send: List[discord.Embed] = []
     embed = discord.Embed(
         title=f"{E['crystal']} Celtic Cross Spread {E['crystal']}",
-        description=f"A deep, archetypal exploration of your path.\n\n**How I’ll read this:** {mode_label(mode)}",
+        description=f"A deep, archetypal exploration of your path.\n\n**How I’ll read this:** {tone_label(tone)}",
         color=0xA020F0,
     )
 
@@ -1105,7 +1084,7 @@ async def celtic_slash(interaction: discord.Interaction):
     ]
 
     for pos, (card, orientation) in zip(pretty_positions, cards):
-        meaning = render_card_text(card, orientation, mode)
+        meaning = render_card_text(card, orientation, tone)
         field_name = f"{pos}: {card['name']} ({orientation})"
         field_value = meaning if len(meaning) < 1000 else meaning[:997] + "..."
         field_length = len(field_name) + len(field_value)
@@ -1114,7 +1093,7 @@ async def celtic_slash(interaction: discord.Interaction):
             embeds_to_send.append(embed)
             embed = discord.Embed(
                 title=f"{E['crystal']} Celtic Cross (Continued)",
-                description=f"**How I’ll read this:** {mode_label(mode)}",
+                description=f"**How I’ll read this:** {tone_label(tone)}",
                 color=0xA020F0,
             )
             total_length = len(embed.title) + len(embed.description)
@@ -1145,7 +1124,7 @@ async def celtic_slash(interaction: discord.Interaction):
     ]
 )
 async def tone_slash(interaction: discord.Interaction, tone: app_commands.Choice[str]):
-    chosen = set_user_mode(interaction.user.id, tone.value)
+    chosen = set_user_tone(interaction.user.id, tone.value)
     await send_ephemeral(
         interaction,
         content=f"✅ Tone set to **{chosen}**.\n\nTip: Pair it with an intention using `/intent`.",
@@ -1218,7 +1197,7 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
         return
 
     chosen = matches[0]
-    mode = get_effective_mode(interaction.user.id)
+    tone = get_effective_tone(interaction.user.id)
     settings = get_user_settings(interaction.user.id)
 
     suit = chosen.get("suit") or "Major Arcana"
@@ -1227,7 +1206,7 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
     log_history_if_opted_in(
         interaction.user.id,
         command="meaning",
-        mode=mode,
+        tone=tone,
         payload={"query": card, "matched": chosen.get("name", ""), "shown": ["Upright", "Reversed"]},
         settings=settings,
     )
@@ -1243,22 +1222,22 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
             file_obj, attach_url = None, None
 
     embed_top = discord.Embed(
-        title=f"{E['book']} {chosen.get('name','(unknown)')} • {mode_label(mode)}",
+        title=f"{E['book']} {chosen.get('name','(unknown)')} • {tone_label(tone)}",
         description="",
         color=color,
     )
     if attach_url:
         embed_top.set_image(url=attach_url)
 
-    upright_text = clip_field(render_card_text(chosen, "Upright", mode), 1024)
-    reversed_text = clip_field(render_card_text(chosen, "Reversed", mode), 1024)
+    upright_text = clip_field(render_card_text(chosen, "Upright", tone), 1024)
+    reversed_text = clip_field(render_card_text(chosen, "Reversed", tone), 1024)
 
     embed_body = discord.Embed(
         description=f"**{chosen.get('name','(unknown)')}** reveals both sides of its nature:",
         color=color,
     )
-    embed_body.add_field(name=f"Upright {E['sun']} • {mode}", value=upright_text or "—", inline=False)
-    embed_body.add_field(name=f"Reversed {E['moon']} • {mode}", value=reversed_text or "—", inline=False)
+    embed_body.add_field(name=f"Upright {E['sun']} • {tone}", value=upright_text or "—", inline=False)
+    embed_body.add_field(name=f"Reversed {E['moon']} • {tone}", value=reversed_text or "—", inline=False)
     embed_body.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
     await send_ephemeral(interaction, embeds=[embed_top, embed_body], mood="general", file_obj=file_obj)
@@ -1273,20 +1252,20 @@ async def clarify_slash(interaction: discord.Interaction):
     tone_emoji = E["sun"] if orientation == "Upright" else E["moon"]
     intent_text = user_intentions.get(interaction.user.id)
 
-    mode = get_effective_mode(interaction.user.id)
-    meaning = render_card_text(card, orientation, mode)
+    tone = get_effective_tone(interaction.user.id)
+    meaning = render_card_text(card, orientation, tone)
 
     log_history_if_opted_in(
         interaction.user.id,
         command="clarify",
-        mode=mode,
+        tone=tone,
         payload={
             "intention": intent_text,
             "card": {"name": card["name"], "orientation": orientation},
         },
     )
 
-    desc = f"**{card['name']} ({orientation} {tone_emoji}) • {mode_label(mode)}**\n\n{meaning}"
+    desc = f"**{card['name']} ({orientation} {tone_emoji}) • {tone_label(tone)}**\n\n{meaning}"
     if intent_text:
         desc += f"\n\n{E['light']} **Clarifying Intention:** *{intent_text}*"
 
@@ -1380,15 +1359,15 @@ async def reveal_slash(interaction: discord.Interaction):
             )
             return
 
-        mode = get_effective_mode(interaction.user.id)
+        tone = get_effective_tone(interaction.user.id)
         orientation = "Reversed" if is_reversed else "Upright"
-        meaning = render_card_text(card, orientation, mode)
+        meaning = render_card_text(card, orientation, tone)
 
         settings = get_user_settings(interaction.user.id)
         log_history_if_opted_in(
             interaction.user.id,
             command="reveal",
-            mode=mode,
+            tone=tone,
             payload={
                 "source": "mystery",
                 "card": {"name": card["name"], "orientation": orientation},
@@ -1397,7 +1376,7 @@ async def reveal_slash(interaction: discord.Interaction):
         )
 
         embed = discord.Embed(
-            title=f"{E['book']} Reveal: {card['name']} ({orientation}) • {mode_label(mode)}",
+            title=f"{E['book']} Reveal: {card['name']} ({orientation}) • {tone_label(tone)}",
             description=meaning,
             color=suit_color(card["suit"]),
         )
@@ -1422,7 +1401,7 @@ async def insight_slash(interaction: discord.Interaction):
         known_seekers[user_id_str] = {"name": user_name}
         save_known_seekers(known_seekers)
 
-    current_mode = get_effective_mode(interaction.user.id)
+    current_tone = get_effective_tone(interaction.user.id)
     current_intent = user_intentions.get(interaction.user.id, None)
 
     greetings_first = [
@@ -1440,11 +1419,11 @@ async def insight_slash(interaction: discord.Interaction):
     opener = random.choice(greetings_first if first_time else greetings_returning)
 
     intent_line = f"**Your intention:** *{current_intent}*" if current_intent else "**Your intention:** *unspoken… for now.*"
-    mode_line = f"**How I’ll speak:** {mode_label(current_mode)}"
+    tone_line = f"**How I’ll speak:** {tone_label(current_tone)}"
 
     guided = (
         f"{intent_line}\n"
-        f"{mode_line}\n\n"
+        f"{tone_line}\n\n"
         "Here’s how we do this:\n"
         "• Want a single clean message for today? Try **/cardoftheday**.\n"
         "• Got a situation with teeth? Use **/read** and give me your question.\n"
