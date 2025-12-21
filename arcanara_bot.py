@@ -198,10 +198,10 @@ def _clip(text: str, max_len: int = 3800) -> str:
 def render_card_text(card: Dict[str, Any], orientation: str, tone: str) -> str:
     """
     orientation: "Upright" or "Reversed"
-    tone: one of tone_SPECS keys
+    tone: one of TONE_SPECS keys
     """
     tone = normalize_tone(tone)
-    spec = tone_SPECS[tone]
+    spec = TONE_SPECS.get(tone, TONE_SPECS[DEFAULT_TONE])
 
     is_rev = (orientation.lower() == "reversed")
     meaning = card.get("reversed" if is_rev else "upright", "—")
