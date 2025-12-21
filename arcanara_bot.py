@@ -570,78 +570,102 @@ def _chunk_lines(lines: List[str], max_len: int = 950) -> List[str]:
 # ==============================
 # ONBOARDING (patched: /tone + /shuffle language, no /mode or /reset)
 # ==============================
-def build_onboarding_embeds(guild: discord.Guild) -> List[discord.Embed]:
-    intro = discord.Embed(
-        title="🔮 Arcanara has crossed the threshold",
-        description=(
-            f"I’ve anchored to **{guild.name}**.\n\n"
-            "I’m not here to spy — I don’t read messages, and I don’t rummage through DMs.\n"
-            "I *am* here to translate symbols into **clean choices**… with a little shimmer on the edges.\n\n"
-            "Think of me as a steady hand on the lantern:\n"
-            "• when your mind is loud\n"
-            "• when decisions stack up\n"
-            "• when you need a different lens on love, work, or money\n"
-            "• when you’re ready for the deeper story (the kind you can’t unsee — in a good way)\n\n"
-            "When you’re ready, start with `/cardoftheday` — it’s the gentlest doorway."
-        ),
-        color=0xB28DFF,
-    )
-    intro.set_footer(text="✨ Readings are ephemeral by default — private to the requester.")
+def _chunk_text(text: str, max_len: int = 1900) -> List[str]:
+    """
+    Chunk a long text into multiple messages safely under Discord 2000-char limit.
+    Tries to split on double newlines, then single newlines, then hard-splits.
+    """
+    text = (text or "").strip()
+    if len(text) <= max_len:
+        return [text] if text else []
 
-    checklist = discord.Embed(
-        title="🧭 Setup Checklist (two minutes, no incense required)",
-        description=(
-            "**1) Choose your reading voice:** `/tone`\n"
-            "• *full* = layered + expansive\n"
-            "• *direct* = “tell me straight”\n"
-            "• *poetic* = intuitive + lyrical\n"
-            "• *shadow* = deeper truths\n"
-            "• *love / work / money* = focused lenses\n\n"
-            "**2) Set your thread (intention):** `/intent`\n"
-            "Example: `my next career move` or `how to handle this friendship`.\n\n"
-            "**3) Tune your experience:** `/settings`\n"
-            "Toggle images, and choose whether you want history saved (**opt-in only**).\n\n"
-            "**4) Need a clean slate?** `/shuffle`\n"
-            "This clears your intention and resets your tone — so we’re not dragging yesterday’s storyline into today."
-        ),
-        color=0x9370DB,
-    )
+    parts: List[str] = []
+    buf = ""
 
-    # --- 3) Permissions (Arcanara voice, admin-clear) ---
-    perms = discord.Embed(
-        title="🛡️ A small offering: permissions (so I don’t faceplant in the temple)",
-        description=(
-            "I don’t ask for much — just a doorway and a place to set the lantern.\n\n"
-            "**In the channel you want me to speak in, I need:**\n"
-            "• **View Channel**\n"
-            "• **Send Messages**\n"
-            "• **Embed Links** *(required — my readings live in embeds)*\n"
-            "• **Attach Files** *(required for card images)*\n\n"
-            "**Nice-to-have:**\n"
-            "• **Read Message History** *(helps Discord behave; I still don’t read your conversations)*\n"
-            "• **View Audit Log** *(only if you want me to DM the person who invited me)*\n\n"
-            "**One more truth:** DMs are protected by *your* Discord privacy settings.\n"
-            "If your DMs are closed, I’ll try my best — and then I’ll leave this welcome in a server channel instead."
-        ),
-        color=0x4B0082,
-    )
+    # Prefer paragraph breaks
+    for para in text.split("\n\n"):
+        candidate = (buf + ("\n\n" if buf else "") + para).strip()
+        if len(candidate) <= max_len:
+            buf = candidate
+            continue
 
-    howto = discord.Embed(
-        title="🕯️ How to work with me (a gentle ritual)",
-        description=(
-            "Here are the quickest ways to get real value fast:\n\n"
-            "• `/cardoftheday` — one clear signal for the day\n"
-            "• `/read` — **Situation • Obstacle • Guidance** (my favorite for quick clarity)\n"
-            "• `/threecard` — Past • Present • Future (zoom out and breathe)\n"
-            "• `/clarify` — one clarifier when you already *mostly* know\n"
-            "• `/meaning` — upright + reversed meanings in your current tone\n\n"
-            "**Mystery mode (dramatic pause included):**\n"
-            "`/mystery` shows the card image only… then `/reveal` when you’re ready.\n\n"
-            "If your intention changes midstream, use `/intent` again — or `/shuffle` to start perfectly clean."
-        ),
-        color=0x6A5ACD,
+        if buf:
+            parts.append(buf)
+            buf = ""
+
+        # If a single paragraph is still too big, split by lines
+        if len(para) > max_len:
+            line_buf = ""
+            for line in para.split("\n"):
+                cand2 = (line_buf + ("\n" if line_buf else "") + line).strip()
+                if len(cand2) <= max_len:
+                    line_buf = cand2
+                else:
+                    if line_buf:
+                        parts.append(line_buf)
+                        line_buf = ""
+                    # hard split line if needed
+                    while len(line) > max_len:
+                        parts.append(line[:max_len])
+                        line = line[max_len:]
+                    if line:
+                        line_buf = line
+            if line_buf:
+                parts.append(line_buf)
+        else:
+            parts.append(para)
+
+    if buf:
+        parts.append(buf)
+
+    return [p for p in parts if p.strip()]
+
+
+def build_onboarding_messages(guild: discord.Guild) -> List[str]:
+    # 1) Welcome
+    msg1 = (
+        f"🔮 **Arcanara has crossed the threshold**\n"
+        f"I’ve anchored to **{guild.name}**.\n\n"
+        "I’m not here to spy — I don’t read messages, and I don’t rummage through DMs.\n"
+        "I *am* here to translate symbols into clean choices… with a little shimmer on the edges.\n\n"
+        "Use me for:\n"
+        "• **Daily clarity** when your mind is loud\n"
+        "• **Decision support** (not destiny) when choices stack up\n"
+        "• **Love / work / money lenses** when you need a different angle\n"
+        "• **Deep dives** when you’re ready for the whole pattern\n\n"
+        "Gentlest doorway: **/cardoftheday**.\n"
+        "Most readings are **private by default** (ephemeral)."
     )
 
+    # 2) Setup checklist + permissions note
+    msg2 = (
+        "🧭 **Setup Checklist (two minutes, no incense required)**\n"
+        "1) Choose your reading voice: **/tone**\n"
+        "2) Set your thread (intention): **/intent**\n"
+        "3) Tune your experience: **/settings** (images + history opt-in)\n"
+        "4) Need a clean slate? **/shuffle** (resets intention + tone)\n\n"
+        "🛡️ **Permissions note (so I can speak):**\n"
+        "• **Send Messages** — required wherever you want me to post\n"
+        "• **Embed Links** — recommended (prettier formatting)\n"
+        "• **Attach Files** — recommended (card images)\n\n"
+        "If DMs are closed for server members, I may not be able to DM the welcome —\n"
+        "in that case I’ll post it in a channel I can access."
+    )
+
+    # 3) Quick use guide
+    msg3 = (
+        "🕯️ **How to work with the deck (a gentle ritual)**\n"
+        "• **/cardoftheday** — one clear signal for the day\n"
+        "• **/read** — Situation • Obstacle • Guidance (you provide an intention)\n"
+        "• **/threecard** — Past • Present • Future\n"
+        "• **/celtic** — full 10-card Celtic Cross\n"
+        "• **/clarify** — one clarifier for your current intention\n"
+        "• **/meaning** — look up a card (upright + reversed)\n\n"
+        "🎭 **Mystery mode:** **/mystery** (image only)… then **/reveal** when you’re ready.\n"
+        "And when the storyline changes: **/shuffle**."
+    )
+
+    # 4) Command index (auto-generated)
     cmds = [c for c in bot.tree.get_commands() if isinstance(c, app_commands.Command)]
     cmds = sorted(cmds, key=lambda c: c.name)
 
@@ -650,18 +674,11 @@ def build_onboarding_embeds(guild: discord.Guild) -> List[discord.Embed]:
         desc = (c.description or "").strip()
         lines.append(f"• `/{c.name}` — {desc}" if desc else f"• `/{c.name}`")
 
-    chunks = _chunk_lines(lines, max_len=950)
+    index_text = "📜 **Command Index**\n" + ("\n".join(lines) if lines else "—")
+    msg4_chunks = _chunk_text(index_text, max_len=1900)
 
-    index = discord.Embed(
-        title="📜 Command Index",
-        description="Every door I can open — listed plainly.",
-        color=0x2E8B57,
-    )
-    index.add_field(name="Commands", value=chunks[0] if chunks else "—", inline=False)
-    for i, part in enumerate(chunks[1:], start=2):
-        index.add_field(name=f"Commands (cont. {i})", value=part, inline=False)
-
-    return [intro, checklist, perms, howto, index]
+    # Return as a list of separate Discord messages
+    return [msg1, msg2, msg3, *msg4_chunks]
 
 
 async def find_bot_inviter(guild: discord.Guild, bot_user: discord.ClientUser) -> Optional[discord.User]:
@@ -677,7 +694,7 @@ async def find_bot_inviter(guild: discord.Guild, bot_user: discord.ClientUser) -
 
 
 async def send_onboarding_message(guild: discord.Guild):
-    embeds = build_onboarding_embeds(guild)
+    messages = build_onboarding_messages(guild)
 
     # 1) Prefer inviter (audit log), else owner
     recipient = await find_bot_inviter(guild, bot.user)
@@ -687,26 +704,19 @@ async def send_onboarding_message(guild: discord.Guild):
     # Try DM recipient
     if recipient:
         try:
-            await recipient.send(embeds=embeds)
+            for msg in messages:
+                await recipient.send(content=msg)
             return
         except (discord.Forbidden, discord.HTTPException):
             pass
-    # Prefer a private setup channel if it exists
-    preferred_names = {"arcanara-setup", "bot-setup", "admin", "mods"}
-    for ch in guild.text_channels:
-        if ch.name.lower() in preferred_names and me and ch.permissions_for(me).send_messages:
-            try:
-                await ch.send(embeds=embeds)
-                return
-            except discord.HTTPException:
-                pass
 
     # Fallback: post in system channel / first available text channel
     me = guild.me
     channel = guild.system_channel
     if channel and me and channel.permissions_for(me).send_messages:
         try:
-            await channel.send(embeds=embeds)
+            for msg in messages:
+                await channel.send(content=msg)
             return
         except discord.HTTPException:
             pass
@@ -714,11 +724,11 @@ async def send_onboarding_message(guild: discord.Guild):
     for ch in guild.text_channels:
         if me and ch.permissions_for(me).send_messages:
             try:
-                await ch.send(embeds=embeds)
+                for msg in messages:
+                    await ch.send(content=msg)
                 return
             except discord.HTTPException:
                 continue
-
 
 @bot.event
 async def on_guild_join(guild: discord.Guild):
@@ -1161,22 +1171,21 @@ async def resendwelcome_slash(interaction: discord.Interaction, where: app_comma
         await interaction.followup.send("⚠️ This command can only be used in a server.", ephemeral=True)
         return
 
-    embeds = build_onboarding_embeds(guild)
+    messages = build_onboarding_messages(guild)
 
     try:
         if where.value == "here":
             ch = interaction.channel
             if isinstance(ch, (discord.TextChannel, discord.Thread)):
-                await ch.send(embeds=embeds)
+                for msg in messages:
+                    await ch.send(content=msg)
                 await interaction.followup.send("✅ Welcome message posted here.", ephemeral=True)
             else:
                 await interaction.followup.send("⚠️ I can’t post in this channel type.", ephemeral=True)
         else:
             await send_onboarding_message(guild)
-            await interaction.followup.send(
-                "✅ Welcome message sent (DM owner/inviter, with channel fallback).",
-                ephemeral=True,
-            )
+            await interaction.followup.send("✅ Welcome message sent (DM owner/inviter, with channel fallback).", ephemeral=True)
+
 
     except Exception as e:
         print(f"⚠️ resendwelcome failed: {type(e).__name__}: {e}")
@@ -1184,7 +1193,6 @@ async def resendwelcome_slash(interaction: discord.Interaction, where: app_comma
             "⚠️ A thread snagged while sending the welcome. Check permissions/logs.",
             ephemeral=True,
         )
-
 
 @bot.tree.command(name="meaning", description="Show upright and reversed meanings for a card (using your current tone).")
 @app_commands.describe(card="Card name (example: The Lovers)")
