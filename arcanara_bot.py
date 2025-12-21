@@ -858,10 +858,12 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 @bot.tree.command(name="shuffle", description="Cleanse the deck and reset your intention + tone.")
 @app_commands.checks.cooldown(3, 60.0)
 async def shuffle_slash(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     # Reset user state
     user_intentions.pop(interaction.user.id, None)
     MYSTERY_STATE.pop(interaction.user.id, None)
-    reset_user_mode(interaction.user.id)  # resets stored tone/mode to default
+    reset_user_tone(interaction.user.id)  # resets stored tone/mode to default
     random.shuffle(tarot_cards)
 
     embed = discord.Embed(
@@ -869,7 +871,7 @@ async def shuffle_slash(interaction: discord.Interaction):
         description=(
             "The deck is cleared.\n\n"
             f"• **Intention**: reset\n"
-            f"• **Tone**: reset to **{DEFAULT_MODE}**\n\n"
+            f"• **Tone**: reset to **{DEFAULT_TONE}**\n\n"
             "Set a fresh intention with `/intent`, then draw with `/cardoftheday` or `/read`."
         ),
         color=0x9370DB
@@ -1388,7 +1390,6 @@ async def reveal_slash(interaction: discord.Interaction):
 async def insight_slash(interaction: discord.Interaction):
     if not interaction.response.is_done():
         await interaction.response.defer(ephemeral=True)
-
     user_id_str = str(interaction.user.id)
     user_name = interaction.user.display_name
 
@@ -1466,12 +1467,6 @@ async def insight_slash(interaction: discord.Interaction):
 
     embed.set_footer(text="A tarot reading is a mirror, not a cage. You steer.")
     await send_ephemeral(interaction, embed=embed, mood="general")
-    
-if not interaction.response.is_done():
-    try:
-        await interaction.response.defer(ephemeral=True)
-    except discord.NotFound:
-        return
 
 
 @bot.tree.command(name="privacy", description="What Arcanara stores and how to delete it.")
