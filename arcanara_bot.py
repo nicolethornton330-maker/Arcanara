@@ -45,6 +45,129 @@ def ensure_tables():
                 );
             """)
         conn.commit()
+        
+# ==============================
+# TAROT MODES (DB-backed)
+# ==============================
+DEFAULT_MODE = "direct"
+
+MODE_SPECS = {
+    "quick":  ["quick", "call_to_action"],
+    "direct": ["do_dont", "watch_for", "next_24h", "questions", "call_to_action"],
+    "poetic": ["meaning", "mantra", "call_to_action"],
+    "shadow": ["shadow", "watch_for", "questions", "call_to_action"],
+    "love":   ["relationships", "do_dont", "questions", "call_to_action"],
+    "work":   ["work", "next_24h", "do", "call_to_action"],
+    "money":  ["money", "next_24h", "do", "call_to_action"],
+    "full":   ["meaning", "mantra", "do_dont", "watch_for", "shadow", "questions", "next_24h", "call_to_action"],
+}
+
+def normalize_mode(mode: str) -> str:
+    mode = (mode or "").lower().strip()
+    return mode if mode in MODE_SPECS else DEFAULT_MODE
+
+def get_user_mode(user_id: int) -> str:
+    with db_connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT mode FROM tarot_user_prefs WHERE user_id=%s", (user_id,))
+            row = cur.fetchone()
+    return normalize_mode(row["mode"]) if row else DEFAULT_MODE
+
+def set_user_mode(user_id: int, mode: str) -> str:
+    mode = normalize_mode(mode)
+    with db_connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO tarot_user_prefs (user_id, mode)
+                VALUES (%s, %s)
+                ON CONFLICT (user_id) DO UPDATE SET
+                    mode = EXCLUDED.mode,
+                    updated_at = NOW()
+            """, (user_id, mode))
+        conn.commit()
+    return mode
+
+def reset_user_mode(user_id: int) -> str:
+    with db_connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM tarot_user_prefs WHERE user_id=%s", (user_id,))
+        conn.commit()
+    return DEFAULT_MODE
+
+def _clip(text: str, max_len: int = 3800) -> str:
+    text = (text or "").strip()
+    if len(text) <= max_len:
+        return text
+    return text[: max_len - 1] + "…"
+
+def render_card_text(card: Dict[str, Any], orientation: str, mode: str) -> str:
+    """
+    orientation: "Upright" or "Reversed"
+    mode: one of MODE_SPECS keys
+    """
+    mode = normalize_mode(mode)
+    spec = MODE_SPECS[mode]
+
+    is_rev = (orientation.lower() == "reversed")
+    meaning = card.get("reversed" if is_rev else "upright", "—")
+
+    dg = card.get("direct_guidance", {}) or {}
+    lenses = dg.get("lenses", {}) or {}
+
+    def do_dont():
+        do = dg.get("do", "")
+        dont = dg.get("dont", "")
+        if do and dont:
+            return f"**Do:** {do}\n**Don't:** {dont}"
+        return do or dont
+
+    def questions():
+        qs = dg.get("questions", []) or []
+        qs = [q for q in qs if isinstance(q, str) and q.strip()]
+        return "**Ask:** " + " | ".join(qs[:3]) if qs else ""
+
+    blocks = []
+    for token in spec:
+        if token == "meaning":
+            blocks.append(meaning)
+        elif token == "mantra":
+            m = dg.get("mantra", "")
+            if m: blocks.append(f"**Mantra:** {m}")
+        elif token == "quick":
+            q = dg.get("quick", "")
+            if q: blocks.append(q)
+        elif token == "do":
+            d = dg.get("do", "")
+            if d: blocks.append(f"**Do:** {d}")
+        elif token == "do_dont":
+            dd = do_dont()
+            if dd: blocks.append(dd)
+        elif token == "watch_for":
+            w = dg.get("watch_for", "")
+            if w: blocks.append(f"**Watch for:** {w}")
+        elif token == "shadow":
+            s = dg.get("shadow", "")
+            if s: blocks.append(f"**Shadow:** {s}")
+        elif token == "questions":
+            qs = questions()
+            if qs: blocks.append(qs)
+        elif token == "next_24h":
+            n = dg.get("next_24h", "")
+            if n: blocks.append(f"**Next 24h:** {n}")
+        elif token == "relationships":
+            txt = lenses.get("relationships") or dg.get("relationships", "")
+            if txt: blocks.append(f"**Love/People:** {txt}")
+        elif token == "work":
+            txt = lenses.get("work") or dg.get("work", "")
+            if txt: blocks.append(f"**Work:** {txt}")
+        elif token == "money":
+            txt = lenses.get("money") or dg.get("money", "")
+            if txt: blocks.append(f"**Money:** {txt}")
+        elif token == "call_to_action":
+            a = card.get("call_to_action", "")
+            if a: blocks.append(f"**Action:** {a}")
+
+    return _clip("\n\n".join(blocks))
 
 # ==============================
 # LOAD TAROT JSON
@@ -121,8 +244,8 @@ def normalize_card_name(name: str) -> str:
 def draw_card():
     card = random.choice(tarot_cards)
     orientation = random.choice(["Upright", "Reversed"])
-    meaning = card["upright"] if orientation == "Upright" else card["reversed"]
-    return card, orientation, meaning
+    return card, orientation
+
 
 def draw_unique_cards(num_cards: int):
     deck = tarot_cards.copy()
@@ -131,9 +254,9 @@ def draw_unique_cards(num_cards: int):
     for _ in range(min(num_cards, len(deck))):
         card = deck.pop()
         orientation = random.choice(["Upright", "Reversed"])
-        meaning = card["upright"] if orientation == "Upright" else card["reversed"]
-        drawn.append((card, orientation, meaning))
+        drawn.append((card, orientation))
     return drawn
+
 
 def suit_color(suit):
     return {
@@ -248,8 +371,13 @@ async def shuffle(ctx):
 @bot.command(name="cardoftheday")
 async def card_of_the_day(ctx):
     card, orientation, meaning = draw_card()
+    card, orientation = draw_card()
     tone = E["sun"] if orientation == "Upright" else E["moon"]
-    intent_text = user_intentions.get(ctx.author.id)
+
+    mode = get_user_mode(ctx.author.id)
+    meaning = render_card_text(card, orientation, mode)
+
+    desc = f"**{card['name']} ({orientation} {tone}) • mode: {mode}**\n\n{meaning}"
 
     desc = f"**{card['name']} ({orientation} {tone})**\n\n{meaning}"
     if intent_text:
@@ -511,6 +639,22 @@ async def insight(ctx):
         await asyncio.sleep(random.uniform(0.8, 1.2))
 
     await ctx.send(embed=embed)
+
+@bot.command(name="mode")
+async def mode(ctx, *, mode: str = None):
+    """Set your default tarot reading mode."""
+    if not mode:
+        current = get_user_mode(ctx.author.id)
+        await ctx.send(f"{E['light']} Your current mode is **{current}**.")
+        return
+
+    chosen = set_user_mode(ctx.author.id, mode)
+    await ctx.send(f"✅ Default tarot mode set to **{chosen}**.")
+
+@bot.command(name="mode_reset")
+async def mode_reset(ctx):
+    chosen = reset_user_mode(ctx.author.id)
+    await ctx.send(f"✅ Mode reset. Default tarot mode is **{chosen}**.")
 
 # ==============================
 # MYSTERY + REVEAL COMMANDS
