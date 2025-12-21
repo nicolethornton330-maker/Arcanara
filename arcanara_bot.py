@@ -58,6 +58,29 @@ def ensure_tables():
                 );
                 """
             )
+            # ---- MIGRATION: older schema used "mode" instead of "tone"
+            cur.execute("""
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                      AND table_name = 'tarot_user_prefs'
+                      AND column_name = 'mode'
+                )
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                      AND table_name = 'tarot_user_prefs'
+                      AND column_name = 'tone'
+                )
+                THEN
+                    ALTER TABLE tarot_user_prefs RENAME COLUMN mode TO tone;
+                END IF;
+            END $$;
+            """)
 
             # New table: user settings (opt-in history + images toggle)
             cur.execute(
