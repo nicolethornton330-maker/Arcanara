@@ -1145,6 +1145,9 @@ async def celtic_slash(interaction: discord.Interaction):
     ]
 )
 async def tone_slash(interaction: discord.Interaction, tone: app_commands.Choice[str]):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
+        
     chosen = set_user_tone(interaction.user.id, tone.value)
     await send_ephemeral(
         interaction,
@@ -1302,6 +1305,9 @@ async def clarify_slash(interaction: discord.Interaction):
 @bot.tree.command(name="intent", description="Set (or view) your current intention.")
 @app_commands.describe(intention="Leave blank to view your current intention.")
 async def intent_slash(interaction: discord.Interaction, intention: Optional[str] = None):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
+        
     if not intention:
         current = user_intentions.get(interaction.user.id)
         if current:
@@ -1319,6 +1325,9 @@ async def intent_slash(interaction: discord.Interaction, intention: Optional[str
 
 @bot.tree.command(name="mystery", description="Pull a mystery card (image only). Use /reveal to see the meaning.")
 async def mystery_slash(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
+        
     card = random.choice(tarot_cards)
     is_reversed = random.random() < 0.5
 
@@ -1511,6 +1520,9 @@ async def privacy_slash(interaction: discord.Interaction):
 
 @bot.tree.command(name="forgetme", description="Delete your stored Arcanara data.")
 async def forgetme_slash(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
+        
     uid = interaction.user.id
 
     with db_connect() as conn:
@@ -1532,6 +1544,9 @@ async def forgetme_slash(interaction: discord.Interaction):
     images=[app_commands.Choice(name="on", value="on"), app_commands.Choice(name="off", value="off")],
 )
 async def settings_slash(
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
+        
     interaction: discord.Interaction,
     history: Optional[app_commands.Choice[str]] = None,
     images: Optional[app_commands.Choice[str]] = None,
