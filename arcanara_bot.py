@@ -100,6 +100,22 @@ MODE_SPECS = {
     "full":   ["reader_voice", "tell", "meaning", "mantra", "do_dont", "prescription", "watch_for", "pitfall",
                "shadow", "green_red", "questions", "next_24h", "call_to_action"],
 }
+# Human-friendly mode names (reader voice)
+MODE_LABELS = {
+    "full":   "Full Spectrum (deep + practical)",
+    "direct": "Direct (straight talk, no fluff)",
+    "shadow": "Shadow Work (truth + integration)",
+    "poetic": "Poetic (symbolic, soft edges)",
+    "quick":  "Quick Hit (one clear message)",
+    "love":   "Love Lens (people + patterns)",
+    "work":   "Work Lens (purpose + friction)",
+    "money":  "Money Lens (resources + decisions)",
+}
+
+def mode_label(mode: str) -> str:
+    """Return a reader-style label for a mode value."""
+    m = normalize_mode(mode)
+    return MODE_LABELS.get(m, MODE_LABELS[DEFAULT_MODE])
 
 def get_effective_mode(user_id: int, mode_override: Optional[str] = None) -> str:
     if mode_override:
@@ -788,7 +804,7 @@ async def cardoftheday_slash(interaction: discord.Interaction):
     tone = E["sun"] if orientation == "Upright" else E["moon"]
     intent_text = user_intentions.get(interaction.user.id)
 
-    desc = f"**{card['name']} ({orientation} {tone}) • mode: {mode}**\n\n{meaning}"
+    desc = f"**{card['name']} ({orientation} {tone}) • {mode_label(mode)}**\n\n{meaning}"
     if intent_text:
         desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
 
@@ -847,7 +863,7 @@ async def read_slash(interaction: discord.Interaction, focus: str):
 
     embed = discord.Embed(
         title=f"{E['crystal']} Intuitive Reading {E['crystal']}",
-        description=f"{E['light']} **Focus:** *{focus}*\n\n**Mode:** {mode}",
+        description=f"{E['light']} **Focus:** *{focus}*\n\n**How I’ll read this:** {mode_label(mode)}",
         color=0x9370DB
     )
 
@@ -893,7 +909,7 @@ async def threecard_slash(interaction: discord.Interaction):
     desc = "Past • Present • Future"
     if intent_text:
         desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
-    desc += f"\n\n**Mode:** {mode}"
+    desc += f"\n\n**How I’ll read this:** {mode_label(mode)}"
 
     embed = discord.Embed(
         title=f"{E['crystal']} Three-Card Spread",
@@ -943,7 +959,7 @@ async def celtic_slash(interaction: discord.Interaction):
     embeds_to_send: List[discord.Embed] = []
     embed = discord.Embed(
         title=f"{E['crystal']} Celtic Cross Spread {E['crystal']}",
-        description=f"A deep, archetypal exploration of your path.\n\n**Mode:** {mode}",
+        description=f"A deep, archetypal exploration of your path.\n\n**How I’ll read this:** {mode_label(mode)}",
         color=0xA020F0
     )
 
@@ -965,7 +981,7 @@ async def celtic_slash(interaction: discord.Interaction):
             embeds_to_send.append(embed)
             embed = discord.Embed(
                 title=f"{E['crystal']} Celtic Cross (Continued)",
-                description=f"**Mode:** {mode}",
+                description=f"**How I’ll read this:** {mode_label(mode)}",
                 color=0xA020F0
             )
             total_length = len(embed.title) + len(embed.description)
@@ -1031,7 +1047,7 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
             file_obj, attach_url = None, None
 
     embed_top = discord.Embed(
-        title=f"{E['book']} {chosen.get('name','(unknown)')} • mode: {mode}",
+        title=f"{E['book']} {chosen.get('name','(unknown)')} • {mode_label(mode)}",
         description="",
         color=color
     )
@@ -1073,7 +1089,8 @@ async def clarify_slash(interaction: discord.Interaction):
         },
     )
 
-    desc = f"**{card['name']} ({orientation} {tone}) • mode: {mode}**\n\n{meaning}"
+    desc = f"**{card['name']} ({orientation} {tone}) • {mode_label(mode)}**\n\n{meaning}"
+
     if intent_text:
         desc += f"\n\n{E['light']} **Clarifying Focus:** *{intent_text}*"
 
@@ -1114,8 +1131,10 @@ async def intent_slash(interaction: discord.Interaction, focus: Optional[str] = 
 ])
 async def mode_slash(interaction: discord.Interaction, mode: app_commands.Choice[str]):
     chosen = set_user_mode(interaction.user.id, mode.value)
-    await interaction.response.send_message(f"✅ Default tarot mode set to **{chosen}**.", ephemeral=True)
-
+    await interaction.response.send_message(
+    f"✅ Reset. We’re back to **{mode_label(DEFAULT_MODE)}**.",
+    ephemeral=True
+)
 
 @bot.tree.command(name="mode_reset", description="Reset your mode back to the default.")
 async def mode_reset_slash(interaction: discord.Interaction):
@@ -1200,7 +1219,7 @@ async def reveal_slash(interaction: discord.Interaction):
         )
 
         embed = discord.Embed(
-            title=f"{E['book']} Reveal: {card['name']} ({orientation}) • mode: {mode}",
+            title=f"{E['book']} Reveal: {card['name']} ({orientation}) • {mode_label(mode)}",
             description=meaning,
             color=suit_color(card["suit"])
         )
@@ -1212,64 +1231,102 @@ async def reveal_slash(interaction: discord.Interaction):
         # Always clear, even if an exception happens mid-way
         MYSTERY_STATE.pop(interaction.user.id, None)
 
-@bot.tree.command(name="insight", description="Show Arcanara’s command index and your current settings.")
+@bot.tree.command(name="insight", description="A guided intro to Arcanara (and a full list of commands).")
 async def insight_slash(interaction: discord.Interaction):
-    user_id = str(interaction.user.id)
+    # Defer so we never lose the interaction if Discord is slow
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
+
+    user_id_str = str(interaction.user.id)
     user_name = interaction.user.display_name
 
-    first_time = user_id not in known_seekers
+    first_time = user_id_str not in known_seekers
     if first_time:
-        greeting = f"{E['spark']} **Welcome, {user_name}.**\nThe deck senses a new presence — your journey begins here."
-        known_seekers[user_id] = {"name": user_name}
+        known_seekers[user_id_str] = {"name": user_name}
         save_known_seekers(known_seekers)
-    else:
-        greeting = f"{E['spark']} **Welcome back, {user_name}.**\nYour energy feels familiar — shall we continue?"
 
     current_mode = get_effective_mode(interaction.user.id)
-    current_intent = user_intentions.get(interaction.user.id, "—")
+    current_intent = user_intentions.get(interaction.user.id, None)
 
-    # Dynamically list all slash commands
+    # --- A more human, reader-style voice ---
+    greetings_first = [
+        f"Come closer, {user_name} — let’s see what wants to be known.",
+        f"{user_name}… I felt you arrive before you spoke.",
+        f"Alright, {user_name}. No theatrics — just clarity.",
+        f"Welcome, {user_name}. The deck likes honest questions.",
+    ]
+    greetings_returning = [
+        f"Back again, {user_name}? Good. The story didn’t end without you.",
+        f"There you are, {user_name}. Same you — new chapter.",
+        f"Welcome back, {user_name}. Let’s pick up the thread.",
+        f"{user_name}… the deck remembers your rhythm.",
+    ]
+
+    opener = random.choice(greetings_first if first_time else greetings_returning)
+
+    # Gentle, confident guidance paths
+    intent_line = f"**Your focus:** *{current_intent}*" if current_intent else "**Your focus:** *unspoken… for now.*"
+    mode_line = f"**How I’ll speak:** {mode_label(current_mode)}"
+
+    guided = (
+        f"{intent_line}\n"
+        f"{mode_line}\n\n"
+        "Here’s how we do this:\n"
+        f"• Want a single clean message for today? Try **/cardoftheday**.\n"
+        f"• Got a situation with teeth? Use **/read** and give me your focus.\n"
+        f"• Want the timeline vibe? **/threecard** (past • present • future).\n"
+        f"• Need the *deep* dive? **/celtic** — it pulls the whole pattern.\n"
+        f"• Not sure what a card means in *your* mode? Ask **/meaning**.\n"
+        f"• Feeling uncertain? **/clarify** will pull one more lantern from the dark.\n\n"
+        "And if you’re in the mood for a little mischief:\n"
+        f"• **/mystery** (image only) … then **/reveal** when you’re ready."
+    )
+
+    # --- Build all slash commands dynamically ---
     cmds = [c for c in bot.tree.get_commands() if isinstance(c, app_commands.Command)]
     cmds = sorted(cmds, key=lambda c: c.name)
 
-    # Build a readable list
+    # Reader-style phrasing for commands list
     lines = []
     for c in cmds:
         desc = (c.description or "").strip()
-        lines.append(f"• `/{c.name}` — {desc}" if desc else f"• `/{c.name}`")
+        if desc:
+            lines.append(f"• `/{c.name}` — {desc}")
+        else:
+            lines.append(f"• `/{c.name}`")
 
-    # Split if necessary to avoid field limits
-    chunk = "\n".join(lines)
-    if len(chunk) > 900:
-        # rough chunking
-        chunks = []
-        buf = []
-        size = 0
-        for line in lines:
-            if size + len(line) + 1 > 900:
-                chunks.append("\n".join(buf))
-                buf = [line]
-                size = len(line) + 1
-            else:
-                buf.append(line)
-                size += len(line) + 1
-        if buf:
+    # Chunk to respect embed field limits
+    chunks: List[str] = []
+    buf: List[str] = []
+    size = 0
+    for line in lines:
+        if size + len(line) + 1 > 900:
             chunks.append("\n".join(buf))
-    else:
-        chunks = [chunk]
+            buf = [line]
+            size = len(line) + 1
+        else:
+            buf.append(line)
+            size += len(line) + 1
+    if buf:
+        chunks.append("\n".join(buf))
 
     embed = discord.Embed(
-        title=f"{E['crystal']} Arcanara Insight Menu {E['crystal']}",
-        description=f"{greeting}\n\n**Mode:** `{current_mode}`\n**Intention:** *{current_intent}*\n\n━━━━━━━━━━━━━━━━━━━━━━━",
+        title=f"{E['crystal']} Arcanara",
+        description=f"*{opener}*\n\n{guided}",
         color=0xB28DFF
     )
 
-    embed.add_field(name="📜 Available Commands", value=chunks[0] or "—", inline=False)
+    embed.add_field(
+        name="What I can do for you",
+        value=chunks[0] if chunks else "—",
+        inline=False
+    )
     for i, part in enumerate(chunks[1:], start=2):
-        embed.add_field(name=f"📜 Available Commands (cont. {i})", value=part, inline=False)
+        embed.add_field(name=f"What I can do for you (cont. {i})", value=part, inline=False)
 
-    embed.set_footer(text=f"{E['light']} Trust your intuition • Arcanara Tarot Bot")
+    embed.set_footer(text="A tarot reading is a mirror, not a cage. You steer.")
     await send_ephemeral(interaction, embed=embed, mood="general")
+
 
 @bot.tree.command(name="privacy", description="What Arcanara stores and how to delete it.")
 async def privacy_slash(interaction: discord.Interaction):
