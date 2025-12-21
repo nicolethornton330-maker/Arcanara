@@ -7,6 +7,9 @@ import json
 import asyncio
 from pathlib import Path
 import os
+import psycopg
+from psycopg.rows import dict_row
+from typing import Dict, Any, List, Optional
 from card_images import make_image_attachment # uses assets/cards/rws_stx/ etc.
 MYSTERY_STATE: dict[int, dict] = {}
 # ==============================
@@ -16,6 +19,32 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 if not BOT_TOKEN:
     raise ValueError("❌ BOT_TOKEN environment variable not found. Please set it in your host environment settings.")
+    
+# ==============================
+# DATABASE (Render Postgres)
+# ==============================
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("❌ DATABASE_URL environment variable not found. Add your Render Postgres DATABASE_URL to this service.")
+
+_DB_READY = False  # prevents re-creating tables multiple times
+
+def db_connect():
+    # psycopg3 will read ssl settings from DATABASE_URL if Render includes them
+    return psycopg.connect(DATABASE_URL, row_factory=dict_row)
+
+def ensure_tables():
+    """Create tables if they don't exist (safe to run on startup)."""
+    with db_connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS tarot_user_prefs (
+                    user_id BIGINT PRIMARY KEY,
+                    mode TEXT NOT NULL,
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+            """)
+        conn.commit()
 
 # ==============================
 # LOAD TAROT JSON
@@ -196,6 +225,11 @@ async def send_with_typing(ctx, embed, delay_range=(1.5, 3.0), mood="general"):
 # ==============================
 @bot.event
 async def on_ready():
+    global _DB_READY
+    if not _DB_READY:
+        ensure_tables()
+        _DB_READY = True
+
     print(f"{E['crystal']} Arcanara is awake and shimmering as {bot.user}")
 
 # ==============================
