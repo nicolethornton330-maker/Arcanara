@@ -729,7 +729,6 @@ async def send_ephemeral(
     except NotFound as e:
         # Interaction expired/unknown
         print(f"⚠️ send_ephemeral expired: {type(e).__name__}: {e}")
-                return
         raise
 # ==============================
 # EVENTS
