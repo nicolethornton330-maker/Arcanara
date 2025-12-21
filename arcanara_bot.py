@@ -660,34 +660,50 @@ async def send_ephemeral(
     mood: str = "general",
     file_obj: Optional[discord.File] = None,
 ):
-    def _prepare():
-        nonlocal embed, embeds
-        if embed is not None:
-            embed = _prepend_in_character(embed, mood)
-            return {"content": content, "embed": embed, "ephemeral": True, "file": file_obj}
-        if embeds is not None and len(embeds) > 0:
-            embeds = list(embeds)
-            embeds[0] = _prepend_in_character(embeds[0], mood)
-            return {"content": content, "embeds": embeds, "ephemeral": True, "file": file_obj}
-        return {"content": content or "—", "ephemeral": True}
+    # Choose response channel (first response vs followup)
+    send_fn = interaction.followup.send if interaction.response.is_done() else interaction.response.send_message
 
-    payload = _prepare()
+    # Build payload WITHOUT file unless it's real
+    payload: Dict[str, Any] = {"ephemeral": True}
 
-    # First try: respond if not done, otherwise followup
+    if content is not None:
+        payload["content"] = content
+
+    if embed is not None:
+        payload["embed"] = _prepend_in_character(embed, mood)
+    elif embeds:
+        embeds = list(embeds)
+        embeds[0] = _prepend_in_character(embeds[0], mood)
+        payload["embeds"] = embeds
+    elif content is None:
+        payload["content"] = "—"
+
+    if file_obj is not None:
+        payload["file"] = file_obj
+
     try:
-        if interaction.response.is_done():
-            await interaction.followup.send(**payload)
-        else:
-            await interaction.response.send_message(**payload)
+        await send_fn(**payload)
         return
+
     except HTTPException as e:
-        # Discord says we already acknowledged -> use followup instead
+        # 40060 = already acknowledged (use followup)
         if getattr(e, "code", None) == 40060:
             try:
+                payload.pop("ephemeral", None)  # followup still supports ephemeral, but keep clean
+                payload["ephemeral"] = True
                 await interaction.followup.send(**payload)
                 return
             except Exception as e2:
-                print(f"⚠️ followup.send also failed: {type(e2).__name__}: {e2}")
+                print(f"⚠️ followup.send failed after 40060: {type(e2).__name__}: {e2}")
+                return
+
+        raise
+
+    except NotFound as e:
+        # 10062 = unknown interaction (usually responded too late)
+        if getattr(e, "code", None) == 10062:
+            print("⚠️ Interaction expired (10062). Could not respond.")
+            return
         raise
 # ==============================
 # EVENTS
@@ -712,23 +728,9 @@ async def on_ready():
 
     print(f"{E['crystal']} Arcanara is awake and shimmering as {bot.user}")
 
-    
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-    orig = getattr(error, "original", error)
-
-    if isinstance(orig, app_commands.CommandOnCooldown):
-        try:
-            await send_ephemeral(
-                interaction,
-                content=f"⏳ Slow your shuffle, seeker. Try again in **{orig.retry_after:.0f}s**.",
-                mood="general",
-            )
-        except Exception as e:
-            print(f"⚠️ failed sending cooldown msg: {type(e).__name__}: {e}")
-        return
-
-    print(f"⚠️ Slash command error: {type(orig).__name__}: {orig}")
+    print(f"⚠️ Slash command error: {type(error).__name__}: {error}")
 
     try:
         await send_ephemeral(
@@ -737,8 +739,7 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
             mood="general",
         )
     except Exception as e:
-        print(f"⚠️ failed sending error msg: {type(e).__name__}: {e}")
-
+        print(f"⚠️ Failed to send error message: {type(e).__name__}: {e}")
 
 # ==============================
 # SLASH COMMANDS (EPHEMERAL)
@@ -747,6 +748,9 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 @bot.tree.command(name="shuffle", description="Cleanse and reset the deck’s energy.")
 @app_commands.checks.cooldown(3, 60.0)  # 3 per minute
 async def shuffle_slash(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
+
     random.shuffle(tarot_cards)
     embed = discord.Embed(
         title=f"{E['shuffle']} The Deck Has Been Cleansed {E['shuffle']}",
@@ -758,6 +762,8 @@ async def shuffle_slash(interaction: discord.Interaction):
 @bot.tree.command(name="cardoftheday", description="Reveal the card that guides your day.")
 @app_commands.checks.cooldown(1, 60.0)  # 1 per minute
 async def cardoftheday_slash(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     card, orientation = draw_card()
     mode = get_effective_mode(interaction.user.id)
     meaning = render_card_text(card, orientation, mode)
@@ -809,6 +815,8 @@ async def cardoftheday_slash(interaction: discord.Interaction):
 @app_commands.checks.cooldown(3, 60.0)  # 3 per minute
 @app_commands.describe(focus="Your question or focus (example: my career path)")
 async def read_slash(interaction: discord.Interaction, focus: str):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     user_intentions[interaction.user.id] = focus
     mode = get_effective_mode(interaction.user.id)
 
@@ -852,6 +860,8 @@ async def read_slash(interaction: discord.Interaction, focus: str):
 @bot.tree.command(name="threecard", description="Past • Present • Future spread.")
 @app_commands.checks.cooldown(3, 60.0)  # 3 per minute
 async def threecard_slash(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     positions = ["Past", "Present", "Future"]
     cards = draw_unique_cards(3)
 
@@ -899,6 +909,8 @@ async def threecard_slash(interaction: discord.Interaction):
 @bot.tree.command(name="celtic", description="Full 10-card Celtic Cross spread.")
 @app_commands.checks.cooldown(1, 120.0)  # 1 use per 120s per user
 async def celtic_slash(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     positions = [
         "Present Situation", "Challenge", "Root Cause", "Past",
         "Conscious Goal", "Near Future", "Self", "External Influence",
@@ -967,6 +979,8 @@ async def celtic_slash(interaction: discord.Interaction):
 @bot.tree.command(name="meaning", description="Show upright and reversed meanings for a card (using your current mode).")
 @app_commands.describe(card="Card name (example: The Lovers)")
 async def meaning_slash(interaction: discord.Interaction, card: str):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     norm_query = normalize_card_name(card)
 
     matches = [
@@ -1030,6 +1044,8 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
 
 @bot.tree.command(name="clarify", description="Draw a clarifier card for your current focus.")
 async def clarify_slash(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     card, orientation = draw_card()
     tone = E["sun"] if orientation == "Upright" else E["moon"]
     intent_text = user_intentions.get(interaction.user.id)
@@ -1134,6 +1150,8 @@ async def mystery_slash(interaction: discord.Interaction):
 
 @bot.tree.command(name="reveal", description="Reveal the meaning of your last mystery card.")
 async def reveal_slash(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     state = MYSTERY_STATE.get(interaction.user.id)
     if not state:
         await interaction.response.send_message(
