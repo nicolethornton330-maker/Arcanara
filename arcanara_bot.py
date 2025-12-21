@@ -5,14 +5,15 @@ from discord import app_commands
 import re
 import random, time
 import json
-import asyncio
 from pathlib import Path
 import os
 import psycopg
+from psycopg.types.json import Json
 from psycopg.rows import dict_row
 from typing import Dict, Any, List, Optional
 from card_images import make_image_attachment # uses assets/cards/rws_stx/ etc.
-MYSTERY_STATE: dict[int, dict] = {}
+
+MYSTERY_STATE: Dict[int, Dict[str, Any]] = {}
 # ==============================
 # CONFIGURATION
 # ==============================
@@ -31,13 +32,17 @@ if not DATABASE_URL:
 _DB_READY = False  # prevents re-creating tables multiple times
 
 def db_connect():
-    # psycopg3 will read ssl settings from DATABASE_URL if Render includes them
-    return psycopg.connect(DATABASE_URL, row_factory=dict_row)
+    return psycopg.connect(
+        DATABASE_URL,
+        row_factory=dict_row,
+        connect_timeout=10,
+    )
 
 def ensure_tables():
     """Create tables if they don't exist (safe to run on startup)."""
     with db_connect() as conn:
         with conn.cursor() as cur:
+            # Existing table: user mode preference
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS tarot_user_prefs (
                     user_id BIGINT PRIMARY KEY,
@@ -45,6 +50,33 @@ def ensure_tables():
                     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
             """)
+
+            # New table: user settings (opt-in history + images toggle)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS tarot_user_settings (
+                    user_id BIGINT PRIMARY KEY,
+                    history_opt_in BOOLEAN NOT NULL DEFAULT FALSE,
+                    images_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+            """)
+
+            # New table: reading history (only used if opt-in)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS tarot_reading_history (
+                    id BIGSERIAL PRIMARY KEY,
+                    user_id BIGINT NOT NULL,
+                    command TEXT NOT NULL,
+                    mode TEXT NOT NULL,
+                    payload JSONB NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+            """)
+            cur.execute("""
+                CREATE INDEX IF NOT EXISTS idx_tarot_history_user_time
+                ON tarot_reading_history (user_id, created_at DESC);
+            """)
+
         conn.commit()
         
 # ==============================
@@ -241,6 +273,77 @@ def render_card_text(card: Dict[str, Any], orientation: str, mode: str) -> str:
     return _clip("\n\n".join(blocks))
 
 # ==============================
+# USER SETTINGS + HISTORY (DB-backed)
+# ==============================
+def get_user_settings(user_id: int) -> dict:
+    with db_connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT history_opt_in, images_enabled
+                FROM tarot_user_settings
+                WHERE user_id=%s
+            """, (user_id,))
+            row = cur.fetchone()
+    return row or {"history_opt_in": False, "images_enabled": True}
+
+def set_user_settings(
+    user_id: int,
+    *,
+    history_opt_in: Optional[bool] = None,
+    images_enabled: Optional[bool] = None
+) -> dict:
+    current = get_user_settings(user_id)
+    if history_opt_in is None:
+        history_opt_in = current["history_opt_in"]
+    if images_enabled is None:
+        images_enabled = current["images_enabled"]
+
+    with db_connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO tarot_user_settings (user_id, history_opt_in, images_enabled)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (user_id) DO UPDATE SET
+                    history_opt_in = EXCLUDED.history_opt_in,
+                    images_enabled = EXCLUDED.images_enabled,
+                    updated_at = NOW()
+            """, (user_id, history_opt_in, images_enabled))
+        conn.commit()
+
+    return {"history_opt_in": history_opt_in, "images_enabled": images_enabled}
+
+def log_history_if_opted_in(
+    user_id: int,
+    command: str,
+    mode: str,
+    payload: dict,
+    *,
+    settings: Optional[Dict[str, Any]] = None,
+) -> None:
+    """
+    If settings are provided, uses them (no extra DB read).
+    If not provided, fetches settings from DB.
+    Never crashes a command if logging fails.
+    """
+    try:
+        if settings is None:
+            settings = get_user_settings(user_id)
+
+        if not settings.get("history_opt_in", False):
+            return
+
+        with db_connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO tarot_reading_history (user_id, command, mode, payload)
+                    VALUES (%s, %s, %s, %s)
+                """, (user_id, command, mode, Json(payload)))
+            conn.commit()
+
+    except Exception as e:
+        print(f"⚠️ history log failed: {type(e).__name__}: {e}")
+
+# ==============================
 # LOAD TAROT JSON
 # ==============================
 def load_tarot_json():
@@ -257,30 +360,35 @@ print(f"✅ Loaded {len(tarot_cards)} tarot cards successfully!")
 # ==============================
 # SEEKER MEMORY SYSTEM
 # ==============================
-KNOWN_SEEKERS_FILE = Path("known_seekers.json")
+BASE_DIR = Path(__file__).resolve().parent
+KNOWN_SEEKERS_FILE = BASE_DIR / "known_seekers.json"
 
-def load_known_seekers():
+def load_known_seekers() -> Dict[str, Any]:
     if KNOWN_SEEKERS_FILE.exists():
         try:
             with KNOWN_SEEKERS_FILE.open("r", encoding="utf-8") as f:
                 return json.load(f)
-        except Exception:
+        except Exception as e:
+            print(f"⚠️ could not load known_seekers: {type(e).__name__}: {e}")
             return {}
     return {}
 
-def save_known_seekers(data):
-    with KNOWN_SEEKERS_FILE.open("w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+def save_known_seekers(data: Dict[str, Any]) -> None:
+    try:
+        with KNOWN_SEEKERS_FILE.open("w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"⚠️ could not save known_seekers: {type(e).__name__}: {e}")
 
-known_seekers = load_known_seekers()
-user_intentions = {}
+known_seekers: Dict[str, Any] = load_known_seekers()
+user_intentions: Dict[int, str] = {}
 
 # ==============================
 # BOT SETUP
 # ==============================
 intents = discord.Intents.default()
 intents.guilds = True
-intents.message_content = True  # can be True or False; slash commands don't need it
+intents.message_content = False
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # ==============================
@@ -379,7 +487,7 @@ in_character_lines = {
 }
 
 # ==============================
-# TYPING SIMULATION (ephemeral helper)
+# EPHEMERAL SENDER (in-character, no thinking lines)
 # ==============================
 def _prepend_in_character(embed: discord.Embed, mood: str) -> discord.Embed:
     line = random.choice(in_character_lines.get(mood, in_character_lines["general"]))
@@ -388,20 +496,6 @@ def _prepend_in_character(embed: discord.Embed, mood: str) -> discord.Embed:
     else:
         embed.description = f"*{line}*"
     return embed
-
-
-async def _send_ephemeral(interaction: discord.Interaction, **kwargs):
-    """
-    Safely send an ephemeral message whether or not the interaction
-    has already been responded to.
-    """
-    kwargs.setdefault("ephemeral", True)
-
-    if interaction.response.is_done():
-        return await interaction.followup.send(**kwargs)
-
-    return await interaction.response.send_message(**kwargs)
-
 
 async def send_ephemeral(
     interaction: discord.Interaction,
@@ -412,19 +506,26 @@ async def send_ephemeral(
     mood: str = "general",
     file_obj: Optional[discord.File] = None,
 ):
-    # Apply in-character line to the first embed only
+    # choose response channel (first response vs followup)
+    send_fn = (
+        interaction.followup.send
+        if interaction.response.is_done()
+        else interaction.response.send_message
+    )
+
     if embed is not None:
         embed = _prepend_in_character(embed, mood)
-        await _send_ephemeral(interaction, content=content, embed=embed, file=file_obj)
+        await send_fn(content=content, embed=embed, ephemeral=True, file=file_obj)
         return
 
     if embeds is not None and len(embeds) > 0:
         embeds = list(embeds)
         embeds[0] = _prepend_in_character(embeds[0], mood)
-        await _send_ephemeral(interaction, content=content, embeds=embeds, file=file_obj)
+        await send_fn(content=content, embeds=embeds, ephemeral=True, file=file_obj)
         return
 
-    await _send_ephemeral(interaction, content=content or "—")
+    await send_fn(content=content or "—", ephemeral=True)
+
 
 # ==============================
 # EVENTS
@@ -433,23 +534,47 @@ async def send_ephemeral(
 async def on_ready():
     global _DB_READY
     if not _DB_READY:
-        ensure_tables()
-        _DB_READY = True
+        try:
+            ensure_tables()
+            _DB_READY = True
+            print("✅ DB ready.")
+        except Exception as e:
+            print(f"❌ DB init failed: {type(e).__name__}: {e}")
+            return
 
     try:
         await bot.tree.sync()
         print("✅ Slash commands synced.")
     except Exception as e:
-        print(f"⚠️ Slash sync failed: {e}")
+        print(f"⚠️ Slash sync failed: {type(e).__name__}: {e}")
 
     print(f"{E['crystal']} Arcanara is awake and shimmering as {bot.user}")
 
+    
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    if isinstance(error, app_commands.CommandOnCooldown):
+        await send_ephemeral(
+            interaction,
+            content=f"⏳ Slow your shuffle, seeker. Try again in **{error.retry_after:.0f}s**.",
+            mood="general",
+        )
+        return
+
+    # fallback: log + show friendly message
+    print(f"⚠️ Slash command error: {type(error).__name__}: {error}")
+    await send_ephemeral(
+        interaction,
+        content="⚠️ A thread snagged in the weave. Try again in a moment.",
+        mood="general",
+    )
 
 # ==============================
 # SLASH COMMANDS (EPHEMERAL)
 # ==============================
 
 @bot.tree.command(name="shuffle", description="Cleanse and reset the deck’s energy.")
+@app_commands.checks.cooldown(3, 60.0)  # 3 per minute
 async def shuffle_slash(interaction: discord.Interaction):
     random.shuffle(tarot_cards)
     embed = discord.Embed(
@@ -459,17 +584,22 @@ async def shuffle_slash(interaction: discord.Interaction):
     )
     await send_ephemeral(interaction, embed=embed, mood="shuffle")
 
-
 @bot.tree.command(name="cardoftheday", description="Reveal the card that guides your day.")
+@app_commands.checks.cooldown(1, 60.0)  # 1 per minute
 async def cardoftheday_slash(interaction: discord.Interaction):
     card, orientation = draw_card()
     mode = get_effective_mode(interaction.user.id)
     meaning = render_card_text(card, orientation, mode)
 
+    settings = get_user_settings(interaction.user.id)
+
     is_reversed = (orientation == "Reversed")
-    file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
-    if not attach_url and file_obj is not None:
-        attach_url = f"attachment://{file_obj.filename}"
+    file_obj, attach_url = None, None
+
+    if settings.get("images_enabled", True):
+        file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
+        if not attach_url and file_obj is not None:
+            attach_url = f"attachment://{file_obj.filename}"
 
     tone = E["sun"] if orientation == "Upright" else E["moon"]
     intent_text = user_intentions.get(interaction.user.id)
@@ -478,11 +608,26 @@ async def cardoftheday_slash(interaction: discord.Interaction):
     if intent_text:
         desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
 
+    # ✅ STEP 5: log history (ONLY logs if user opted in)
+    log_history_if_opted_in(
+        interaction.user.id,
+        command="cardoftheday",
+        mode=mode,
+        payload={
+            "card": card["name"],
+            "orientation": orientation,
+            "focus": intent_text,
+            "images_enabled": bool(settings.get("images_enabled", True)),
+        },
+        settings=settings,
+    )
+
     embed = discord.Embed(
         title=f"{E['crystal']} Card of the Day",
         description=desc,
         color=suit_color(card["suit"])
     )
+
     if attach_url:
         embed.set_image(url=attach_url)
 
@@ -490,13 +635,29 @@ async def cardoftheday_slash(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="read", description="Three-card reading: Situation • Obstacle • Guidance.")
+@app_commands.checks.cooldown(3, 60.0)  # 3 per minute
 @app_commands.describe(focus="Your question or focus (example: my career path)")
 async def read_slash(interaction: discord.Interaction, focus: str):
     user_intentions[interaction.user.id] = focus
     mode = get_effective_mode(interaction.user.id)
 
     cards = draw_unique_cards(3)
-    positions = [f"Situation {E['sun']}", f"Obstacle {E['sword']}", f"Guidance {E['star']}"]
+    positions = ["Situation", "Obstacle", "Guidance"]
+
+    # ---- history (opt-in) ----
+    log_history_if_opted_in(
+        interaction.user.id,
+        command="read",
+        mode=mode,
+        payload={
+            "focus": focus,
+            "spread": "situation_obstacle_guidance",
+            "cards": [
+                {"position": pos, "name": card["name"], "orientation": orientation}
+                for pos, (card, orientation) in zip(positions, cards)
+            ],
+        },
+    )
 
     embed = discord.Embed(
         title=f"{E['crystal']} Intuitive Reading {E['crystal']}",
@@ -504,7 +665,8 @@ async def read_slash(interaction: discord.Interaction, focus: str):
         color=0x9370DB
     )
 
-    for pos, (card, orientation) in zip(positions, cards):
+    pretty_positions = [f"Situation {E['sun']}", f"Obstacle {E['sword']}", f"Guidance {E['star']}"]
+    for pos, (card, orientation) in zip(pretty_positions, cards):
         meaning = render_card_text(card, orientation, mode)
         embed.add_field(
             name=f"{pos}: {card['name']} ({orientation})",
@@ -517,12 +679,28 @@ async def read_slash(interaction: discord.Interaction, focus: str):
 
 
 @bot.tree.command(name="threecard", description="Past • Present • Future spread.")
+@app_commands.checks.cooldown(3, 60.0)  # 3 per minute
 async def threecard_slash(interaction: discord.Interaction):
-    positions = [f"Past {E['clock']}", f"Present {E['moon']}", f"Future {E['star']}"]
+    positions = ["Past", "Present", "Future"]
     cards = draw_unique_cards(3)
 
     mode = get_effective_mode(interaction.user.id)
     intent_text = user_intentions.get(interaction.user.id)
+
+    # ---- history (opt-in) ----
+    log_history_if_opted_in(
+        interaction.user.id,
+        command="threecard",
+        mode=mode,
+        payload={
+            "focus": intent_text,
+            "spread": "past_present_future",
+            "cards": [
+                {"position": pos, "name": card["name"], "orientation": orientation}
+                for pos, (card, orientation) in zip(positions, cards)
+            ],
+        },
+    )
 
     desc = "Past • Present • Future"
     if intent_text:
@@ -535,7 +713,8 @@ async def threecard_slash(interaction: discord.Interaction):
         color=0xA020F0
     )
 
-    for pos, (card, orientation) in zip(positions, cards):
+    pretty_positions = [f"Past {E['clock']}", f"Present {E['moon']}", f"Future {E['star']}"]
+    for pos, (card, orientation) in zip(pretty_positions, cards):
         meaning = render_card_text(card, orientation, mode)
         embed.add_field(
             name=f"{pos}: {card['name']} ({orientation})",
@@ -547,16 +726,30 @@ async def threecard_slash(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="celtic", description="Full 10-card Celtic Cross spread.")
+@app_commands.checks.cooldown(1, 120.0)  # 1 use per 120s per user
 async def celtic_slash(interaction: discord.Interaction):
     positions = [
-        "1️⃣ Present Situation", "2️⃣ Challenge", "3️⃣ Root Cause", "4️⃣ Past",
-        "5️⃣ Conscious Goal", "6️⃣ Near Future", "7️⃣ Self", "8️⃣ External Influence",
-        "9️⃣ Hopes & Fears", "🔟 Outcome"
+        "Present Situation", "Challenge", "Root Cause", "Past",
+        "Conscious Goal", "Near Future", "Self", "External Influence",
+        "Hopes & Fears", "Outcome"
     ]
     cards = draw_unique_cards(10)
     mode = get_effective_mode(interaction.user.id)
 
-    # We may need multiple messages due to embed limits.
+    # ---- history (opt-in) ----
+    log_history_if_opted_in(
+        interaction.user.id,
+        command="celtic",
+        mode=mode,
+        payload={
+            "spread": "celtic_cross",
+            "cards": [
+                {"position": pos, "name": card["name"], "orientation": orientation}
+                for pos, (card, orientation) in zip(positions, cards)
+            ],
+        },
+    )
+
     embeds_to_send: List[discord.Embed] = []
     embed = discord.Embed(
         title=f"{E['crystal']} Celtic Cross Spread {E['crystal']}",
@@ -566,7 +759,13 @@ async def celtic_slash(interaction: discord.Interaction):
 
     total_length = len(embed.title) + len(embed.description)
 
-    for pos, (card, orientation) in zip(positions, cards):
+    pretty_positions = [
+        "1️⃣ Present Situation", "2️⃣ Challenge", "3️⃣ Root Cause", "4️⃣ Past",
+        "5️⃣ Conscious Goal", "6️⃣ Near Future", "7️⃣ Self", "8️⃣ External Influence",
+        "9️⃣ Hopes & Fears", "🔟 Outcome"
+    ]
+
+    for pos, (card, orientation) in zip(pretty_positions, cards):
         meaning = render_card_text(card, orientation, mode)
         field_name = f"{pos}: {card['name']} ({orientation})"
         field_value = meaning if len(meaning) < 1000 else meaning[:997] + "..."
@@ -606,16 +805,34 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
     ]
 
     if not matches:
-        await interaction.response.send_message(f"{E['warn']} I searched the deck but found no card named **{card}**.", ephemeral=True)
+        await interaction.response.send_message(
+            f"{E['warn']} I searched the deck but found no card named **{card}**.",
+            ephemeral=True
+        )
         return
 
     chosen = matches[0]
     mode = get_effective_mode(interaction.user.id)
+    settings = get_user_settings(interaction.user.id)
 
-    # default upright image
-    file_obj, attach_url = make_image_attachment(chosen["name"], is_reversed=False)
-    if not attach_url and file_obj is not None:
-        attach_url = f"attachment://{file_obj.filename}"
+    # ---- history (opt-in) ----
+    log_history_if_opted_in(
+        interaction.user.id,
+        command="meaning",
+        mode=mode,
+        payload={
+            "query": card,
+            "matched": chosen["name"],
+            "shown": ["Upright", "Reversed"],
+        },
+        settings=settings,
+    )
+
+    file_obj, attach_url = None, None
+    if settings.get("images_enabled", True):
+        file_obj, attach_url = make_image_attachment(chosen["name"], is_reversed=False)
+        if not attach_url and file_obj is not None:
+            attach_url = f"attachment://{file_obj.filename}"
 
     embed_top = discord.Embed(
         title=f"{E['book']} {chosen['name']} • mode: {mode}",
@@ -640,16 +857,6 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
     await send_ephemeral(interaction, embeds=[embed_top, embed_body], mood="general", file_obj=file_obj)
 
 
-async def card_name_autocomplete(interaction: discord.Interaction, current: str):
-    current = (current or "").lower()
-    hits = [c["name"] for c in tarot_cards if current in c["name"].lower()]
-    return [app_commands.Choice(name=name, value=name) for name in hits[:25]]
-
-@meaning_slash.autocomplete("card")
-async def meaning_card_autocomplete(interaction: discord.Interaction, current: str):
-    return await card_name_autocomplete(interaction, current)
-
-
 @bot.tree.command(name="clarify", description="Draw a clarifier card for your current focus.")
 async def clarify_slash(interaction: discord.Interaction):
     card, orientation = draw_card()
@@ -658,6 +865,17 @@ async def clarify_slash(interaction: discord.Interaction):
 
     mode = get_effective_mode(interaction.user.id)
     meaning = render_card_text(card, orientation, mode)
+
+    # ---- history (opt-in) ----
+    log_history_if_opted_in(
+        interaction.user.id,
+        command="clarify",
+        mode=mode,
+        payload={
+            "focus": intent_text,
+            "card": {"name": card["name"], "orientation": orientation},
+        },
+    )
 
     desc = f"**{card['name']} ({orientation} {tone}) • mode: {mode}**\n\n{meaning}"
     if intent_text:
@@ -671,7 +889,6 @@ async def clarify_slash(interaction: discord.Interaction):
     embed.set_footer(text=f"{E['spark']} A clarifier shines a smaller light within your larger spread.")
 
     await send_ephemeral(interaction, embed=embed, mood="general")
-
 
 @bot.tree.command(name="intent", description="Set (or view) your current intention/focus.")
 @app_commands.describe(focus="Leave blank to view your current intention.")
@@ -709,7 +926,6 @@ async def mode_reset_slash(interaction: discord.Interaction):
     chosen = reset_user_mode(interaction.user.id)
     await interaction.response.send_message(f"✅ Mode reset. Default tarot mode is **{chosen}**.", ephemeral=True)
 
-
 @bot.tree.command(name="mystery", description="Pull a mystery card (image only). Use /reveal to see the meaning.")
 async def mystery_slash(interaction: discord.Interaction):
     card = random.choice(tarot_cards)
@@ -721,50 +937,82 @@ async def mystery_slash(interaction: discord.Interaction):
         "ts": time.time(),
     }
 
+    settings = get_user_settings(interaction.user.id)
+
     embed_top = discord.Embed(
         title=f"{E['crystal']} {card['name']}" + (" — Reversed" if is_reversed else ""),
         description="Type **/reveal** to see the meaning.",
         color=suit_color(card["suit"])
     )
 
-    file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
-    if not attach_url and file_obj is not None:
-        attach_url = f"attachment://{file_obj.filename}"
-    if attach_url:
-        embed_top.set_image(url=attach_url)
+    file_obj, attach_url = None, None
+    if settings.get("images_enabled", True):
+        file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
+        if not attach_url and file_obj is not None:
+            attach_url = f"attachment://{file_obj.filename}"
+        if attach_url:
+            embed_top.set_image(url=attach_url)
+    else:
+        # Optional: make it clear why there's no image
+        embed_top.description = (
+            "Images are currently **off**.\n"
+            "Turn them on with `/settings images:on`, or type **/reveal** to see the meaning."
+        )
 
     await send_ephemeral(interaction, embed=embed_top, mood="general", file_obj=file_obj)
-
 
 @bot.tree.command(name="reveal", description="Reveal the meaning of your last mystery card.")
 async def reveal_slash(interaction: discord.Interaction):
     state = MYSTERY_STATE.get(interaction.user.id)
     if not state:
-        await interaction.response.send_message(f"{E['warn']} No mystery card on file. Use **/mystery** first.", ephemeral=True)
+        await interaction.response.send_message(
+            f"{E['warn']} No mystery card on file. Use **/mystery** first.",
+            ephemeral=True
+        )
         return
 
-    name = state["name"]
-    is_reversed = state["is_reversed"]
+    try:
+        name = state["name"]
+        is_reversed = state["is_reversed"]
 
-    card = next((c for c in tarot_cards if c["name"] == name), None)
-    if not card:
-        await interaction.response.send_message(f"{E['warn']} I lost track of that card. Try **/mystery** again.", ephemeral=True)
-        return
+        card = next((c for c in tarot_cards if c["name"] == name), None)
+        if not card:
+            await interaction.response.send_message(
+                f"{E['warn']} I lost track of that card. Try **/mystery** again.",
+                ephemeral=True
+            )
+            return
 
-    mode = get_effective_mode(interaction.user.id)
-    orientation = "Reversed" if is_reversed else "Upright"
-    meaning = render_card_text(card, orientation, mode)
+        mode = get_effective_mode(interaction.user.id)
+        orientation = "Reversed" if is_reversed else "Upright"
+        meaning = render_card_text(card, orientation, mode)
 
-    embed = discord.Embed(
-        title=f"{E['book']} Reveal: {card['name']} ({orientation}) • mode: {mode}",
-        description=meaning,
-        color=suit_color(card["suit"])
-    )
-    embed.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
+        # ---- history (opt-in) ----
+        settings = get_user_settings(interaction.user.id)
+        
+        log_history_if_opted_in(
+            interaction.user.id,
+            command="reveal",
+            mode=mode,
+            payload={
+                "source": "mystery",
+                "card": {"name": card["name"], "orientation": orientation},
+            },
+            settings=settings
+        )
 
-    del MYSTERY_STATE[interaction.user.id]
-    await send_ephemeral(interaction, embed=embed, mood="general")
+        embed = discord.Embed(
+            title=f"{E['book']} Reveal: {card['name']} ({orientation}) • mode: {mode}",
+            description=meaning,
+            color=suit_color(card["suit"])
+        )
+        embed.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
+        await send_ephemeral(interaction, embed=embed, mood="general")
+
+    finally:
+        # Always clear, even if an exception happens mid-way
+        MYSTERY_STATE.pop(interaction.user.id, None)
 
 @bot.tree.command(name="insight", description="Show Arcanara’s command index and your current settings.")
 async def insight_slash(interaction: discord.Interaction):
@@ -825,6 +1073,58 @@ async def insight_slash(interaction: discord.Interaction):
     embed.set_footer(text=f"{E['light']} Trust your intuition • Arcanara Tarot Bot")
     await send_ephemeral(interaction, embed=embed, mood="general")
 
+@bot.tree.command(name="privacy", description="What Arcanara stores and how to delete it.")
+async def privacy_slash(interaction: discord.Interaction):
+    embed = discord.Embed(
+        title="🔒 Arcanara Privacy",
+        description=(
+            "**Stored data (optional / minimal):**\n"
+            "• Your chosen `/mode`\n"
+            "• Your `/settings` (images on/off, history opt-in)\n"
+            "• Reading history **only if you opt in**\n\n"
+            "**Delete everything:** use `/forgetme`.\n"
+            "Arcanara does not need message content intent and does not read your DMs."
+        ),
+        color=0x6A5ACD
+    )
+    await send_ephemeral(interaction, embed=embed, mood="general")
+
+@bot.tree.command(name="forgetme", description="Delete your stored Arcanara data.")
+async def forgetme_slash(interaction: discord.Interaction):
+    uid = interaction.user.id
+
+    with db_connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM tarot_user_prefs WHERE user_id=%s", (uid,))
+            cur.execute("DELETE FROM tarot_user_settings WHERE user_id=%s", (uid,))
+            cur.execute("DELETE FROM tarot_reading_history WHERE user_id=%s", (uid,))
+        conn.commit()
+
+    user_intentions.pop(uid, None)
+    MYSTERY_STATE.pop(uid, None)
+
+    await send_ephemeral(interaction, content="✅ Your thread has been cut clean. Stored data deleted.", mood="general")
+    
+@bot.tree.command(name="settings", description="Control history + images for your readings.")
+@app_commands.choices(
+    history=[app_commands.Choice(name="on", value="on"), app_commands.Choice(name="off", value="off")],
+    images=[app_commands.Choice(name="on", value="on"), app_commands.Choice(name="off", value="off")],
+)
+async def settings_slash(
+    interaction: discord.Interaction,
+    history: Optional[app_commands.Choice[str]] = None,
+    images: Optional[app_commands.Choice[str]] = None,
+):
+    h = None if history is None else (history.value == "on")
+    i = None if images is None else (images.value == "on")
+    set_user_settings(interaction.user.id, history_opt_in=h, images_enabled=i)
+
+    s = get_user_settings(interaction.user.id)
+    await send_ephemeral(
+        interaction,
+        content=f"✅ Settings saved.\n• History: **{'on' if s['history_opt_in'] else 'off'}**\n• Images: **{'on' if s['images_enabled'] else 'off'}**",
+        mood="general",
+    )
 
 # ==============================
 # RUN BOT
