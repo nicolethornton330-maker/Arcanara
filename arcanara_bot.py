@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import os
 import psycopg
+import traceback
 from psycopg.types.json import Json
 from discord.errors import HTTPException
 from psycopg.rows import dict_row
@@ -730,8 +731,13 @@ async def on_ready():
 
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    # Always log the real underlying exception + traceback
+    orig = getattr(error, "original", error)
     print(f"⚠️ Slash command error: {type(error).__name__}: {error}")
+    print(f"⚠️ Original: {type(orig).__name__}: {orig}")
+    traceback.print_exception(type(orig), orig, orig.__traceback__)
 
+    # Try to tell the user (but don't crash if interaction expired/ack'd)
     try:
         await send_ephemeral(
             interaction,
@@ -740,6 +746,7 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
         )
     except Exception as e:
         print(f"⚠️ Failed to send error message: {type(e).__name__}: {e}")
+
 
 # ==============================
 # SLASH COMMANDS (EPHEMERAL)
@@ -974,25 +981,25 @@ async def celtic_slash(interaction: discord.Interaction):
 
     for e in embeds_to_send[1:]:
         await interaction.followup.send(embeds=[e], ephemeral=True)
-
-
 @bot.tree.command(name="meaning", description="Show upright and reversed meanings for a card (using your current mode).")
 @app_commands.describe(card="Card name (example: The Lovers)")
 async def meaning_slash(interaction: discord.Interaction, card: str):
     if not interaction.response.is_done():
         await interaction.response.defer(ephemeral=True)
+
     norm_query = normalize_card_name(card)
 
     matches = [
         c for c in tarot_cards
-        if normalize_card_name(c["name"]) == norm_query
-        or norm_query in normalize_card_name(c["name"])
+        if normalize_card_name(c.get("name", "")) == norm_query
+        or norm_query in normalize_card_name(c.get("name", ""))
     ]
 
     if not matches:
-        await interaction.response.send_message(
-            f"{E['warn']} I searched the deck but found no card named **{card}**.",
-            ephemeral=True
+        await send_ephemeral(
+            interaction,
+            content=f"{E['warn']} I searched the deck but found no card named **{card}**.",
+            mood="general"
         )
         return
 
@@ -1000,47 +1007,49 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
     mode = get_effective_mode(interaction.user.id)
     settings = get_user_settings(interaction.user.id)
 
-    # ---- history (opt-in) ----
+    # Safe suit handling (prevents KeyError)
+    suit = chosen.get("suit") or "Major Arcana"
+    color = suit_color(suit)
+
+    # History (opt-in)
     log_history_if_opted_in(
         interaction.user.id,
         command="meaning",
         mode=mode,
-        payload={
-            "query": card,
-            "matched": chosen["name"],
-            "shown": ["Upright", "Reversed"],
-        },
+        payload={"query": card, "matched": chosen.get("name", ""), "shown": ["Upright", "Reversed"]},
         settings=settings,
     )
 
     file_obj, attach_url = None, None
     if settings.get("images_enabled", True):
-        file_obj, attach_url = make_image_attachment(chosen["name"], is_reversed=False)
-        if not attach_url and file_obj is not None:
-            attach_url = f"attachment://{file_obj.filename}"
+        try:
+            file_obj, attach_url = make_image_attachment(chosen.get("name", ""), is_reversed=False)
+            if not attach_url and file_obj is not None:
+                attach_url = f"attachment://{file_obj.filename}"
+        except Exception as e:
+            print(f"⚠️ make_image_attachment failed: {type(e).__name__}: {e}")
+            file_obj, attach_url = None, None
 
     embed_top = discord.Embed(
-        title=f"{E['book']} {chosen['name']} • mode: {mode}",
+        title=f"{E['book']} {chosen.get('name','(unknown)')} • mode: {mode}",
         description="",
-        color=suit_color(chosen["suit"])
+        color=color
     )
     if attach_url:
         embed_top.set_image(url=attach_url)
 
-    embed_body = discord.Embed(
-        description=f"**{chosen['name']}** reveals both sides of its nature:",
-        color=suit_color(chosen["suit"])
-    )
-
     upright_text = clip_field(render_card_text(chosen, "Upright", mode), 1024)
     reversed_text = clip_field(render_card_text(chosen, "Reversed", mode), 1024)
 
-    embed_body.add_field(name=f"Upright {E['sun']} • {mode}", value=upright_text, inline=False)
-    embed_body.add_field(name=f"Reversed {E['moon']} • {mode}", value=reversed_text, inline=False)
+    embed_body = discord.Embed(
+        description=f"**{chosen.get('name','(unknown)')}** reveals both sides of its nature:",
+        color=color
+    )
+    embed_body.add_field(name=f"Upright {E['sun']} • {mode}", value=upright_text or "—", inline=False)
+    embed_body.add_field(name=f"Reversed {E['moon']} • {mode}", value=reversed_text or "—", inline=False)
     embed_body.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
     await send_ephemeral(interaction, embeds=[embed_top, embed_body], mood="general", file_obj=file_obj)
-
 
 @bot.tree.command(name="clarify", description="Draw a clarifier card for your current focus.")
 async def clarify_slash(interaction: discord.Interaction):
