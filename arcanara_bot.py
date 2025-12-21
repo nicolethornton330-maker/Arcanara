@@ -327,6 +327,11 @@ def draw_unique_cards(num_cards: int):
         drawn.append((card, orientation))
     return drawn
 
+def clip_field(text: str, limit: int = 1024) -> str:
+    text = (text or "").strip()
+    if len(text) <= limit:
+        return text
+    return text[: limit - 1] + "…"
 
 def suit_color(suit):
     return {
@@ -374,7 +379,7 @@ in_character_lines = {
 # ==============================
 # TYPING SIMULATION
 # ==============================
-async def send_with_typing(ctx, embed, delay_range=(1.5, 3.0), mood="general"):
+async def send_with_typing(ctx, embed, delay_range=(1.5, 3.0), mood="general", file_obj=None):
     thinking_lines = {
         "shuffle": [
             "🔮 Arcanara breathes deeply and stirs the deck...",
@@ -411,7 +416,11 @@ async def send_with_typing(ctx, embed, delay_range=(1.5, 3.0), mood="general"):
         line = random.choice(in_character_lines.get(mood, in_character_lines["general"]))
         await ctx.send(f"*{line}*")
         await asyncio.sleep(0.5)
-        await ctx.send(embed=embed)
+
+        if file_obj:
+            await ctx.send(embed=embed, file=file_obj)
+        else:
+            await ctx.send(embed=embed)
 
 # ==============================
 # EVENTS
@@ -441,8 +450,12 @@ async def shuffle(ctx):
 @bot.command(name="cardoftheday")
 async def card_of_the_day(ctx):
     card, orientation = draw_card()
-    mode = get_user_mode(ctx.author.id)
+    mode = get_effective_mode(ctx.author.id)
     meaning = render_card_text(card, orientation, mode)
+
+    is_reversed = (orientation == "Reversed")
+    file_obj, attach_url = make_image_attachment(card["name"], is_reversed)
+
     tone = E["sun"] if orientation == "Upright" else E["moon"]
     intent_text = user_intentions.get(ctx.author.id)
 
@@ -450,14 +463,15 @@ async def card_of_the_day(ctx):
     if intent_text:
         desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
 
-
     embed = discord.Embed(
         title=f"{E['crystal']} Card of the Day",
         description=desc,
         color=suit_color(card["suit"])
     )
+    if attach_url:
+        embed.set_image(url=attach_url)
 
-    await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="daily")
+    await send_with_typing(ctx, embed, delay_range=(1.5, 2.5), mood="daily", file_obj=file_obj)
 
 @bot.command(name="read")
 async def read(ctx, *, message: str = None):
@@ -595,8 +609,8 @@ async def meaning(ctx, *, query: str):
     )
     mode = get_effective_mode(ctx.author.id)
 
-    upright_text = render_card_text(card, "Upright", mode)
-    reversed_text = render_card_text(card, "Reversed", mode)
+    upright_text = render_card_text(card, "Upright", mode), 1024)
+    reversed_text = render_card_text(card, "Reversed", mode), 1024)
 
     embed_body.add_field(name=f"Upright {E['sun']} • {mode}",   value=upright_text if len(upright_text) < 1000 else upright_text[:997] + "...",  inline=False)
     embed_body.add_field(name=f"Reversed {E['moon']} • {mode}", value=reversed_text if len(reversed_text) < 1000 else reversed_text[:997] + "...", inline=False)
