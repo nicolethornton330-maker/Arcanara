@@ -542,7 +542,7 @@ def build_onboarding_embeds(guild: discord.Guild) -> List[discord.Embed]:
             "• `/meaning` — upright + reversed meanings in your current mode\n\n"
             "**Mystery mode (dramatic pause included):**\n"
             "`/mystery` shows the card image only… then `/reveal` when you’re ready.\n\n"
-            "If your focus changes midstream, use `/reset` and we begin again — clean and honest."
+            "If your intention changes midstream, use `/reset` and we begin again — clean and honest."
         ),
         color=0x6A5ACD,
     )
@@ -681,55 +681,51 @@ async def send_ephemeral(
     mood: str = "general",
     file_obj: Optional[discord.File] = None,
 ):
-    def _kwargs(**extra):
-        kw = {"ephemeral": True}
-        if content is not None:
-            kw["content"] = content
-        kw.update(extra)
+    # Choose response channel (first response vs followup)
+    def _send_kwargs(**kw):
+        # Only include file if it's real (discord.py chokes on file=None)
         if file_obj is not None:
             kw["file"] = file_obj
         return kw
 
-    # choose response channel (first response vs followup)
-    first_send = interaction.response.send_message
-    followup_send = interaction.followup.send
-
     try:
+        if not interaction.response.is_done():
+            send_fn = interaction.response.send_message
+        else:
+            send_fn = interaction.followup.send
+
         if embed is not None:
             embed = _prepend_in_character(embed, mood)
-            if interaction.response.is_done():
-                await followup_send(**_kwargs(embed=embed))
-            else:
-                await first_send(**_kwargs(embed=embed))
+            await send_fn(**_send_kwargs(content=content, embed=embed, ephemeral=True))
             return
 
-        if embeds is not None and len(embeds) > 0:
+        if embeds:
             embeds = list(embeds)
             embeds[0] = _prepend_in_character(embeds[0], mood)
-            if interaction.response.is_done():
-                await followup_send(**_kwargs(embeds=embeds))
-            else:
-                await first_send(**_kwargs(embeds=embeds))
+            await send_fn(**_send_kwargs(content=content, embeds=embeds, ephemeral=True))
             return
 
-        # content-only
-        if interaction.response.is_done():
-            await followup_send(**_kwargs(content=content or "—"))
-        else:
-            await first_send(**_kwargs(content=content or "—"))
+        await send_fn(**_send_kwargs(content=content or "—", ephemeral=True))
 
-    except HTTPException as e:
-        # If the interaction was already acknowledged, try followup
-        try:
-            await followup_send(**_kwargs(content=content or "—"))
-        except (NotFound, HTTPException):
-            # Interaction expired/invalid — nothing else we can do
-            print(f"⚠️ send_ephemeral failed: {type(e).__name__}: {e}")
-
-    except NotFound as e:
-        # Interaction expired/unknown
-        print(f"⚠️ send_ephemeral expired: {type(e).__name__}: {e}")
+    except discord.HTTPException as e:
+        # If Discord says “already acknowledged”, fall back to followup
+        if getattr(e, "code", None) == 40060:
+            try:
+                if embed is not None:
+                    embed = _prepend_in_character(embed, mood)
+                    await interaction.followup.send(**_send_kwargs(content=content, embed=embed, ephemeral=True))
+                    return
+                if embeds:
+                    embeds = list(embeds)
+                    embeds[0] = _prepend_in_character(embeds[0], mood)
+                    await interaction.followup.send(**_send_kwargs(content=content, embeds=embeds, ephemeral=True))
+                    return
+                await interaction.followup.send(**_send_kwargs(content=content or "—", ephemeral=True))
+                return
+            except Exception:
+                pass
         raise
+
 # ==============================
 # EVENTS
 # ==============================
@@ -776,15 +772,25 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 # SLASH COMMANDS (EPHEMERAL)
 # ==============================
 
-@bot.tree.command(name="shuffle", description="Cleanse and reset the deck’s energy.")
+@bot.tree.command(name="shuffle", description="Cleanse the deck and reset your intention + tone.")
+@app_commands.checks.cooldown(3, 60.0)
 async def shuffle_slash(interaction: discord.Interaction):
-    if not interaction.response.is_done():
-        await interaction.response.defer(ephemeral=True)
+    # Reset user state
+    user_intentions.pop(interaction.user.id, None)
+    MYSTERY_STATE.pop(interaction.user.id, None)
+    reset_user_mode(interaction.user.id)  # resets stored “tone” (mode) back to default
 
+    # Optional: also shuffle the in-memory deck order
     random.shuffle(tarot_cards)
+
     embed = discord.Embed(
-        title=f"{E['shuffle']} The Deck Has Been Cleansed {E['shuffle']}",
-        description="Energy reset complete. The cards are ready to speak again.",
+        title=f"{E['shuffle']} Cleanse Complete {E['shuffle']}",
+        description=(
+            "The deck is cleared.\n\n"
+            f"• **Intention**: reset\n"
+            f"• **Tone**: reset to **{DEFAULT_MODE}**\n\n"
+            "Set a fresh intention with `/intent`, then draw with `/cardoftheday` or `/read`."
+        ),
         color=0x9370DB
     )
     await send_ephemeral(interaction, embed=embed, mood="shuffle")
@@ -812,7 +818,7 @@ async def cardoftheday_slash(interaction: discord.Interaction):
 
     desc = f"**{card['name']} ({orientation} {tone}) • {mode_label(mode)}**\n\n{meaning}"
     if intent_text:
-        desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
+        desc += f"\n\n{E['light']} **Intention:** *{intent_text}*"
 
     # ✅ STEP 5: log history (ONLY logs if user opted in)
     log_history_if_opted_in(
@@ -822,7 +828,7 @@ async def cardoftheday_slash(interaction: discord.Interaction):
         payload={
             "card": card["name"],
             "orientation": orientation,
-            "focus": intent_text,
+            "intention": intent_text,
             "images_enabled": bool(settings.get("images_enabled", True)),
         },
         settings=settings,
@@ -841,11 +847,11 @@ async def cardoftheday_slash(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="read", description="Three-card reading: Situation • Obstacle • Guidance.")
-@app_commands.describe(focus="Your question or focus (example: my career path)")
-async def read_slash(interaction: discord.Interaction, focus: str):
+@app_commands.describe(Intention="Your question or focus (example: my career path)")
+async def read_slash(interaction: discord.Interaction, intention: str):
     if not interaction.response.is_done():
         await interaction.response.defer(ephemeral=True)
-    user_intentions[interaction.user.id] = focus
+    user_intentions[interaction.user.id] = intention
     mode = get_effective_mode(interaction.user.id)
 
     cards = draw_unique_cards(3)
@@ -857,7 +863,7 @@ async def read_slash(interaction: discord.Interaction, focus: str):
         command="read",
         mode=mode,
         payload={
-            "focus": focus,
+            "intention": intention,
             "spread": "situation_obstacle_guidance",
             "cards": [
                 {"position": pos, "name": card["name"], "orientation": orientation}
@@ -868,7 +874,7 @@ async def read_slash(interaction: discord.Interaction, focus: str):
 
     embed = discord.Embed(
         title=f"{E['crystal']} Intuitive Reading {E['crystal']}",
-        description=f"{E['light']} **Focus:** *{focus}*\n\n**How I’ll read this:** {mode_label(mode)}",
+        description=f"{E['light']} **intention:** *{intention}*\n\n**How I’ll read this:** {mode_label(mode)}",
         color=0x9370DB
     )
 
@@ -901,7 +907,7 @@ async def threecard_slash(interaction: discord.Interaction):
         command="threecard",
         mode=mode,
         payload={
-            "focus": intent_text,
+            "intention": intent_text,
             "spread": "past_present_future",
             "cards": [
                 {"position": pos, "name": card["name"], "orientation": orientation}
@@ -912,7 +918,7 @@ async def threecard_slash(interaction: discord.Interaction):
 
     desc = "Past • Present • Future"
     if intent_text:
-        desc += f"\n\n{E['light']} **Focus:** *{intent_text}*"
+        desc += f"\n\n{E['light']} **Intention:** *{intent_text}*"
     desc += f"\n\n**How I’ll read this:** {mode_label(mode)}"
 
     embed = discord.Embed(
@@ -1001,6 +1007,25 @@ async def celtic_slash(interaction: discord.Interaction):
 
     for e in embeds_to_send[1:]:
         await interaction.followup.send(embeds=[e], ephemeral=True)
+
+@bot.tree.command(name="tone", description="Choose Arcanara’s reading tone (your default lens).")
+@app_commands.choices(tone=[
+    app_commands.Choice(name="full", value="full"),
+    app_commands.Choice(name="direct", value="direct"),
+    app_commands.Choice(name="shadow", value="shadow"),
+    app_commands.Choice(name="poetic", value="poetic"),
+    app_commands.Choice(name="quick", value="quick"),
+    app_commands.Choice(name="love", value="love"),
+    app_commands.Choice(name="work", value="work"),
+    app_commands.Choice(name="money", value="money"),
+])
+async def tone_slash(interaction: discord.Interaction, tone: app_commands.Choice[str]):
+    chosen = set_user_mode(interaction.user.id, tone.value)  # uses your existing DB/table
+    await send_ephemeral(
+        interaction,
+        content=f"✅ Tone set to **{chosen}**.\n\nTip: Pair it with an intention using `/intent`.",
+        mood="general",
+    )
         
 @bot.tree.command(name="resendwelcome", description="Resend Arcanara’s onboarding message (admin).")
 @app_commands.checks.has_permissions(manage_guild=True)
@@ -1040,32 +1065,6 @@ async def resendwelcome_slash(
         print(f"⚠️ resendwelcome failed: {type(e).__name__}: {e}")
         await interaction.followup.send("⚠️ A thread snagged while sending the welcome. Check permissions/logs.", ephemeral=True)
 
-@bot.tree.command(name="reset", description="Clear your current intention/focus (clean slate).")
-async def reset_slash(interaction: discord.Interaction):
-    user_intentions.pop(interaction.user.id, None)
-    MYSTERY_STATE.pop(interaction.user.id, None)  # optional but nice: clears mystery card too
-    await send_ephemeral(
-        interaction,
-        content="✨ Clean slate. Your intention thread is cleared.",
-        mood="general",
-    )
-
-@bot.tree.command(name="resetall", description="Reset your mode + clear your intention (full refresh).")
-async def resetall_slash(interaction: discord.Interaction):
-    user_intentions.pop(interaction.user.id, None)
-    MYSTERY_STATE.pop(interaction.user.id, None)
-    chosen = reset_user_mode(interaction.user.id)
-
-    await send_ephemeral(
-        interaction,
-        content=(
-            "🕯️ Done.\n"
-            "• Intention cleared\n"
-            f"• Mode reset to **{chosen}**"
-        ),
-        mood="general",
-    )
-        
 @bot.tree.command(name="meaning", description="Show upright and reversed meanings for a card (using your current mode).")
 @app_commands.describe(card="Card name (example: The Lovers)")
 async def meaning_slash(interaction: discord.Interaction, card: str):
@@ -1136,7 +1135,7 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
 
     await send_ephemeral(interaction, embeds=[embed_top, embed_body], mood="general", file_obj=file_obj)
 
-@bot.tree.command(name="clarify", description="Draw a clarifier card for your current focus.")
+@bot.tree.command(name="clarify", description="Draw a clarifier card for your current intention.")
 async def clarify_slash(interaction: discord.Interaction):
     if not interaction.response.is_done():
         await interaction.response.defer(ephemeral=True)
@@ -1153,7 +1152,7 @@ async def clarify_slash(interaction: discord.Interaction):
         command="clarify",
         mode=mode,
         payload={
-            "focus": intent_text,
+            "intention": intent_text,
             "card": {"name": card["name"], "orientation": orientation},
         },
     )
@@ -1161,7 +1160,7 @@ async def clarify_slash(interaction: discord.Interaction):
     desc = f"**{card['name']} ({orientation} {tone}) • {mode_label(mode)}**\n\n{meaning}"
 
     if intent_text:
-        desc += f"\n\n{E['light']} **Clarifying Focus:** *{intent_text}*"
+        desc += f"\n\n{E['light']} **Clarifying Intention:** *{intent_text}*"
 
     embed = discord.Embed(
         title=f"{E['light']} Clarifier Card {E['light']}",
@@ -1172,43 +1171,19 @@ async def clarify_slash(interaction: discord.Interaction):
 
     await send_ephemeral(interaction, embed=embed, mood="general")
 
-@bot.tree.command(name="intent", description="Set (or view) your current intention/focus.")
-@app_commands.describe(focus="Leave blank to view your current intention.")
-async def intent_slash(interaction: discord.Interaction, focus: Optional[str] = None):
-    if not focus:
+@bot.tree.command(name="intent", description="Set (or view) your current intention.")
+@app_commands.describe(intention="Leave blank to view your current intention.")
+async def intent_slash(interaction: discord.Interaction, intention: Optional[str] = None):
+    if not intention:
         current = user_intentions.get(interaction.user.id)
         if current:
             await interaction.response.send_message(f"{E['light']} Your current intention is: *{current}*", ephemeral=True)
         else:
-            await interaction.response.send_message(f"{E['warn']} You haven’t set an intention yet. Use `/intent focus: ...`", ephemeral=True)
+            await interaction.response.send_message(f"{E['warn']} You haven’t set an intention yet. Use `/intent intention: ...`", ephemeral=True)
         return
 
-    user_intentions[interaction.user.id] = focus
-    await interaction.response.send_message(f"{E['spark']} Intention set to: *{focus}*", ephemeral=True)
-
-
-@bot.tree.command(name="mode", description="Set your default tarot reading mode.")
-@app_commands.choices(mode=[
-    app_commands.Choice(name="full", value="full"),
-    app_commands.Choice(name="direct", value="direct"),
-    app_commands.Choice(name="shadow", value="shadow"),
-    app_commands.Choice(name="poetic", value="poetic"),
-    app_commands.Choice(name="quick", value="quick"),
-    app_commands.Choice(name="love", value="love"),
-    app_commands.Choice(name="work", value="work"),
-    app_commands.Choice(name="money", value="money"),
-])
-async def mode_slash(interaction: discord.Interaction, mode: app_commands.Choice[str]):
-    chosen = set_user_mode(interaction.user.id, mode.value)
-    await interaction.response.send_message(
-    f"✅ Reset. We’re back to **{mode_label(DEFAULT_MODE)}**.",
-    ephemeral=True
-)
-
-@bot.tree.command(name="mode_reset", description="Reset your mode back to the default.")
-async def mode_reset_slash(interaction: discord.Interaction):
-    chosen = reset_user_mode(interaction.user.id)
-    await interaction.response.send_message(f"✅ Mode reset. Default tarot mode is **{chosen}**.", ephemeral=True)
+    user_intentions[interaction.user.id] = intention
+    await interaction.response.send_message(f"{E['spark']} Intention set to: *{intention}*", ephemeral=True)
 
 @bot.tree.command(name="mystery", description="Pull a mystery card (image only). Use /reveal to see the meaning.")
 async def mystery_slash(interaction: discord.Interaction):
@@ -1334,7 +1309,7 @@ async def insight_slash(interaction: discord.Interaction):
     opener = random.choice(greetings_first if first_time else greetings_returning)
 
     # Gentle, confident guidance paths
-    intent_line = f"**Your focus:** *{current_intent}*" if current_intent else "**Your focus:** *unspoken… for now.*"
+    intent_line = f"**Your intention:** *{current_intent}*" if current_intent else "**Your intention:** *unspoken… for now.*"
     mode_line = f"**How I’ll speak:** {mode_label(current_mode)}"
 
     guided = (
@@ -1342,7 +1317,7 @@ async def insight_slash(interaction: discord.Interaction):
         f"{mode_line}\n\n"
         "Here’s how we do this:\n"
         f"• Want a single clean message for today? Try **/cardoftheday**.\n"
-        f"• Got a situation with teeth? Use **/read** and give me your focus.\n"
+        f"• Got a situation with teeth? Use **/read** and give me your question.\n"
         f"• Want the timeline vibe? **/threecard** (past • present • future).\n"
         f"• Need the *deep* dive? **/celtic** — it pulls the whole pattern.\n"
         f"• Not sure what a card means? Ask **/meaning**.\n"
