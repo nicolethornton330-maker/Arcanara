@@ -455,6 +455,93 @@ def suit_emoji(suit):
         "Pentacles": E["leaf"], "Major Arcana": E["arcana"]
     }.get(suit, E["crystal"])
 
+def build_onboarding_embed(guild: discord.Guild) -> discord.Embed:
+    return discord.Embed(
+        title="🔮 Arcanara has arrived",
+        description=(
+            f"Thanks for inviting me to **{guild.name}**.\n\n"
+            "**Quick start:**\n"
+            "• `/insight` — see all commands + your current settings\n"
+            "• `/cardoftheday` — one card, one message\n"
+            "• `/read` — Situation • Obstacle • Guidance\n"
+            "• `/threecard` — Past • Present • Future\n"
+            "• `/celtic` — full Celtic Cross\n\n"
+            "**Your controls:**\n"
+            "• `/mode` — set your default reading style\n"
+            "• `/settings` — toggle images + history opt-in\n"
+            "• `/privacy` — what I store and how to delete it\n"
+            "• `/forgetme` — delete your stored data\n\n"
+            "FYI: Most responses are **ephemeral** (only you can see them)."
+        ),
+        color=0xB28DFF,
+    )
+
+async def find_bot_inviter(guild: discord.Guild, bot_user: discord.ClientUser) -> Optional[discord.User]:
+    """
+    Attempts to find who added the bot by checking the guild audit log.
+    Requires the bot to have 'View Audit Log' permission in that server.
+    Returns None if unavailable.
+    """
+    try:
+        async for entry in guild.audit_logs(limit=10, action=discord.AuditLogAction.bot_add):
+            target = getattr(entry, "target", None)
+            if target and target.id == bot_user.id:
+                return entry.user
+    except (discord.Forbidden, discord.HTTPException):
+        return None
+    return None
+
+async def send_onboarding_message(guild: discord.Guild):
+    embed = build_onboarding_embed(guild)
+
+    # 1) Try DM the inviter (if audit logs are accessible)
+    recipient = None
+    inviter = await find_bot_inviter(guild, bot.user)
+    if inviter:
+        recipient = inviter
+    else:
+        # 2) Fall back to server owner
+        recipient = guild.owner
+
+    # Try DM
+    if recipient:
+        try:
+            await recipient.send(embed=embed)
+            return
+        except discord.Forbidden:
+            pass
+        except discord.HTTPException:
+            pass
+
+    # 3) Fall back to posting in a channel if DMs are blocked
+    # Prefer system channel
+    channel = guild.system_channel
+    if channel and channel.permissions_for(guild.me).send_messages:
+        try:
+            await channel.send(embed=embed)
+            return
+        except discord.HTTPException:
+            pass
+
+    # Otherwise find first text channel we can post in
+    for ch in guild.text_channels:
+        perms = ch.permissions_for(guild.me)
+        if perms.send_messages:
+            try:
+                await ch.send(embed=embed)
+                return
+            except discord.HTTPException:
+                continue
+
+@bot.event
+async def on_guild_join(guild: discord.Guild):
+    # Keep it non-blocking and resilient
+    try:
+        await send_onboarding_message(guild)
+        print(f"✅ Onboarding message sent for guild: {guild.name} ({guild.id})")
+    except Exception as e:
+        print(f"⚠️ Onboarding failed for guild {guild.id}: {type(e).__name__}: {e}")
+
 # ==============================
 # IN-CHARACTER RESPONSES
 # ==============================
