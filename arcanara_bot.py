@@ -769,7 +769,6 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 # ==============================
 
 @bot.tree.command(name="shuffle", description="Cleanse and reset the deck’s energy.")
-@app_commands.checks.cooldown(3, 60.0)  # 3 per minute
 async def shuffle_slash(interaction: discord.Interaction):
     if not interaction.response.is_done():
         await interaction.response.defer(ephemeral=True)
@@ -783,7 +782,6 @@ async def shuffle_slash(interaction: discord.Interaction):
     await send_ephemeral(interaction, embed=embed, mood="shuffle")
 
 @bot.tree.command(name="cardoftheday", description="Reveal the card that guides your day.")
-@app_commands.checks.cooldown(1, 60.0)  # 1 per minute
 async def cardoftheday_slash(interaction: discord.Interaction):
     if not interaction.response.is_done():
         await interaction.response.defer(ephemeral=True)
@@ -835,7 +833,6 @@ async def cardoftheday_slash(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="read", description="Three-card reading: Situation • Obstacle • Guidance.")
-@app_commands.checks.cooldown(3, 60.0)  # 3 per minute
 @app_commands.describe(focus="Your question or focus (example: my career path)")
 async def read_slash(interaction: discord.Interaction, focus: str):
     if not interaction.response.is_done():
@@ -881,7 +878,6 @@ async def read_slash(interaction: discord.Interaction, focus: str):
 
 
 @bot.tree.command(name="threecard", description="Past • Present • Future spread.")
-@app_commands.checks.cooldown(3, 60.0)  # 3 per minute
 async def threecard_slash(interaction: discord.Interaction):
     if not interaction.response.is_done():
         await interaction.response.defer(ephemeral=True)
