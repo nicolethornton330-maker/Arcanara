@@ -109,7 +109,30 @@ def ensure_tables():
                 );
                 """
             )
-            
+            # ---- MIGRATION: older schema used "mode" instead of "tone" in history
+            cur.execute("""
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                      AND table_name = 'tarot_reading_history'
+                      AND column_name = 'mode'
+                )
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public'
+                      AND table_name = 'tarot_reading_history'
+                      AND column_name = 'tone'
+                )
+                THEN
+                    ALTER TABLE tarot_reading_history RENAME COLUMN mode TO tone;
+                END IF;
+            END $$;
+            """)
+
             # Daily Card (persist per user per day)
             cur.execute(
                 """
@@ -395,18 +418,32 @@ def set_user_settings(
 def fetch_history(user_id: int, limit: int = 10) -> List[Dict[str, Any]]:
     with db_connect() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT command, tone, payload, created_at
-                FROM tarot_reading_history
-                WHERE user_id=%s
-                ORDER BY created_at DESC
-                LIMIT %s
-                """,
-                (user_id, limit),
-            )
+            try:
+                cur.execute(
+                    """
+                    SELECT command, tone, payload, created_at
+                    FROM tarot_reading_history
+                    WHERE user_id=%s
+                    ORDER BY created_at DESC
+                    LIMIT %s
+                    """,
+                    (user_id, limit),
+                )
+            except psycopg.errors.UndefinedColumn:
+                # Older schema used 'mode' instead of 'tone'
+                cur.execute(
+                    """
+                    SELECT command, mode AS tone, payload, created_at
+                    FROM tarot_reading_history
+                    WHERE user_id=%s
+                    ORDER BY created_at DESC
+                    LIMIT %s
+                    """,
+                    (user_id, limit),
+                )
             rows = cur.fetchall() or []
     return rows
+
 
 
 def summarize_history_row(command: str, payload: Dict[str, Any]) -> str:
