@@ -12,6 +12,7 @@ import os
 import psycopg
 from datetime import datetime
 import traceback
+from zoneinfo import ZoneInfo
 from psycopg.types.json import Json
 from psycopg.rows import dict_row
 from typing import Dict, Any, List, Optional
@@ -108,6 +109,27 @@ def ensure_tables():
                 );
                 """
             )
+            
+            # Daily Card (persist per user per day)
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS tarot_daily_card (
+                    user_id BIGINT NOT NULL,
+                    day DATE NOT NULL,
+                    card_name TEXT NOT NULL,
+                    orientation TEXT NOT NULL,  -- 'Upright' or 'Reversed'
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    PRIMARY KEY (user_id, day)
+                );
+                """
+            )
+            cur.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_tarot_daily_card_day
+                ON tarot_daily_card (day);
+                """
+            )
+
             cur.execute(
                 """
                 CREATE INDEX IF NOT EXISTS idx_tarot_history_user_time
@@ -607,6 +629,40 @@ def normalize_card_name(name: str) -> str:
 # ==============================
 # HELPERS
 # ==============================
+DEFAULT_TZ = ZoneInfo("America/Chicago")
+
+def _today_local_date() -> datetime.date:
+    return datetime.now(DEFAULT_TZ).date()
+
+def get_daily_card_row(user_id: int, day) -> Optional[Dict[str, Any]]:
+    with db_connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT card_name, orientation, created_at
+                FROM tarot_daily_card
+                WHERE user_id=%s AND day=%s
+                """,
+                (user_id, day),
+            )
+            return cur.fetchone()
+
+def set_daily_card_row(user_id: int, day, card_name: str, orientation: str) -> None:
+    with db_connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO tarot_daily_card (user_id, day, card_name, orientation)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (user_id, day) DO NOTHING
+                """,
+                (user_id, day, card_name, orientation),
+            )
+        conn.commit()
+
+def find_card_by_name(name: str) -> Optional[Dict[str, Any]]:
+    return next((c for c in tarot_cards if c.get("name") == name), None)
+
 def draw_card():
     card = random.choice(tarot_cards)
     orientation = random.choice(["Upright", "Reversed"])
@@ -1069,7 +1125,20 @@ async def cardoftheday_slash(interaction: discord.Interaction):
     if not await safe_defer(interaction, ephemeral=True):
         return
 
-    card, orientation = draw_card()
+    day = _today_local_date()
+    row = get_daily_card_row(interaction.user.id, day)
+
+    if row:
+        orientation = row["orientation"]
+        card = find_card_by_name(row["card_name"])
+        if card is None:
+            # If your deck JSON changed and the name doesn't match anymore, fall back gracefully
+            card, orientation = draw_card()
+            set_daily_card_row(interaction.user.id, day, card["name"], orientation)
+    else:
+        card, orientation = draw_card()
+        set_daily_card_row(interaction.user.id, day, card["name"], orientation)
+
     tone = get_effective_tone(interaction.user.id)
     meaning = render_card_text(card, orientation, tone)
 
@@ -1103,6 +1172,7 @@ async def cardoftheday_slash(interaction: discord.Interaction):
             "orientation": orientation,
             "intention": intent_text,
             "images_enabled": bool(settings.get("images_enabled", True)),
+            "day": str(day),
         },
         settings=settings,
     )
@@ -1117,7 +1187,6 @@ async def cardoftheday_slash(interaction: discord.Interaction):
         embed.set_image(url=attach_url)
 
     await send_ephemeral(interaction, embed=embed, mood="daily", file_obj=file_obj)
-
 
 
 @bot.tree.command(name="read", description="Three-card reading: Situation • Obstacle • Guidance.")
@@ -1347,6 +1416,7 @@ async def resendwelcome_slash(interaction: discord.Interaction, where: app_comma
 
 @bot.tree.command(name="meaning", description="Show upright and reversed meanings for a card (with card photo).")
 @app_commands.describe(card="Card name (example: The Lovers)")
+@app_commands.autocomplete(card=card_name_autocomplete)
 async def meaning_slash(interaction: discord.Interaction, card: str):
     if not await safe_defer(interaction, ephemeral=True):
         return
