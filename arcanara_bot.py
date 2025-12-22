@@ -1573,24 +1573,29 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
     embed.add_field(name=f"Reversed {E['moon']} • {tone}", value=reversed_text or "—", inline=False)
     embed.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
-    # Attach ONE image: ALWAYS the upright card image
-    file_obj, attach_url = None, None
-    if settings.get("images_enabled", True):
-        try:
-            file_obj, attach_url = make_image_attachment(chosen.get("name", ""), is_reversed=False)
+    # Attach ONE image (match /cardoftheday behavior)
+file_obj, attach_url = None, None
+if settings.get("images_enabled", True):
+    try:
+        # IMPORTANT: use the canonical matched name (not the user's raw query)
+        file_obj, attach_url = make_image_attachment(chosen.get("name", ""), is_reversed=False)
 
-            # Same fallback as /cardoftheday
-            if not attach_url and file_obj is not None:
-                attach_url = f"attachment://{file_obj.filename}"
+        # Prefer attachment URLs when we have a file object
+        if file_obj is not None:
+            attach_url = f"attachment://{file_obj.filename}"
 
-        except Exception as e:
-            print(f"⚠️ make_image_attachment failed in /meaning: {type(e).__name__}: {e}")
-            file_obj, attach_url = None, None
+        # If we somehow got a non-URL path string, don't use it
+        if attach_url and not (attach_url.startswith("http") or attach_url.startswith("attachment://")):
+            attach_url = None
 
-    if attach_url:
-        embed.set_image(url=attach_url)
+    except Exception as e:
+        print(f"⚠️ make_image_attachment failed in /meaning for '{chosen.get('name','')}' : {type(e).__name__}: {e}")
+        file_obj, attach_url = None, None
 
-    await send_ephemeral(interaction, embed=embed, mood="general", file_obj=file_obj)
+if attach_url:
+    embed.set_image(url=attach_url)
+
+await send_ephemeral(interaction, embed=embed, mood="general", file_obj=file_obj)
 
 @bot.tree.command(name="clarify", description="Draw a clarifier card for your current intention.")
 async def clarify_slash(interaction: discord.Interaction):
