@@ -1347,7 +1347,6 @@ async def resendwelcome_slash(interaction: discord.Interaction, where: app_comma
 
 @bot.tree.command(name="meaning", description="Show upright and reversed meanings for a card (with card photo).")
 @app_commands.describe(card="Card name (example: The Lovers)")
-@app_commands.autocomplete(card=card_name_autocomplete)
 async def meaning_slash(interaction: discord.Interaction, card: str):
     if not await safe_defer(interaction, ephemeral=True):
         return
@@ -1384,8 +1383,8 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
         settings=settings,
     )
 
-    # --- Build embeds ---
-    embed_top = discord.Embed(
+    # Build ONE embed (same style as cardoftheday: single embed + image)
+    embed = discord.Embed(
         title=f"{E['book']} {chosen.get('name','(unknown)')} • {tone_label(tone)}",
         description="",
         color=color,
@@ -1394,35 +1393,28 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
     upright_text = clip_field(render_card_text(chosen, "Upright", tone), 1024)
     reversed_text = clip_field(render_card_text(chosen, "Reversed", tone), 1024)
 
-    embed_body = discord.Embed(
-        description=f"**{chosen.get('name','(unknown)')}** reveals both sides of its nature:",
-        color=color,
-    )
-    embed_body.add_field(name=f"Upright {E['sun']} • {tone}", value=upright_text or "—", inline=False)
-    embed_body.add_field(name=f"Reversed {E['moon']} • {tone}", value=reversed_text or "—", inline=False)
-    embed_body.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
+    embed.add_field(name=f"Upright {E['sun']} • {tone}", value=upright_text or "—", inline=False)
+    embed.add_field(name=f"Reversed {E['moon']} • {tone}", value=reversed_text or "—", inline=False)
+    embed.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
-    # --- Attach ONE image (always upright image; not reversed) ---
+    # Attach ONE image: ALWAYS the upright card image
     file_obj, attach_url = None, None
-
     if settings.get("images_enabled", True):
         try:
             file_obj, attach_url = make_image_attachment(chosen.get("name", ""), is_reversed=False)
 
-            # Same fallback pattern as /cardoftheday
+            # Same fallback as /cardoftheday
             if not attach_url and file_obj is not None:
                 attach_url = f"attachment://{file_obj.filename}"
-
-            if attach_url:
-                embed_top.set_image(url=attach_url)
 
         except Exception as e:
             print(f"⚠️ make_image_attachment failed in /meaning: {type(e).__name__}: {e}")
             file_obj, attach_url = None, None
 
-    # Send both embeds + the single attached image (if available)
-    await send_ephemeral(interaction, embeds=[embed_top, embed_body], mood="general", file_obj=file_obj)
+    if attach_url:
+        embed.set_image(url=attach_url)
 
+    await send_ephemeral(interaction, embed=embed, mood="general", file_obj=file_obj)
 
 @bot.tree.command(name="clarify", description="Draw a clarifier card for your current intention.")
 async def clarify_slash(interaction: discord.Interaction):
