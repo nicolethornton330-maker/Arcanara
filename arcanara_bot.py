@@ -121,7 +121,7 @@ def ensure_tables():
 # ==============================
 # TAROT TONES (DB-backed)
 # ==============================
-DEFAULT_TONE = "full"
+DEFAULT_TONE = "quick"
 
 TONE_SPECS = {
     "quick":  ["quick", "call_to_action"],
@@ -1316,7 +1316,7 @@ async def resendwelcome_slash(interaction: discord.Interaction, where: app_comma
             ephemeral=True,
         )
 
-@bot.tree.command(name="meaning", description="Show upright and reversed meanings for a card (using your current tone).")
+@bot.tree.command(name="meaning", description="Show upright and reversed meanings for a card (with card photo).")
 @app_commands.describe(card="Card name (example: The Lovers)")
 async def meaning_slash(interaction: discord.Interaction, card: str):
     if not await safe_defer(interaction, ephemeral=True):
@@ -1325,8 +1325,7 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
     norm_query = normalize_card_name(card)
 
     matches = [
-        c
-        for c in tarot_cards
+        c for c in tarot_cards
         if normalize_card_name(c.get("name", "")) == norm_query
         or norm_query in normalize_card_name(c.get("name", ""))
     ]
@@ -1346,6 +1345,7 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
     suit = chosen.get("suit") or "Major Arcana"
     color = suit_color(suit)
 
+    # Log lookup (only if opted in)
     log_history_if_opted_in(
         interaction.user.id,
         command="meaning",
@@ -1354,23 +1354,12 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
         settings=settings,
     )
 
-    file_obj, attach_url = None, None
-    if settings.get("images_enabled", True):
-        try:
-            file_obj, attach_url = make_image_attachment(chosen.get("name", ""), is_reversed=False)
-            if not attach_url and file_obj is not None:
-                attach_url = f"attachment://{file_obj.filename}"
-        except Exception as e:
-            print(f"⚠️ make_image_attachment failed: {type(e).__name__}: {e}")
-            file_obj, attach_url = None, None
-
+    # --- Build embeds ---
     embed_top = discord.Embed(
         title=f"{E['book']} {chosen.get('name','(unknown)')} • {tone_label(tone)}",
         description="",
         color=color,
     )
-    if attach_url:
-        embed_top.set_image(url=attach_url)
 
     upright_text = clip_field(render_card_text(chosen, "Upright", tone), 1024)
     reversed_text = clip_field(render_card_text(chosen, "Reversed", tone), 1024)
@@ -1383,6 +1372,18 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
     embed_body.add_field(name=f"Reversed {E['moon']} • {tone}", value=reversed_text or "—", inline=False)
     embed_body.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
+    # --- Attach ONE image (always the card image; not reversed) ---
+    file_obj = None
+    if settings.get("images_enabled", True):
+        try:
+            file_obj, _ = make_image_attachment(chosen.get("name", ""), is_reversed=False)
+            if file_obj is not None:
+                embed_top.set_image(url=f"attachment://{file_obj.filename}")
+        except Exception as e:
+            print(f"⚠️ make_image_attachment failed in /meaning: {type(e).__name__}: {e}")
+            file_obj = None
+
+    # Send both embeds + the single attached image (if available)
     await send_ephemeral(interaction, embeds=[embed_top, embed_body], mood="general", file_obj=file_obj)
 
 
