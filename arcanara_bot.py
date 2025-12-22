@@ -109,30 +109,7 @@ def ensure_tables():
                 );
                 """
             )
-            # ---- MIGRATION: older schema used "mode" instead of "tone" in history
-            cur.execute("""
-            DO $$
-            BEGIN
-                IF EXISTS (
-                    SELECT 1
-                    FROM information_schema.columns
-                    WHERE table_schema = 'public'
-                      AND table_name = 'tarot_reading_history'
-                      AND column_name = 'mode'
-                )
-                AND NOT EXISTS (
-                    SELECT 1
-                    FROM information_schema.columns
-                    WHERE table_schema = 'public'
-                      AND table_name = 'tarot_reading_history'
-                      AND column_name = 'tone'
-                )
-                THEN
-                    ALTER TABLE tarot_reading_history RENAME COLUMN mode TO tone;
-                END IF;
-            END $$;
-            """)
-
+            
             # Daily Card (persist per user per day)
             cur.execute(
                 """
@@ -418,32 +395,18 @@ def set_user_settings(
 def fetch_history(user_id: int, limit: int = 10) -> List[Dict[str, Any]]:
     with db_connect() as conn:
         with conn.cursor() as cur:
-            try:
-                cur.execute(
-                    """
-                    SELECT command, tone, payload, created_at
-                    FROM tarot_reading_history
-                    WHERE user_id=%s
-                    ORDER BY created_at DESC
-                    LIMIT %s
-                    """,
-                    (user_id, limit),
-                )
-            except psycopg.errors.UndefinedColumn:
-                # Older schema used 'mode' instead of 'tone'
-                cur.execute(
-                    """
-                    SELECT command, mode AS tone, payload, created_at
-                    FROM tarot_reading_history
-                    WHERE user_id=%s
-                    ORDER BY created_at DESC
-                    LIMIT %s
-                    """,
-                    (user_id, limit),
-                )
+            cur.execute(
+                """
+                SELECT command, tone, payload, created_at
+                FROM tarot_reading_history
+                WHERE user_id=%s
+                ORDER BY created_at DESC
+                LIMIT %s
+                """,
+                (user_id, limit),
+            )
             rows = cur.fetchall() or []
     return rows
-
 
 
 def summarize_history_row(command: str, payload: Dict[str, Any]) -> str:
@@ -982,33 +945,12 @@ async def send_ephemeral(
     content: Optional[str] = None,
     mood: str = "general",
     file_obj: Optional[discord.File] = None,
-    hybrid: bool = True,
 ):
-    """
-    Ephemeral sender with:
-      - ack-safe handling (response vs followup)
-      - optional file attachment
-      - "practical hybrid" mode: a short in-character line as plain text above the embed
-    """
     def _send_kwargs(**kw):
         # Only include file if it's real (discord.py chokes on file=None)
         if file_obj is not None:
             kw["file"] = file_obj
         return kw
-
-    def _hybridize_content(existing: Optional[str]) -> Optional[str]:
-        if not hybrid or (embed is None and not embeds):
-            return existing
-
-        line = random.choice(in_character_lines.get(mood, in_character_lines["general"]))
-        combined = f"*{line}*\n{existing}" if existing else f"*{line}*"
-
-        # Keep a safety buffer under Discord's 2000 char limit
-        if len(combined) > 1900:
-            combined = combined[:1899] + "…"
-        return combined
-
-    content = _hybridize_content(content)
 
     try:
         # If already deferred/answered, use followup
@@ -1017,64 +959,20 @@ async def send_ephemeral(
         else:
             send_fn = interaction.followup.send
 
-        def _strip_attachment_media(e: discord.Embed) -> discord.Embed:
-            """Remove attachment:// image/thumbnail URLs so embeds don't show broken media on retry."""
-            try:
-                if getattr(e, "image", None) and getattr(e.image, "url", None):
-                    if str(e.image.url).startswith("attachment://"):
-                        e.set_image(url="")
-                if getattr(e, "thumbnail", None) and getattr(e.thumbnail, "url", None):
-                    if str(e.thumbnail.url).startswith("attachment://"):
-                        e.set_thumbnail(url="")
-            except Exception:
-                pass
-            return e
-
-        async def _safe_send(**kw):
-            """Send and, if file attachment fails due to missing permissions, retry without the file."""
-            try:
-                await send_fn(**kw)
-                return
-            except discord.Forbidden:
-                # Often caused by missing Attach Files when sending images
-                if file_obj is None:
-                    raise
-            except discord.HTTPException as ex:
-                # Missing permissions is usually 50013
-                if file_obj is None or getattr(ex, "code", None) != 50013:
-                    raise
-
-            # Retry without the file and add a helpful note
-            note = f"{E['warn']} I couldn’t attach the card image here (missing **Attach Files** permission)."
-            existing = kw.get("content")
-            kw["content"] = f"{existing}\n{note}" if existing else note
-
-            if kw.get("embed") is not None:
-                kw["embed"] = _strip_attachment_media(kw["embed"])
-            if kw.get("embeds") is not None:
-                kw["embeds"] = [_strip_attachment_media(e) for e in kw["embeds"]]
-
-            kw.pop("file", None)
-            await send_fn(**kw)
-
         if embed is not None:
-            # Hybrid: opener line in content; keep embed clean
-            if not hybrid:
-                embed = _prepend_in_character(embed, mood)
-            await _safe_send(**_send_kwargs(content=content, embed=embed, ephemeral=True))
+            embed = _prepend_in_character(embed, mood)
+            await send_fn(**_send_kwargs(content=content, embed=embed, ephemeral=True))
             return
 
         if embeds:
             embeds = list(embeds)
-            if not hybrid:
-                embeds[0] = _prepend_in_character(embeds[0], mood)
-            await _safe_send(**_send_kwargs(content=content, embeds=embeds, ephemeral=True))
+            embeds[0] = _prepend_in_character(embeds[0], mood)
+            await send_fn(**_send_kwargs(content=content, embeds=embeds, ephemeral=True))
             return
 
-        # content-only messages
-        await _safe_send(**_send_kwargs(content=content or "—", ephemeral=True))
-
-    except (discord.NotFound, NotFound):
+        await send_fn(**_send_kwargs(content=content or "—", ephemeral=True))
+        
+    except (discord.NotFound, NotFound) as e:
         # Interaction expired / unknown; nothing we can do
         return
 
@@ -1083,18 +981,14 @@ async def send_ephemeral(
         if getattr(e, "code", None) == 40060:
             try:
                 if embed is not None:
-                    if not hybrid:
-                        embed = _prepend_in_character(embed, mood)
+                    embed = _prepend_in_character(embed, mood)
                     await interaction.followup.send(**_send_kwargs(content=content, embed=embed, ephemeral=True))
                     return
-
                 if embeds:
                     embeds = list(embeds)
-                    if not hybrid:
-                        embeds[0] = _prepend_in_character(embeds[0], mood)
+                    embeds[0] = _prepend_in_character(embeds[0], mood)
                     await interaction.followup.send(**_send_kwargs(content=content, embeds=embeds, ephemeral=True))
                     return
-
                 await interaction.followup.send(**_send_kwargs(content=content or "—", ephemeral=True))
                 return
             except Exception:
