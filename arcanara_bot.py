@@ -982,12 +982,33 @@ async def send_ephemeral(
     content: Optional[str] = None,
     mood: str = "general",
     file_obj: Optional[discord.File] = None,
+    hybrid: bool = True,
 ):
+    """
+    Ephemeral sender with:
+      - ack-safe handling (response vs followup)
+      - optional file attachment
+      - "practical hybrid" mode: a short in-character line as plain text above the embed
+    """
     def _send_kwargs(**kw):
         # Only include file if it's real (discord.py chokes on file=None)
         if file_obj is not None:
             kw["file"] = file_obj
         return kw
+
+    def _hybridize_content(existing: Optional[str]) -> Optional[str]:
+        if not hybrid or (embed is None and not embeds):
+            return existing
+
+        line = random.choice(in_character_lines.get(mood, in_character_lines["general"]))
+        combined = f"*{line}*\n{existing}" if existing else f"*{line}*"
+
+        # Keep a safety buffer under Discord's 2000 char limit
+        if len(combined) > 1900:
+            combined = combined[:1899] + "…"
+        return combined
+
+    content = _hybridize_content(content)
 
     try:
         # If already deferred/answered, use followup
@@ -997,19 +1018,23 @@ async def send_ephemeral(
             send_fn = interaction.followup.send
 
         if embed is not None:
-            embed = _prepend_in_character(embed, mood)
+            # Hybrid: opener line in content; keep embed clean
+            if not hybrid:
+                embed = _prepend_in_character(embed, mood)
             await send_fn(**_send_kwargs(content=content, embed=embed, ephemeral=True))
             return
 
         if embeds:
             embeds = list(embeds)
-            embeds[0] = _prepend_in_character(embeds[0], mood)
+            if not hybrid:
+                embeds[0] = _prepend_in_character(embeds[0], mood)
             await send_fn(**_send_kwargs(content=content, embeds=embeds, ephemeral=True))
             return
 
+        # content-only messages
         await send_fn(**_send_kwargs(content=content or "—", ephemeral=True))
-        
-    except (discord.NotFound, NotFound) as e:
+
+    except (discord.NotFound, NotFound):
         # Interaction expired / unknown; nothing we can do
         return
 
@@ -1018,14 +1043,18 @@ async def send_ephemeral(
         if getattr(e, "code", None) == 40060:
             try:
                 if embed is not None:
-                    embed = _prepend_in_character(embed, mood)
+                    if not hybrid:
+                        embed = _prepend_in_character(embed, mood)
                     await interaction.followup.send(**_send_kwargs(content=content, embed=embed, ephemeral=True))
                     return
+
                 if embeds:
                     embeds = list(embeds)
-                    embeds[0] = _prepend_in_character(embeds[0], mood)
+                    if not hybrid:
+                        embeds[0] = _prepend_in_character(embeds[0], mood)
                     await interaction.followup.send(**_send_kwargs(content=content, embeds=embeds, ephemeral=True))
                     return
+
                 await interaction.followup.send(**_send_kwargs(content=content or "—", ephemeral=True))
                 return
             except Exception:
