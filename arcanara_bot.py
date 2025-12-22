@@ -487,6 +487,35 @@ def load_tarot_json():
 tarot_cards = load_tarot_json()
 print(f"✅ Loaded {len(tarot_cards)} tarot cards successfully!")
 
+# ==============================
+# AUTOCOMPLETE: CARD NAMES
+# ==============================
+CARD_NAMES: List[str] = sorted({c.get("name", "") for c in tarot_cards if c.get("name")})
+
+def _rank_card_matches(query: str, names: List[str], limit: int = 25) -> List[str]:
+    q = (query or "").strip().lower()
+    if not q:
+        return names[:limit]
+
+    starts = []
+    contains = []
+    for n in names:
+        nl = n.lower()
+        if nl.startswith(q):
+            starts.append(n)
+        elif q in nl:
+            contains.append(n)
+
+    # Startswith matches first, then contains matches
+    results = starts + contains
+    return results[:limit]
+
+async def card_name_autocomplete(
+    interaction: discord.Interaction,
+    current: str,
+) -> List[app_commands.Choice[str]]:
+    matches = _rank_card_matches(current, CARD_NAMES, limit=25)
+    return [app_commands.Choice(name=m, value=m) for m in matches]
 
 # ==============================
 # SEEKER MEMORY SYSTEM
@@ -1318,6 +1347,7 @@ async def resendwelcome_slash(interaction: discord.Interaction, where: app_comma
 
 @bot.tree.command(name="meaning", description="Show upright and reversed meanings for a card (with card photo).")
 @app_commands.describe(card="Card name (example: The Lovers)")
+@app_commands.autocomplete(card=card_name_autocomplete)
 async def meaning_slash(interaction: discord.Interaction, card: str):
     if not await safe_defer(interaction, ephemeral=True):
         return
