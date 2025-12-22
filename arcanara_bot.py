@@ -435,62 +435,6 @@ def summarize_history_row(command: str, payload: Dict[str, Any]) -> str:
         return "Saved reading."
 
 
-@bot.tree.command(name="history", description="View your recent Arcanara readings (opt-in only).")
-@app_commands.describe(limit="How many entries to show (max 20)")
-async def history_slash(interaction: discord.Interaction, limit: Optional[int] = 10):
-    if not await safe_defer(interaction, ephemeral=True):
-        return
-
-    limit = 10 if limit is None else max(1, min(int(limit), 20))
-
-    settings = get_user_settings(interaction.user.id)
-    if not settings.get("history_opt_in", False):
-        await send_ephemeral(
-            interaction,
-            content=(
-                f"{E['warn']} Your history is currently **off**.\n\n"
-                "Turn it on with `/settings history:on` if you want Arcanara to remember your readings.\n"
-                "You can delete it any time with `/forgetme`."
-            ),
-            mood="general",
-        )
-        return
-
-    rows = fetch_history(interaction.user.id, limit=limit)
-    if not rows:
-        await send_ephemeral(
-            interaction,
-            content="No saved readings yet. Once history is on, I’ll remember your pulls here.",
-            mood="general",
-        )
-        return
-
-    lines: List[str] = []
-    for r in rows:
-        cmd = r.get("command", "—")
-        tone = r.get("tone", "full")
-        payload = r.get("payload", {}) or {}
-        created_at = r.get("created_at")
-
-        # Discord relative time formatting: <t:UNIX:R>
-        stamp = ""
-        if hasattr(created_at, "timestamp"):
-            stamp = f"<t:{int(created_at.timestamp())}:R>"
-
-        summary = summarize_history_row(cmd, payload)
-        lines.append(f"• {stamp} **/{cmd}** ({tone}) — {summary}")
-
-    text = _clip("\n".join(lines), max_len=3800)
-
-    embed = discord.Embed(
-        title=f"{E['book']} Your Recent Readings",
-        description=text,
-        color=0x6A5ACD,
-    )
-    embed.set_footer(text="History is opt-in • Use /forgetme to delete stored data.")
-
-    await send_ephemeral(interaction, embed=embed, mood="general")
-
 def log_history_if_opted_in(
     user_id: int,
     command: str,
@@ -787,7 +731,7 @@ def build_onboarding_messages(guild: discord.Guild) -> List[str]:
         "• **/celtic** — full 10-card Celtic Cross\n"
         "• **/clarify** — one extra card for your current intention\n"
         "• **/meaning** — look up any card (upright + reversed)\n"
-        " **/history** — reflect on past readings\n"
+        "• **/history** — reflect on past readings\n"
         "• **/mystery** → **/reveal** — dramatic pause included\n\n"
 
         "🔒 **Privacy**\n"
@@ -1035,6 +979,61 @@ async def shuffle_slash(interaction: discord.Interaction):
 
     await send_ephemeral(interaction, embeds=[embed], mood="shuffle")
 
+@bot.tree.command(name="history", description="View your recent Arcanara readings (opt-in only).")
+@app_commands.describe(limit="How many entries to show (max 20)")
+async def history_slash(interaction: discord.Interaction, limit: Optional[int] = 10):
+    if not await safe_defer(interaction, ephemeral=True):
+        return
+
+    limit = 10 if limit is None else max(1, min(int(limit), 20))
+
+    settings = get_user_settings(interaction.user.id)
+    if not settings.get("history_opt_in", False):
+        await send_ephemeral(
+            interaction,
+            content=(
+                f"{E['warn']} Your history is currently **off**.\n\n"
+                "Turn it on with `/settings history:on` if you want Arcanara to remember your readings.\n"
+                "You can delete it any time with `/forgetme`."
+            ),
+            mood="general",
+        )
+        return
+
+    rows = fetch_history(interaction.user.id, limit=limit)
+    if not rows:
+        await send_ephemeral(
+            interaction,
+            content="No saved readings yet. Once history is on, I’ll remember your pulls here.",
+            mood="general",
+        )
+        return
+
+    lines: List[str] = []
+    for r in rows:
+        cmd = r.get("command", "—")
+        tone = r.get("tone", "full")
+        payload = r.get("payload", {}) or {}
+        created_at = r.get("created_at")
+
+        # Discord relative time formatting: <t:UNIX:R>
+        stamp = ""
+        if hasattr(created_at, "timestamp"):
+            stamp = f"<t:{int(created_at.timestamp())}:R>"
+
+        summary = summarize_history_row(cmd, payload)
+        lines.append(f"• {stamp} /{cmd} ({tone}) — {summary}")
+
+    text = _clip("\n".join(lines), max_len=3800)
+
+    embed = discord.Embed(
+        title=f"{E['book']} Your Recent Readings",
+        description=text,
+        color=0x6A5ACD,
+    )
+    embed.set_footer(text="History is opt-in • Use /forgetme to delete stored data.")
+
+    await send_ephemeral(interaction, embed=embed, mood="general")
 
 @bot.tree.command(name="cardoftheday", description="Reveal the card that guides your day.")
 async def cardoftheday_slash(interaction: discord.Interaction):
