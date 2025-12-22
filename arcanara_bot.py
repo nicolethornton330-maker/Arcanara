@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 import os
 import psycopg
+from datetime import datetime
 import traceback
 from psycopg.types.json import Json
 from psycopg.rows import dict_row
@@ -369,6 +370,126 @@ def set_user_settings(
 
     return {"history_opt_in": history_opt_in, "images_enabled": images_enabled}
 
+def fetch_history(user_id: int, limit: int = 10) -> List[Dict[str, Any]]:
+    with db_connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT command, tone, payload, created_at
+                FROM tarot_reading_history
+                WHERE user_id=%s
+                ORDER BY created_at DESC
+                LIMIT %s
+                """,
+                (user_id, limit),
+            )
+            rows = cur.fetchall() or []
+    return rows
+
+
+def summarize_history_row(command: str, payload: Dict[str, Any]) -> str:
+    """Turn stored payload into a short human-readable line."""
+    try:
+        if command == "cardoftheday":
+            card = payload.get("card", "Unknown")
+            orientation = payload.get("orientation", "")
+            intention = payload.get("intention")
+            base = f"**{card}** ({orientation})"
+            if intention:
+                base += f" — *{intention}*"
+            return base
+
+        if command in ("read", "threecard", "celtic"):
+            cards = payload.get("cards", []) or []
+            # cards elements look like: {"position": "...", "name": "...", "orientation": "..."}
+            parts = []
+            for c in cards[:10]:
+                pos = c.get("position", "—")
+                name = c.get("name", "Unknown")
+                ori = c.get("orientation", "")
+                parts.append(f"{pos}: {name} ({ori})")
+            return "; ".join(parts) if parts else "Spread saved (no card details)."
+
+        if command == "meaning":
+            q = payload.get("query", "—")
+            matched = payload.get("matched", "—")
+            return f"Meaning lookup — **{matched}** (query: *{q}*)"
+
+        if command == "clarify":
+            card = (payload.get("card") or {}).get("name", "Unknown")
+            ori = (payload.get("card") or {}).get("orientation", "")
+            intention = payload.get("intention")
+            base = f"Clarifier — **{card}** ({ori})"
+            if intention:
+                base += f" — *{intention}*"
+            return base
+
+        if command == "reveal":
+            card = (payload.get("card") or {}).get("name", "Unknown")
+            ori = (payload.get("card") or {}).get("orientation", "")
+            return f"Mystery reveal — **{card}** ({ori})"
+
+        # fallback
+        return "Saved reading."
+    except Exception:
+        return "Saved reading."
+
+
+@bot.tree.command(name="history", description="View your recent Arcanara readings (opt-in only).")
+@app_commands.describe(limit="How many entries to show (max 20)")
+async def history_slash(interaction: discord.Interaction, limit: Optional[int] = 10):
+    if not await safe_defer(interaction, ephemeral=True):
+        return
+
+    limit = 10 if limit is None else max(1, min(int(limit), 20))
+
+    settings = get_user_settings(interaction.user.id)
+    if not settings.get("history_opt_in", False):
+        await send_ephemeral(
+            interaction,
+            content=(
+                f"{E['warn']} Your history is currently **off**.\n\n"
+                "Turn it on with `/settings history:on` if you want Arcanara to remember your readings.\n"
+                "You can delete it any time with `/forgetme`."
+            ),
+            mood="general",
+        )
+        return
+
+    rows = fetch_history(interaction.user.id, limit=limit)
+    if not rows:
+        await send_ephemeral(
+            interaction,
+            content="No saved readings yet. Once history is on, I’ll remember your pulls here.",
+            mood="general",
+        )
+        return
+
+    lines: List[str] = []
+    for r in rows:
+        cmd = r.get("command", "—")
+        tone = r.get("tone", "full")
+        payload = r.get("payload", {}) or {}
+        created_at = r.get("created_at")
+
+        # Discord relative time formatting: <t:UNIX:R>
+        stamp = ""
+        if hasattr(created_at, "timestamp"):
+            stamp = f"<t:{int(created_at.timestamp())}:R>"
+
+        summary = summarize_history_row(cmd, payload)
+        lines.append(f"• {stamp} **/{cmd}** ({tone}) — {summary}")
+
+    text = _clip("\n".join(lines), max_len=3800)
+
+    embed = discord.Embed(
+        title=f"{E['book']} Your Recent Readings",
+        description=text,
+        color=0x6A5ACD,
+    )
+    embed.set_footer(text="History is opt-in • Use /forgetme to delete stored data.")
+
+    await send_ephemeral(interaction, embed=embed, mood="general")
 
 def log_history_if_opted_in(
     user_id: int,
@@ -666,6 +787,7 @@ def build_onboarding_messages(guild: discord.Guild) -> List[str]:
         "• **/celtic** — full 10-card Celtic Cross\n"
         "• **/clarify** — one extra card for your current intention\n"
         "• **/meaning** — look up any card (upright + reversed)\n"
+        " **/history** — reflect on past readings\n"
         "• **/mystery** → **/reveal** — dramatic pause included\n\n"
 
         "🔒 **Privacy**\n"
