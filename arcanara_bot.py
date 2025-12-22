@@ -169,29 +169,29 @@ def ensure_tables():
 DEFAULT_TONE = "quick"
 
 TONE_SPECS = {
-    "quick":  ["quick", "call_to_action"],
-    "poetic": ["poetic_hint", "meaning", "mantra", "call_to_action"],
+    "Summary":  ["quick", "call_to_action"],
+    "Poetic": ["poetic_hint", "meaning", "mantra", "call_to_action"],
 
-    "direct": ["reader_voice", "tell", "do_dont", "prescription", "watch_for", "pitfall", "questions", "next_24h", "call_to_action"],
-    "shadow": ["reader_voice", "tell", "shadow", "watch_for", "pitfall", "questions", "call_to_action"],
+    "Direct": ["reader_voice", "tell", "do_dont", "prescription", "watch_for", "pitfall", "questions", "next_24h", "call_to_action"],
+    "Shadow": ["reader_voice", "tell", "shadow", "watch_for", "pitfall", "questions", "call_to_action"],
 
-    "love":   ["reader_voice", "tell", "relationships", "green_red", "pitfall", "questions", "call_to_action"],
-    "work":   ["reader_voice", "tell", "work", "prescription", "watch_for", "next_24h", "call_to_action"],
-    "money":  ["reader_voice", "tell", "money", "prescription", "watch_for", "next_24h", "call_to_action"],
+    "Romance":   ["reader_voice", "tell", "relationships", "green_red", "pitfall", "questions", "call_to_action"],
+    "Career":   ["reader_voice", "tell", "work", "prescription", "watch_for", "next_24h", "call_to_action"],
+    "Finance":  ["reader_voice", "tell", "money", "prescription", "watch_for", "next_24h", "call_to_action"],
 
-    "full":   ["reader_voice", "tell", "meaning", "mantra", "do_dont", "prescription", "watch_for", "pitfall",
+    "Deep":   ["reader_voice", "tell", "meaning", "mantra", "do_dont", "prescription", "watch_for", "pitfall",
                "shadow", "green_red", "questions", "next_24h", "call_to_action"],
 }
 
 TONE_LABELS = {
-    "full":   "Full Spectrum (deep + practical)",
-    "direct": "Direct (straight talk, no fluff)",
-    "shadow": "Shadow Work (truth + integration)",
-    "poetic": "Poetic (symbolic, soft edges)",
-    "quick":  "Quick Hit (one clear message)",
-    "love":   "Love Lens (people + patterns)",
-    "work":   "Work Lens (purpose + friction)",
-    "money":  "Money Lens (resources + decisions)",
+    "Deep":   "Full Spectrum (deep + practical)",
+    "Direct": "Direct (straight talk, no fluff)",
+    "Shadow": "Shadow Work (truth + integration)",
+    "Poetic": "Poetic (symbolic, soft edges)",
+    "Summary":  "Quick Hit (one clear message)",
+    "Romance":   "Love Lens (people + patterns)",
+    "Career":   "Work Lens (purpose + friction)",
+    "Finance":  "Money Lens (resources + decisions)",
 }
 
 def normalize_tone(tone: str) -> str:
