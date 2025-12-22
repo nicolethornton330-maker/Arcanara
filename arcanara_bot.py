@@ -1017,22 +1017,62 @@ async def send_ephemeral(
         else:
             send_fn = interaction.followup.send
 
+        def _strip_attachment_media(e: discord.Embed) -> discord.Embed:
+            """Remove attachment:// image/thumbnail URLs so embeds don't show broken media on retry."""
+            try:
+                if getattr(e, "image", None) and getattr(e.image, "url", None):
+                    if str(e.image.url).startswith("attachment://"):
+                        e.set_image(url="")
+                if getattr(e, "thumbnail", None) and getattr(e.thumbnail, "url", None):
+                    if str(e.thumbnail.url).startswith("attachment://"):
+                        e.set_thumbnail(url="")
+            except Exception:
+                pass
+            return e
+
+        async def _safe_send(**kw):
+            """Send and, if file attachment fails due to missing permissions, retry without the file."""
+            try:
+                await send_fn(**kw)
+                return
+            except discord.Forbidden:
+                # Often caused by missing Attach Files when sending images
+                if file_obj is None:
+                    raise
+            except discord.HTTPException as ex:
+                # Missing permissions is usually 50013
+                if file_obj is None or getattr(ex, "code", None) != 50013:
+                    raise
+
+            # Retry without the file and add a helpful note
+            note = f"{E['warn']} I couldn’t attach the card image here (missing **Attach Files** permission)."
+            existing = kw.get("content")
+            kw["content"] = f"{existing}\n{note}" if existing else note
+
+            if kw.get("embed") is not None:
+                kw["embed"] = _strip_attachment_media(kw["embed"])
+            if kw.get("embeds") is not None:
+                kw["embeds"] = [_strip_attachment_media(e) for e in kw["embeds"]]
+
+            kw.pop("file", None)
+            await send_fn(**kw)
+
         if embed is not None:
             # Hybrid: opener line in content; keep embed clean
             if not hybrid:
                 embed = _prepend_in_character(embed, mood)
-            await send_fn(**_send_kwargs(content=content, embed=embed, ephemeral=True))
+            await _safe_send(**_send_kwargs(content=content, embed=embed, ephemeral=True))
             return
 
         if embeds:
             embeds = list(embeds)
             if not hybrid:
                 embeds[0] = _prepend_in_character(embeds[0], mood)
-            await send_fn(**_send_kwargs(content=content, embeds=embeds, ephemeral=True))
+            await _safe_send(**_send_kwargs(content=content, embeds=embeds, ephemeral=True))
             return
 
         # content-only messages
-        await send_fn(**_send_kwargs(content=content or "—", ephemeral=True))
+        await _safe_send(**_send_kwargs(content=content or "—", ephemeral=True))
 
     except (discord.NotFound, NotFound):
         # Interaction expired / unknown; nothing we can do
@@ -1547,17 +1587,8 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
             print(f"⚠️ make_image_attachment failed in /meaning: {type(e).__name__}: {e}")
             file_obj, attach_url = None, None
 
-        # If images are enabled but we couldn't attach art, let the user know (no silent failure)
-    if settings.get("images_enabled", True) and not attach_url:
-        embed.description = (
-            f"{E['warn']} Card art wasn't available for this lookup. "
-            "If this keeps happening, check that images are deployed and Arcanara has **Attach Files** permission."
-        )
-
-if attach_url:
-        # Set both image + thumbnail so card art shows reliably across clients
+    if attach_url:
         embed.set_image(url=attach_url)
-        embed.set_thumbnail(url=attach_url)
 
     await send_ephemeral(interaction, embed=embed, mood="general", file_obj=file_obj)
 
