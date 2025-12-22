@@ -1544,6 +1544,8 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
         return
 
     chosen = matches[0]
+    chosen_name = chosen.get("name", "").strip()
+
     tone = get_effective_tone(interaction.user.id)
     settings = get_user_settings(interaction.user.id)
 
@@ -1555,13 +1557,13 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
         interaction.user.id,
         command="meaning",
         tone=tone,
-        payload={"query": card, "matched": chosen.get("name", ""), "shown": ["Upright", "Reversed"]},
+        payload={"query": card, "matched": chosen_name, "shown": ["Upright", "Reversed"]},
         settings=settings,
     )
 
-    # Build ONE embed (same style as cardoftheday: single embed + image)
+    # Build ONE embed (single embed + image, like cardoftheday)
     embed = discord.Embed(
-        title=f"{E['book']} {chosen.get('name','(unknown)')} • {tone_label(tone)}",
+        title=f"{E['book']} {chosen_name or '(unknown)'} • {tone_label(tone)}",
         description="",
         color=color,
     )
@@ -1573,29 +1575,16 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
     embed.add_field(name=f"Reversed {E['moon']} • {tone}", value=reversed_text or "—", inline=False)
     embed.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
-    # Attach ONE image (match /cardoftheday behavior)
-file_obj, attach_url = None, None
-if settings.get("images_enabled", True):
-    try:
-        # IMPORTANT: use the canonical matched name (not the user's raw query)
-        file_obj, attach_url = make_image_attachment(chosen.get("name", ""), is_reversed=False)
+    # --- Image: same attachment style as cardoftheday ---
+    file_obj, attach_url = make_image_attachment(chosen_name)
 
-        # Prefer attachment URLs when we have a file object
-        if file_obj is not None:
-            attach_url = f"attachment://{file_obj.filename}"
+    if file_obj:
+        embed.set_image(url=f"attachment://{file_obj.filename}")
+        await send_ephemeral(interaction, embed=embed, mood="general", file_obj=file_obj)
+    else:
+        # No image found; still send the meaning
+        await send_ephemeral(interaction, embed=embed, mood="general")
 
-        # If we somehow got a non-URL path string, don't use it
-        if attach_url and not (attach_url.startswith("http") or attach_url.startswith("attachment://")):
-            attach_url = None
-
-    except Exception as e:
-        print(f"⚠️ make_image_attachment failed in /meaning for '{chosen.get('name','')}' : {type(e).__name__}: {e}")
-        file_obj, attach_url = None, None
-
-if attach_url:
-    embed.set_image(url=attach_url)
-
-await send_ephemeral(interaction, embed=embed, mood="general", file_obj=file_obj)
 
 @bot.tree.command(name="clarify", description="Draw a clarifier card for your current intention.")
 async def clarify_slash(interaction: discord.Interaction):
