@@ -1402,16 +1402,23 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
     embed_body.add_field(name=f"Reversed {E['moon']} • {tone}", value=reversed_text or "—", inline=False)
     embed_body.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
-    # --- Attach ONE image (always the card image; not reversed) ---
-    file_obj = None
+    # --- Attach ONE image (always upright image; not reversed) ---
+    file_obj, attach_url = None, None
+
     if settings.get("images_enabled", True):
         try:
-            file_obj, _ = make_image_attachment(chosen.get("name", ""), is_reversed=False)
-            if file_obj is not None:
-                embed_top.set_image(url=f"attachment://{file_obj.filename}")
+            file_obj, attach_url = make_image_attachment(chosen.get("name", ""), is_reversed=False)
+
+            # Same fallback pattern as /cardoftheday
+            if not attach_url and file_obj is not None:
+                attach_url = f"attachment://{file_obj.filename}"
+
+            if attach_url:
+                embed_top.set_image(url=attach_url)
+
         except Exception as e:
             print(f"⚠️ make_image_attachment failed in /meaning: {type(e).__name__}: {e}")
-            file_obj = None
+            file_obj, attach_url = None, None
 
     # Send both embeds + the single attached image (if available)
     await send_ephemeral(interaction, embeds=[embed_top, embed_body], mood="general", file_obj=file_obj)
