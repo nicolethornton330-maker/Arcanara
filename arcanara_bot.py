@@ -1547,8 +1547,17 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
             print(f"⚠️ make_image_attachment failed in /meaning: {type(e).__name__}: {e}")
             file_obj, attach_url = None, None
 
-    if attach_url:
+        # If images are enabled but we couldn't attach art, let the user know (no silent failure)
+    if settings.get("images_enabled", True) and not attach_url:
+        embed.description = (
+            f"{E['warn']} Card art wasn't available for this lookup. "
+            "If this keeps happening, check that images are deployed and Arcanara has **Attach Files** permission."
+        )
+
+if attach_url:
+        # Set both image + thumbnail so card art shows reliably across clients
         embed.set_image(url=attach_url)
+        embed.set_thumbnail(url=attach_url)
 
     await send_ephemeral(interaction, embed=embed, mood="general", file_obj=file_obj)
 
