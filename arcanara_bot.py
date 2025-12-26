@@ -596,8 +596,13 @@ async def card_name_autocomplete(
     interaction: discord.Interaction,
     current: str,
 ) -> List[app_commands.Choice[str]]:
-    matches = _rank_card_matches(current, CARD_NAMES, limit=25)
-    return [app_commands.Choice(name=m, value=m) for m in matches]
+    try:
+        matches = _rank_card_matches(current, CARD_NAMES, limit=25)
+        return [app_commands.Choice(name=m, value=m) for m in matches]
+    except Exception as e:
+        print(f"⚠️ autocomplete failed: {type(e).__name__}: {e}")
+        return []
+
 
 # ==============================
 # SEEKER MEMORY SYSTEM
