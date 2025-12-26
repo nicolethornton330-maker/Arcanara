@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 import discord
 from discord.ext import commands
@@ -143,7 +144,7 @@ def ensure_tables():
 # ==============================
 # TAROT TONES (DB-backed)
 # ==============================
-DEFAULT_TONE = "quick"
+DEFAULT_TONE = "poetic"
 
 TONE_SPECS = {
     "quick":  ["quick", "call_to_action"],
