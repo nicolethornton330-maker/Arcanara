@@ -792,6 +792,10 @@ def _chunk_lines(lines: List[str], max_len: int = 950) -> List[str]:
     
 async def safe_defer(interaction: discord.Interaction, *, ephemeral: bool = True) -> bool:
     """Defer safely. Returns False if the interaction is no longer valid."""
+    # Autocomplete interactions must NOT be deferred
+    if interaction.type == discord.InteractionType.autocomplete:
+        return True
+
     try:
         if not interaction.response.is_done():
             await interaction.response.defer(ephemeral=ephemeral)
@@ -804,7 +808,6 @@ async def safe_defer(interaction: discord.Interaction, *, ephemeral: bool = True
         if getattr(e, "code", None) == 40060:
             return True
         raise
-
 
 # ==============================
 # ONBOARDING (patched: /tone + /shuffle language, no /tone or /reset)
@@ -1087,6 +1090,12 @@ async def on_ready():
 
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    # ✅ Never respond to autocomplete interactions
+    if interaction.type == discord.InteractionType.autocomplete:
+        orig = getattr(error, "original", error)
+        print(f"⚠️ Autocomplete error: {type(orig).__name__}: {orig}")
+        return
+
     orig = getattr(error, "original", error)
     print(f"⚠️ Slash command error: {type(error).__name__}: {error}")
     print(f"⚠️ Original: {type(orig).__name__}: {orig}")
@@ -1100,7 +1109,6 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
         )
     except Exception as e:
         print(f"⚠️ Failed to send error message: {type(e).__name__}: {e}")
-
 
 # ==============================
 # SLASH COMMANDS (EPHEMERAL)
