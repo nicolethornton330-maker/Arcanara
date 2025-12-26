@@ -7,8 +7,22 @@
       "meaning": "Two symbolizes connection and cooperation — the dance between self and other, emotion and reflection, love and boundary. It teaches harmony through mutual recognition."
     },
     "theme": "connection, trust, emotional reciprocity",
-    "upright": "Connection, trust, emotional reciprocity. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
-    "reversed": "Connection, trust, emotional reciprocity, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+    "upright": {
+      "meaning": "Connection, trust, emotional reciprocity. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
+      "voice": {
+        "lead_in": "This is you practicing adulthood in a cape: healing, but make it real.",
+        "pulse": "Two of Cups upright taps the nerve of healing: it’s alive, it’s honest, and it wants motion.",
+        "turn": "Don’t overthink — translate healing into a 10-minute task and do it now."
+      }
+    },
+    "reversed": {
+      "meaning": "Connection, trust, emotional reciprocity, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+      "voice": {
+        "lead_in": "Something’s tangled. Don’t yank — soften around emotion.",
+        "pulse": "Two of Cups reversed says emotion is real, but your approach is costing too much.",
+        "turn": "Stop negotiating with chaos — set one rule that supports emotion."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Send one honest message; ask for what you need.",
     "direct_guidance": {
@@ -55,8 +69,22 @@
       "meaning": "Two represents balance and adaptation — the ability to harmonize opposites through flexibility and rhythm. It asks for conscious juggling of the material and emotional worlds."
     },
     "theme": "adaptability, prioritization, steady rhythm",
-    "upright": "Adaptability, prioritization, steady rhythm. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
-    "reversed": "Adaptability, prioritization, steady rhythm, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+    "upright": {
+      "meaning": "Adaptability, prioritization, steady rhythm. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
+      "voice": {
+        "lead_in": "You’re allowed to take up space — especially when craft is the theme.",
+        "pulse": "Two of Pentacles upright carries craft like a banner: clear, visible, and chosen.",
+        "turn": "Let craft be visible: say it plainly, then back it with one small act."
+      }
+    },
+    "reversed": {
+      "meaning": "Adaptability, prioritization, steady rhythm, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+      "voice": {
+        "lead_in": "This is what happens when you carry resources alone for too long.",
+        "pulse": "Two of Pentacles reversed brings resources to the surface so you can stop bleeding energy into it.",
+        "turn": "Pause the spiral: one calming step, then revisit resources with clarity."
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Do one practical task that improves stability.",
     "direct_guidance": {
@@ -103,8 +131,22 @@
       "meaning": "Two embodies reflection and polarity — the pause between thoughts where insight is born. It teaches discernment and the capacity to hold tension until clarity forms."
     },
     "theme": "decision, clarity, mental equilibrium",
-    "upright": "Decision, clarity, mental equilibrium. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
-    "reversed": "Decision, clarity, mental equilibrium, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+    "upright": {
+      "meaning": "Decision, clarity, mental equilibrium. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
+      "voice": {
+        "lead_in": "You’re building something; clarity is part of the foundation.",
+        "pulse": "Two of Swords upright carries clarity like a banner: clear, visible, and chosen.",
+        "turn": "Protect momentum: reduce the plan until clarity is effortless to start."
+      }
+    },
+    "reversed": {
+      "meaning": "Decision, clarity, mental equilibrium, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+      "voice": {
+        "lead_in": "This isn’t a moral failure — it’s a systems issue. Start with decision.",
+        "pulse": "Two of Swords reversed flags a distortion: decision without clarity, or clarity without kindness.",
+        "turn": "Pick recovery over proving. Let decision be the priority."
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Decide one thing; communicate it in one sentence.",
     "direct_guidance": {
@@ -151,8 +193,22 @@
       "meaning": "Two stands for direction and cooperation — the bridge between inspiration and manifestation. It urges measured confidence: planning that honors both will and patience."
     },
     "theme": "vision, initiative, strategic expansion",
-    "upright": "Vision, initiative, strategic expansion. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
-    "reversed": "Vision, initiative, strategic expansion, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+    "upright": {
+      "meaning": "Vision, initiative, strategic expansion. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
+      "voice": {
+        "lead_in": "You’re closer than you think; initiative is already in motion.",
+        "pulse": "Two of Wands upright taps the nerve of initiative: it’s alive, it’s honest, and it wants motion.",
+        "turn": "Protect momentum: reduce the plan until initiative is effortless to start."
+      }
+    },
+    "reversed": {
+      "meaning": "Vision, initiative, strategic expansion, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+      "voice": {
+        "lead_in": "This isn’t a moral failure — it’s a systems issue. Start with courage.",
+        "pulse": "Two of Wands reversed flags a distortion: courage without clarity, or clarity without kindness.",
+        "turn": "Name the leak: what’s draining courage? Cut that first."
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Take one bold step toward your goal.",
     "direct_guidance": {
@@ -199,8 +255,22 @@
       "meaning": "Three is the pulse of creation — where two unite to birth expression. It sings of joy, shared emotion, and the rhythm of hearts moving in harmony."
     },
     "theme": "celebration, friendship, emotional expression",
-    "upright": "Celebration, friendship, emotional expression. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
-    "reversed": "Celebration, friendship, emotional expression, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+    "upright": {
+      "meaning": "Celebration, friendship, emotional expression. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
+      "voice": {
+        "lead_in": "Today’s vibe: less force, more precision — anchored in intuition.",
+        "pulse": "Three of Cups upright marks the start of intuition done with intention.",
+        "turn": "Keep it clean: one boundary, one step, one honest choice toward intuition."
+      }
+    },
+    "reversed": {
+      "meaning": "Celebration, friendship, emotional expression, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+      "voice": {
+        "lead_in": "This is a detour, not a dead end. Track emotion like breadcrumbs.",
+        "pulse": "Three of Cups reversed suggests emotion got bent out of shape and needs a reset.",
+        "turn": "Ask for help or simplify. emotion doesn’t require martyrdom."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Send one honest message; ask for what you need.",
     "direct_guidance": {
@@ -247,8 +317,22 @@
       "meaning": "Three builds upon two’s balance — it is the architecture of progress. It speaks of craft, cooperation, and the sacred labor that turns skill into art."
     },
     "theme": "collaboration, mastery, contribution",
-    "upright": "Collaboration, mastery, contribution. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
-    "reversed": "Collaboration, mastery, contribution, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+    "upright": {
+      "meaning": "Collaboration, mastery, contribution. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
+      "voice": {
+        "lead_in": "Something in you is ready to level up — stability is the signal flare.",
+        "pulse": "In Three of Pentacles upright, stability isn’t theory — it’s the next practical move.",
+        "turn": "Let stability be visible: say it plainly, then back it with one small act."
+      }
+    },
+    "reversed": {
+      "meaning": "Collaboration, mastery, contribution, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+      "voice": {
+        "lead_in": "Your energy is leaking somewhere; stability shows where the crack is.",
+        "pulse": "Three of Pentacles reversed shows stability running in the background — loud, exhausting, and unexamined.",
+        "turn": "Trade intensity for consistency: a smaller plan that preserves stability."
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Practice your craft for 30 focused minutes.",
     "direct_guidance": {
@@ -295,8 +379,22 @@
       "meaning": "Three is expression after tension — the truth breaking open. It carries the ache of awareness and the clarity that can only arrive through vulnerability."
     },
     "theme": "truth, release, emotional clarity",
-    "upright": "Truth, release, emotional clarity. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
-    "reversed": "Truth, release, emotional clarity, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+    "upright": {
+      "meaning": "Truth, release, emotional clarity. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
+      "voice": {
+        "lead_in": "Today’s vibe: less force, more precision — anchored in truth.",
+        "pulse": "Three of Swords upright marks the start of truth done with intention.",
+        "turn": "Make it concrete: pick one action that proves truth is real."
+      }
+    },
+    "reversed": {
+      "meaning": "Truth, release, emotional clarity, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+      "voice": {
+        "lead_in": "Your boundaries are fuzzy; decision is asking for definition.",
+        "pulse": "Three of Swords reversed points to decision without the support structure it needs.",
+        "turn": "Reduce the load: remove one obligation so decision can breathe."
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Decide one thing; communicate it in one sentence.",
     "direct_guidance": {
@@ -343,8 +441,22 @@
       "meaning": "Three is expansion — fire discovering form. It is the courage to envision beyond the known and to act with faith in unseen horizons."
     },
     "theme": "progress, foresight, exploration",
-    "upright": "Progress, foresight, exploration. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
-    "reversed": "Progress, foresight, exploration, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+    "upright": {
+      "meaning": "Progress, foresight, exploration. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
+      "voice": {
+        "lead_in": "This is you practicing adulthood in a cape: creative heat, but make it real.",
+        "pulse": "Three of Wands upright marks the start of creative heat done with intention.",
+        "turn": "Aim for repeatable progress — creative heat over perfection."
+      }
+    },
+    "reversed": {
+      "meaning": "Progress, foresight, exploration, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+      "voice": {
+        "lead_in": "The pattern is familiar. The fix is gentler: momentum.",
+        "pulse": "Three of Wands reversed shows momentum running in the background — loud, exhausting, and unexamined.",
+        "turn": "Trade intensity for consistency: a smaller plan that preserves momentum."
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Take one bold step toward your goal.",
     "direct_guidance": {
@@ -391,8 +503,22 @@
       "meaning": "Four is the stillness after growth — a container for reflection. It teaches the wisdom of pause: to appreciate, to recalibrate, to remember what truly nourishes the heart."
     },
     "theme": "introspection, emotional renewal, reevaluation",
-    "upright": "Introspection, emotional renewal, reevaluation. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
-    "reversed": "Introspection, emotional renewal, reevaluation, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+    "upright": {
+      "meaning": "Introspection, emotional renewal, reevaluation. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
+      "voice": {
+        "lead_in": "There’s a clean path through this: follow connection and ignore the static.",
+        "pulse": "Four of Cups upright arrives with connection in its hands and a calm look that says “yes, this.”",
+        "turn": "Aim for repeatable progress — connection over perfection."
+      }
+    },
+    "reversed": {
+      "meaning": "Introspection, emotional renewal, reevaluation, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+      "voice": {
+        "lead_in": "Your boundaries are fuzzy; emotion is asking for definition.",
+        "pulse": "Four of Cups reversed asks: is emotion a choice right now, or a reflex?",
+        "turn": "Pause the spiral: one calming step, then revisit emotion with clarity."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Say one feeling out loud—clearly and kindly.",
     "direct_guidance": {
@@ -439,8 +565,22 @@
       "meaning": "Four builds walls and roots alike. It represents the instinct to protect, to conserve, to define one’s domain — stability in its material and psychological forms."
     },
     "theme": "security, control, groundedness",
-    "upright": "Security, control, groundedness. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
-    "reversed": "Security, control, groundedness, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+    "upright": {
+      "meaning": "Security, control, groundedness. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
+      "voice": {
+        "lead_in": "The situation doesn’t need louder — it needs truer. Start with routine.",
+        "pulse": "Four of Pentacles upright is a spotlight on routine — not dramatic, just undeniable.",
+        "turn": "Make it concrete: pick one action that proves routine is real."
+      }
+    },
+    "reversed": {
+      "meaning": "Security, control, groundedness, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+      "voice": {
+        "lead_in": "The signal is distorted. Slow down and listen for craft underneath it.",
+        "pulse": "Four of Pentacles reversed says craft is real, but your approach is costing too much.",
+        "turn": "Trade intensity for consistency: a smaller plan that preserves craft."
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Do one practical task that improves stability.",
     "direct_guidance": {
@@ -487,8 +627,22 @@
       "meaning": "Four is restoration through stillness — the mind’s exhale. It embodies the sacred rest that transforms reflection into strength."
     },
     "theme": "rest, recovery, mental clarity",
-    "upright": "Rest, recovery, mental clarity. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
-    "reversed": "Rest, recovery, mental clarity, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+    "upright": {
+      "meaning": "Rest, recovery, mental clarity. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
+      "voice": {
+        "lead_in": "You’re closer than you think; honest language is already in motion.",
+        "pulse": "Four of Swords upright says honest language matters more than optics — act accordingly.",
+        "turn": "When in doubt, pick the option that increases honest language without increasing chaos."
+      }
+    },
+    "reversed": {
+      "meaning": "Rest, recovery, mental clarity, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+      "voice": {
+        "lead_in": "Your instincts aren’t wrong; they’re just tired. Begin with boundaries.",
+        "pulse": "Four of Swords reversed flags a distortion: boundaries without clarity, or clarity without kindness.",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores boundaries?"
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Decide one thing; communicate it in one sentence.",
     "direct_guidance": {
@@ -535,8 +689,22 @@
       "meaning": "Four is foundation — the home built beneath the flame. It celebrates stability achieved through effort and the joy that arises from shared creation."
     },
     "theme": "stability, community, joyful achievement",
-    "upright": "Stability, community, joyful achievement. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
-    "reversed": "Stability, community, joyful achievement, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+    "upright": {
+      "meaning": "Stability, community, joyful achievement. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
+      "voice": {
+        "lead_in": "You’re not behind. You’re calibrating. Let initiative lead.",
+        "pulse": "Four of Wands upright taps the nerve of initiative: it’s alive, it’s honest, and it wants motion.",
+        "turn": "Make it concrete: pick one action that proves initiative is real."
+      }
+    },
+    "reversed": {
+      "meaning": "Stability, community, joyful achievement, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+      "voice": {
+        "lead_in": "This isn’t a moral failure — it’s a systems issue. Start with momentum.",
+        "pulse": "Four of Wands reversed suggests momentum got bent out of shape and needs a reset.",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores momentum?"
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Take one bold step toward your goal.",
     "direct_guidance": {
@@ -583,8 +751,22 @@
       "meaning": "Five is motion within emotion — the tide that turns after calm waters. It teaches that loss and renewal coexist, each wave carving wisdom from the heart."
     },
     "theme": "grief, acceptance, emotional growth",
-    "upright": "Grief, acceptance, emotional growth. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
-    "reversed": "Grief, acceptance, emotional growth, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+    "upright": {
+      "meaning": "Grief, acceptance, emotional growth. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
+      "voice": {
+        "lead_in": "This is the kind of moment where tender truth quietly becomes your superpower.",
+        "pulse": "Five of Cups upright is the moment tender truth stops being optional.",
+        "turn": "Protect momentum: reduce the plan until tender truth is effortless to start."
+      }
+    },
+    "reversed": {
+      "meaning": "Grief, acceptance, emotional growth, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+      "voice": {
+        "lead_in": "This is a detour, not a dead end. Track tender truth like breadcrumbs.",
+        "pulse": "Five of Cups reversed points to tender truth without the support structure it needs.",
+        "turn": "Pause the spiral: one calming step, then revisit tender truth with clarity."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Name the loss; reach out to one safe person.",
     "direct_guidance": {
@@ -631,8 +813,22 @@
       "meaning": "Five is the tension between need and resource — the breaking point that reveals community, humility, and the strength of asking for help."
     },
     "theme": "scarcity, vulnerability, mutual support",
-    "upright": "Scarcity, vulnerability, mutual support. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
-    "reversed": "Scarcity, vulnerability, mutual support, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+    "upright": {
+      "meaning": "Scarcity, vulnerability, mutual support. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
+      "voice": {
+        "lead_in": "If you feel exposed, good — that’s where practical progress can actually work.",
+        "pulse": "Five of Pentacles upright says practical progress matters more than optics — act accordingly.",
+        "turn": "Don’t overthink — translate practical progress into a 10-minute task and do it now."
+      }
+    },
+    "reversed": {
+      "meaning": "Scarcity, vulnerability, mutual support, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+      "voice": {
+        "lead_in": "The signal is distorted. Slow down and listen for practical progress underneath it.",
+        "pulse": "Five of Pentacles reversed flags a distortion: practical progress without clarity, or clarity without kindness.",
+        "turn": "Ask for help or simplify. practical progress doesn’t require martyrdom."
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Ask for help and review your resources today.",
     "direct_guidance": {
@@ -679,8 +875,22 @@
       "meaning": "Five is the storm of the mind — conflict that exposes ego and truth alike. It clears illusion through friction, demanding humility in victory and grace in defeat."
     },
     "theme": "conflict, perspective, integrity",
-    "upright": "Conflict, perspective, integrity. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
-    "reversed": "Conflict, perspective, integrity, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+    "upright": {
+      "meaning": "Conflict, perspective, integrity. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
+      "voice": {
+        "lead_in": "Your next step is simpler than your anxiety says: truth.",
+        "pulse": "Five of Swords upright says truth matters more than optics — act accordingly.",
+        "turn": "Choose the simplest version of truth that you can repeat tomorrow."
+      }
+    },
+    "reversed": {
+      "meaning": "Conflict, perspective, integrity, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+      "voice": {
+        "lead_in": "This is a detour, not a dead end. Track honest language like breadcrumbs.",
+        "pulse": "Five of Swords reversed shows honest language running in the background — loud, exhausting, and unexamined.",
+        "turn": "Stop negotiating with chaos — set one rule that supports honest language."
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Choose peace: stop arguing and set one boundary.",
     "direct_guidance": {
@@ -727,8 +937,22 @@
       "meaning": "Five is fire uncontained — the creative friction that tests will and refines purpose. It sparks challenge so that passion can mature into direction."
     },
     "theme": "competition, growth through tension, creative assertion",
-    "upright": "Competition, growth through tension, creative assertion. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
-    "reversed": "Competition, growth through tension, creative assertion, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+    "upright": {
+      "meaning": "Competition, growth through tension, creative assertion. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
+      "voice": {
+        "lead_in": "A small shift changes everything: choose momentum on purpose.",
+        "pulse": "Five of Wands upright is a spotlight on momentum — not dramatic, just undeniable.",
+        "turn": "Choose the simplest version of momentum that you can repeat tomorrow."
+      }
+    },
+    "reversed": {
+      "meaning": "Competition, growth through tension, creative assertion, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+      "voice": {
+        "lead_in": "If it’s confusing, that’s information: creative heat is out of alignment.",
+        "pulse": "Five of Wands reversed flags a distortion: creative heat without clarity, or clarity without kindness.",
+        "turn": "Pick recovery over proving. Let creative heat be the priority."
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Turn friction into collaboration—invite input.",
     "direct_guidance": {
@@ -775,8 +999,22 @@
       "meaning": "Six is the heart remembering its rhythm — the harmony that follows healing. It evokes nostalgia, care, and the sweetness of emotional equilibrium restored."
     },
     "theme": "memory, kindness, emotional renewal",
-    "upright": "Memory, kindness, emotional renewal. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
-    "reversed": "Memory, kindness, emotional renewal, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+    "upright": {
+      "meaning": "Memory, kindness, emotional renewal. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
+      "voice": {
+        "lead_in": "Something in you is ready to level up — healing is the signal flare.",
+        "pulse": "Six of Cups upright turns the volume down so healing can finally be heard.",
+        "turn": "Let healing be visible: say it plainly, then back it with one small act."
+      }
+    },
+    "reversed": {
+      "meaning": "Memory, kindness, emotional renewal, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+      "voice": {
+        "lead_in": "This isn’t a moral failure — it’s a systems issue. Start with connection.",
+        "pulse": "Six of Cups reversed says connection is real, but your approach is costing too much.",
+        "turn": "Stop negotiating with chaos — set one rule that supports connection."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Say one feeling out loud—clearly and kindly.",
     "direct_guidance": {
@@ -823,8 +1061,22 @@
       "meaning": "Six is reciprocity made visible — the sacred balance of giving and receiving. It teaches that abundance circulates when generosity and self-respect walk hand in hand."
     },
     "theme": "generosity, equity, mutual benefit",
-    "upright": "Generosity, equity, mutual benefit. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
-    "reversed": "Generosity, equity, mutual benefit, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+    "upright": {
+      "meaning": "Generosity, equity, mutual benefit. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
+      "voice": {
+        "lead_in": "This is the kind of moment where stability quietly becomes your superpower.",
+        "pulse": "Six of Pentacles upright carries stability like a banner: clear, visible, and chosen.",
+        "turn": "Hold steady. If stability is the truth, you don’t need to sprint."
+      }
+    },
+    "reversed": {
+      "meaning": "Generosity, equity, mutual benefit, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+      "voice": {
+        "lead_in": "You might be doing the right thing the hard way — revisit practical progress.",
+        "pulse": "In Six of Pentacles reversed, practical progress is present — but it’s being avoided or overdone.",
+        "turn": "Trade intensity for consistency: a smaller plan that preserves practical progress."
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Do one practical task that improves stability.",
     "direct_guidance": {
@@ -871,8 +1123,22 @@
       "meaning": "Six is transition with grace — the crossing from chaos to coherence. It is thought tempered by compassion, intellect reuniting with peace."
     },
     "theme": "healing, transition, restored clarity",
-    "upright": "Healing, transition, restored clarity. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
-    "reversed": "Healing, transition, restored clarity, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+    "upright": {
+      "meaning": "Healing, transition, restored clarity. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
+      "voice": {
+        "lead_in": "You can be kind and still choose clarity.",
+        "pulse": "Six of Swords upright turns the volume down so clarity can finally be heard.",
+        "turn": "Make it concrete: pick one action that proves clarity is real."
+      }
+    },
+    "reversed": {
+      "meaning": "Healing, transition, restored clarity, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+      "voice": {
+        "lead_in": "This isn’t a moral failure — it’s a systems issue. Start with boundaries.",
+        "pulse": "Six of Swords reversed suggests boundaries got bent out of shape and needs a reset.",
+        "turn": "Reduce the load: remove one obligation so boundaries can breathe."
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Decide one thing; communicate it in one sentence.",
     "direct_guidance": {
@@ -919,8 +1185,22 @@
       "meaning": "Six is triumph harmonized with humility — success shared, not hoarded. It radiates recognition, confidence, and the restoration of purpose through community."
     },
     "theme": "victory, recognition, alignment of purpose",
-    "upright": "Victory, recognition, alignment of purpose. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
-    "reversed": "Victory, recognition, alignment of purpose, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+    "upright": {
+      "meaning": "Victory, recognition, alignment of purpose. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
+      "voice": {
+        "lead_in": "You’re closer than you think; drive is already in motion.",
+        "pulse": "Six of Wands upright arrives with drive in its hands and a calm look that says “yes, this.”",
+        "turn": "Don’t overthink — translate drive into a 10-minute task and do it now."
+      }
+    },
+    "reversed": {
+      "meaning": "Victory, recognition, alignment of purpose, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+      "voice": {
+        "lead_in": "Your boundaries are fuzzy; drive is asking for definition.",
+        "pulse": "Six of Wands reversed highlights drive slipping through your fingers because the system is off.",
+        "turn": "Reduce the load: remove one obligation so drive can breathe."
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Take one bold step toward your goal.",
     "direct_guidance": {
@@ -967,8 +1247,22 @@
       "meaning": "Seven is reflection made dreamlike — the mirror between illusion and insight. It teaches discernment: that not all desires are destinies."
     },
     "theme": "choices, imagination, discernment",
-    "upright": "Choices, imagination, discernment. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
-    "reversed": "Choices, imagination, discernment, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+    "upright": {
+      "meaning": "Choices, imagination, discernment. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
+      "voice": {
+        "lead_in": "Your next step is simpler than your anxiety says: intuition.",
+        "pulse": "Seven of Cups upright puts intuition on the table and asks you to be real about it.",
+        "turn": "Aim for repeatable progress — intuition over perfection."
+      }
+    },
+    "reversed": {
+      "meaning": "Choices, imagination, discernment, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+      "voice": {
+        "lead_in": "Your energy is leaking somewhere; healing shows where the crack is.",
+        "pulse": "In Seven of Cups reversed, healing is present — but it’s being avoided or overdone.",
+        "turn": "Stop negotiating with chaos — set one rule that supports healing."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Pick one option and commit for 24 hours.",
     "direct_guidance": {
@@ -1015,8 +1309,22 @@
       "meaning": "Seven is patience embodied — the farmer’s number. It measures time through effort and faith, teaching that growth unfolds by natural law, not personal demand."
     },
     "theme": "patience, evaluation, steady progress",
-    "upright": "Patience, evaluation, steady progress. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
-    "reversed": "Patience, evaluation, steady progress, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+    "upright": {
+      "meaning": "Patience, evaluation, steady progress. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
+      "voice": {
+        "lead_in": "You can’t control the weather, but you can choose your stance: stability.",
+        "pulse": "Seven of Pentacles upright arrives with stability in its hands and a calm look that says “yes, this.”",
+        "turn": "Protect momentum: reduce the plan until stability is effortless to start."
+      }
+    },
+    "reversed": {
+      "meaning": "Patience, evaluation, steady progress, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+      "voice": {
+        "lead_in": "You can’t think your way out of a drained battery. Restore routine.",
+        "pulse": "Seven of Pentacles reversed highlights routine slipping through your fingers because the system is off.",
+        "turn": "Reduce the load: remove one obligation so routine can breathe."
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Do one practical task that improves stability.",
     "direct_guidance": {
@@ -1063,8 +1371,22 @@
       "meaning": "Seven is the seeker’s mind — strategy meeting conscience. It examines motive, revealing that wisdom without integrity dissolves into deceit."
     },
     "theme": "strategy, truth, self-awareness",
-    "upright": "Strategy, truth, self-awareness. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
-    "reversed": "Strategy, truth, self-awareness, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+    "upright": {
+      "meaning": "Strategy, truth, self-awareness. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
+      "voice": {
+        "lead_in": "A small shift changes everything: choose decision on purpose.",
+        "pulse": "Seven of Swords upright is the moment decision stops being optional.",
+        "turn": "Don’t overthink — translate decision into a 10-minute task and do it now."
+      }
+    },
+    "reversed": {
+      "meaning": "Strategy, truth, self-awareness, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+      "voice": {
+        "lead_in": "You may be reacting, not deciding — truth is the clue.",
+        "pulse": "In Seven of Swords reversed, truth is present — but it’s being avoided or overdone.",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores truth?"
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Get specific: clarify, decide, communicate.",
     "direct_guidance": {
@@ -1111,8 +1433,22 @@
       "meaning": "Seven is conviction tested — courage under pressure. It refines will through resistance, turning belief into embodied strength."
     },
     "theme": "defense, conviction, perseverance",
-    "upright": "Defense, conviction, perseverance. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
-    "reversed": "Defense, conviction, perseverance, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+    "upright": {
+      "meaning": "Defense, conviction, perseverance. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
+      "voice": {
+        "lead_in": "The situation doesn’t need louder — it needs truer. Start with momentum.",
+        "pulse": "Seven of Wands upright turns the volume down so momentum can finally be heard.",
+        "turn": "Hold steady. If momentum is the truth, you don’t need to sprint."
+      }
+    },
+    "reversed": {
+      "meaning": "Defense, conviction, perseverance, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+      "voice": {
+        "lead_in": "You can’t think your way out of a drained battery. Restore drive.",
+        "pulse": "Seven of Wands reversed shows drive running in the background — loud, exhausting, and unexamined.",
+        "turn": "Choose the version of drive that feels sustainable, not dramatic."
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Take one bold step toward your goal.",
     "direct_guidance": {
@@ -1159,8 +1495,22 @@
       "meaning": "Eight is movement with meaning — the soul’s departure in search of authenticity. It teaches mastery through release, reminding us that true success is measured by alignment, not attachment."
     },
     "theme": "departure, self-discovery, emotional mastery",
-    "upright": "Departure, self-discovery, emotional mastery. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
-    "reversed": "Departure, self-discovery, emotional mastery, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+    "upright": {
+      "meaning": "Departure, self-discovery, emotional mastery. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
+      "voice": {
+        "lead_in": "You’re not behind. You’re calibrating. Let tender truth lead.",
+        "pulse": "Eight of Cups upright turns the volume down so tender truth can finally be heard.",
+        "turn": "Choose the simplest version of tender truth that you can repeat tomorrow."
+      }
+    },
+    "reversed": {
+      "meaning": "Departure, self-discovery, emotional mastery, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+      "voice": {
+        "lead_in": "The pattern is familiar. The fix is gentler: tender truth.",
+        "pulse": "Eight of Cups reversed asks: is tender truth a choice right now, or a reflex?",
+        "turn": "Choose the version of tender truth that feels sustainable, not dramatic."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Let go of one thing that drains you.",
     "direct_guidance": {
@@ -1207,8 +1557,22 @@
       "meaning": "Eight is craftsmanship in motion — the sacred repetition that refines skill into art. It embodies discipline, devotion, and the patient joy of mastery earned through practice."
     },
     "theme": "skill, dedication, self-improvement",
-    "upright": "Skill, dedication, self-improvement. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
-    "reversed": "Skill, dedication, self-improvement, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+    "upright": {
+      "meaning": "Skill, dedication, self-improvement. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
+      "voice": {
+        "lead_in": "You’re allowed to take up space — especially when routine is the theme.",
+        "pulse": "Eight of Pentacles upright marks the start of routine done with intention.",
+        "turn": "Choose the simplest version of routine that you can repeat tomorrow."
+      }
+    },
+    "reversed": {
+      "meaning": "Skill, dedication, self-improvement, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+      "voice": {
+        "lead_in": "The pattern is familiar. The fix is gentler: resources.",
+        "pulse": "In Eight of Pentacles reversed, resources is present — but it’s being avoided or overdone.",
+        "turn": "Stop negotiating with chaos — set one rule that supports resources."
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Practice your craft for 30 focused minutes.",
     "direct_guidance": {
@@ -1255,8 +1619,22 @@
       "meaning": "Eight is the mirror of power — showing both limitation and liberation. It teaches that mastery of thought begins when we recognize which bindings are self-made."
     },
     "theme": "restriction, perception, mental liberation",
-    "upright": "Restriction, perception, mental liberation. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
-    "reversed": "Restriction, perception, mental liberation, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+    "upright": {
+      "meaning": "Restriction, perception, mental liberation. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
+      "voice": {
+        "lead_in": "Something in you is ready to level up — honest language is the signal flare.",
+        "pulse": "Eight of Swords upright taps the nerve of honest language: it’s alive, it’s honest, and it wants motion.",
+        "turn": "Treat honest language like a practice, not a performance."
+      }
+    },
+    "reversed": {
+      "meaning": "Restriction, perception, mental liberation, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+      "voice": {
+        "lead_in": "You don’t need to win today — you need to recover truth.",
+        "pulse": "Eight of Swords reversed is a mirror: where truth becomes self-sabotage if left unchecked.",
+        "turn": "Name the leak: what’s draining truth? Cut that first."
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Get specific: clarify, decide, communicate.",
     "direct_guidance": {
@@ -1303,8 +1681,22 @@
       "meaning": "Eight is acceleration — energy moving cleanly through intention. It symbolizes momentum aligned with clarity, the swift harmony of purpose and timing."
     },
     "theme": "momentum, communication, decisive movement",
-    "upright": "Momentum, communication, decisive movement. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
-    "reversed": "Momentum, communication, decisive movement, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+    "upright": {
+      "meaning": "Momentum, communication, decisive movement. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
+      "voice": {
+        "lead_in": "There’s a clean path through this: follow creative heat and ignore the static.",
+        "pulse": "Eight of Wands upright turns the volume down so creative heat can finally be heard.",
+        "turn": "Hold steady. If creative heat is the truth, you don’t need to sprint."
+      }
+    },
+    "reversed": {
+      "meaning": "Momentum, communication, decisive movement, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+      "voice": {
+        "lead_in": "If it’s confusing, that’s information: momentum is out of alignment.",
+        "pulse": "Eight of Wands reversed points to momentum without the support structure it needs.",
+        "turn": "Name the leak: what’s draining momentum? Cut that first."
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Send the message / ship the draft today.",
     "direct_guidance": {
@@ -1351,8 +1743,22 @@
       "meaning": "Nine is emotional fruition — the quiet joy of wholeness found within. It is contentment earned through gratitude, reminding us that fulfillment deepens through appreciation, not accumulation."
     },
     "theme": "satisfaction, emotional fulfillment, gratitude",
-    "upright": "Satisfaction, emotional fulfillment, gratitude. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
-    "reversed": "Satisfaction, emotional fulfillment, gratitude, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+    "upright": {
+      "meaning": "Satisfaction, emotional fulfillment, gratitude. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
+      "voice": {
+        "lead_in": "You’re allowed to take up space — especially when emotion is the theme.",
+        "pulse": "Nine of Cups upright turns the volume down so emotion can finally be heard.",
+        "turn": "Keep it clean: one boundary, one step, one honest choice toward emotion."
+      }
+    },
+    "reversed": {
+      "meaning": "Satisfaction, emotional fulfillment, gratitude, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+      "voice": {
+        "lead_in": "This isn’t a moral failure — it’s a systems issue. Start with emotion.",
+        "pulse": "Nine of Cups reversed flags a distortion: emotion without clarity, or clarity without kindness.",
+        "turn": "Do the gentle fix: a small boundary that protects emotion today."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Say one feeling out loud—clearly and kindly.",
     "direct_guidance": {
@@ -1399,8 +1805,22 @@
       "meaning": "Nine is self-sufficiency realized — the wisdom of earned comfort. It reflects refinement and the serenity that arrives when effort and integrity align."
     },
     "theme": "independence, accomplishment, self-worth",
-    "upright": "Independence, accomplishment, self-worth. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
-    "reversed": "Independence, accomplishment, self-worth, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+    "upright": {
+      "meaning": "Independence, accomplishment, self-worth. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
+      "voice": {
+        "lead_in": "Your next step is simpler than your anxiety says: practical progress.",
+        "pulse": "Nine of Pentacles upright is a spotlight on practical progress — not dramatic, just undeniable.",
+        "turn": "Make it concrete: pick one action that proves practical progress is real."
+      }
+    },
+    "reversed": {
+      "meaning": "Independence, accomplishment, self-worth, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+      "voice": {
+        "lead_in": "If it feels heavy, it’s because practical progress is being forced instead of chosen.",
+        "pulse": "Nine of Pentacles reversed shows practical progress running in the background — loud, exhausting, and unexamined.",
+        "turn": "Pause the spiral: one calming step, then revisit practical progress with clarity."
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Do one practical task that improves stability.",
     "direct_guidance": {
@@ -1447,8 +1867,22 @@
       "meaning": "Nine is awakening through endurance — the mind confronting its shadows. It transforms fear into understanding, teaching that awareness is the beginning of peace."
     },
     "theme": "anxiety, realization, release through awareness",
-    "upright": "Anxiety, realization, release through awareness. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
-    "reversed": "Anxiety, realization, release through awareness, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+    "upright": {
+      "meaning": "Anxiety, realization, release through awareness. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
+      "voice": {
+        "lead_in": "This is you practicing adulthood in a cape: decision, but make it real.",
+        "pulse": "Nine of Swords upright taps the nerve of decision: it’s alive, it’s honest, and it wants motion.",
+        "turn": "Hold steady. If decision is the truth, you don’t need to sprint."
+      }
+    },
+    "reversed": {
+      "meaning": "Anxiety, realization, release through awareness, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+      "voice": {
+        "lead_in": "This is the cost of overgiving — honest language needs protection.",
+        "pulse": "Nine of Swords reversed brings honest language to the surface so you can stop bleeding energy into it.",
+        "turn": "Ask for help or simplify. honest language doesn’t require martyrdom."
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Write the worry; pick the next smallest step.",
     "direct_guidance": {
@@ -1495,8 +1929,22 @@
       "meaning": "Nine is endurance at dusk — strength carrying wisdom’s weight. It honors perseverance and the resolve to finish strong, even when weary."
     },
     "theme": "resilience, perseverance, protection of purpose",
-    "upright": "Resilience, perseverance, protection of purpose. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
-    "reversed": "Resilience, perseverance, protection of purpose, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+    "upright": {
+      "meaning": "Resilience, perseverance, protection of purpose. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
+      "voice": {
+        "lead_in": "You can be kind and still choose momentum.",
+        "pulse": "Nine of Wands upright arrives with momentum in its hands and a calm look that says “yes, this.”",
+        "turn": "Protect momentum: reduce the plan until momentum is effortless to start."
+      }
+    },
+    "reversed": {
+      "meaning": "Resilience, perseverance, protection of purpose, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+      "voice": {
+        "lead_in": "This is a detour, not a dead end. Track creative heat like breadcrumbs.",
+        "pulse": "Nine of Wands reversed flags a distortion: creative heat without clarity, or clarity without kindness.",
+        "turn": "Stop negotiating with chaos — set one rule that supports creative heat."
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Take one bold step toward your goal.",
     "direct_guidance": {
@@ -1543,8 +1991,22 @@
       "meaning": "Ten is emotional culmination — the return of love to its source. It unites heart and spirit, revealing joy as a shared vibration, not a private possession."
     },
     "theme": "fulfillment, harmony, emotional legacy",
-    "upright": "Fulfillment, harmony, emotional legacy. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
-    "reversed": "Fulfillment, harmony, emotional legacy, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+    "upright": {
+      "meaning": "Fulfillment, harmony, emotional legacy. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
+      "voice": {
+        "lead_in": "You can be kind and still choose healing.",
+        "pulse": "Ten of Cups upright turns the volume down so healing can finally be heard.",
+        "turn": "Make it concrete: pick one action that proves healing is real."
+      }
+    },
+    "reversed": {
+      "meaning": "Fulfillment, harmony, emotional legacy, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+      "voice": {
+        "lead_in": "You might be doing the right thing the hard way — revisit emotion.",
+        "pulse": "Ten of Cups reversed is a mirror: where emotion becomes self-sabotage if left unchecked.",
+        "turn": "Trade intensity for consistency: a smaller plan that preserves emotion."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Say one feeling out loud—clearly and kindly.",
     "direct_guidance": {
@@ -1591,8 +2053,22 @@
       "meaning": "Ten is the culmination of material mastery — structure meeting soul. It embodies legacy, sustainability, and the wisdom of building something that outlasts the builder."
     },
     "theme": "legacy, abundance, continuity",
-    "upright": "Legacy, abundance, continuity. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
-    "reversed": "Legacy, abundance, continuity, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+    "upright": {
+      "meaning": "Legacy, abundance, continuity. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
+      "voice": {
+        "lead_in": "This is the chapter where resources becomes non-negotiable.",
+        "pulse": "Ten of Pentacles upright puts resources on the table and asks you to be real about it.",
+        "turn": "Make it concrete: pick one action that proves resources is real."
+      }
+    },
+    "reversed": {
+      "meaning": "Legacy, abundance, continuity, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+      "voice": {
+        "lead_in": "You may be reacting, not deciding — craft is the clue.",
+        "pulse": "Ten of Pentacles reversed suggests craft got bent out of shape and needs a reset.",
+        "turn": "Pause the spiral: one calming step, then revisit craft with clarity."
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Take one step that helps future-you.",
     "direct_guidance": {
@@ -1639,8 +2115,22 @@
       "meaning": "Ten is the ending that becomes clarity — the release after struggle. It transforms collapse into awakening, closing a chapter so that new truth can rise."
     },
     "theme": "ending, surrender, renewal through acceptance",
-    "upright": "Ending, surrender, renewal through acceptance. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
-    "reversed": "Ending, surrender, renewal through acceptance, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+    "upright": {
+      "meaning": "Ending, surrender, renewal through acceptance. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
+      "voice": {
+        "lead_in": "You don’t need permission. You need alignment — start with truth.",
+        "pulse": "Ten of Swords upright taps the nerve of truth: it’s alive, it’s honest, and it wants motion.",
+        "turn": "Hold steady. If truth is the truth, you don’t need to sprint."
+      }
+    },
+    "reversed": {
+      "meaning": "Ending, surrender, renewal through acceptance, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+      "voice": {
+        "lead_in": "If it feels heavy, it’s because honest language is being forced instead of chosen.",
+        "pulse": "Ten of Swords reversed suggests honest language got bent out of shape and needs a reset.",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores honest language?"
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Get specific: clarify, decide, communicate.",
     "direct_guidance": {
@@ -1687,8 +2177,22 @@
       "meaning": "Ten is culmination through responsibility — energy gathered to its limit. It teaches that mastery requires delegation, rest, and the wisdom to carry only what is yours."
     },
     "theme": "burden, perseverance, release through discernment",
-    "upright": "Burden, perseverance, release through discernment. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
-    "reversed": "Burden, perseverance, release through discernment, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+    "upright": {
+      "meaning": "Burden, perseverance, release through discernment. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
+      "voice": {
+        "lead_in": "You can’t control the weather, but you can choose your stance: drive.",
+        "pulse": "Ten of Wands upright turns the volume down so drive can finally be heard.",
+        "turn": "Treat drive like a practice, not a performance."
+      }
+    },
+    "reversed": {
+      "meaning": "Burden, perseverance, release through discernment, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+      "voice": {
+        "lead_in": "Your energy is leaking somewhere; momentum shows where the crack is.",
+        "pulse": "Ten of Wands reversed suggests momentum got bent out of shape and needs a reset.",
+        "turn": "Pause the spiral: one calming step, then revisit momentum with clarity."
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Delegate one task or drop one commitment.",
     "direct_guidance": {
@@ -1735,8 +2239,22 @@
       "meaning": "One is the pulse of birth — undivided emotion becoming awareness. It teaches that love begins as presence: the courage to feel fully, without filter or expectation."
     },
     "theme": "emotional renewal, openness, heart awakening",
-    "upright": "Emotional renewal, openness, heart awakening. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
-    "reversed": "Emotional renewal, openness, heart awakening, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+    "upright": {
+      "meaning": "Emotional renewal, openness, heart awakening. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly.",
+      "voice": {
+        "lead_in": "You’re closer than you think; healing is already in motion.",
+        "pulse": "Ace of Cups upright marks the start of healing done with intention.",
+        "turn": "Choose the simplest version of healing that you can repeat tomorrow."
+      }
+    },
+    "reversed": {
+      "meaning": "Emotional renewal, openness, heart awakening, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach.",
+      "voice": {
+        "lead_in": "This is what happens when you carry connection alone for too long.",
+        "pulse": "In Ace of Cups reversed, connection is present — but it’s being avoided or overdone.",
+        "turn": "Name the leak: what’s draining connection? Cut that first."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Say one feeling out loud—clearly and kindly.",
     "direct_guidance": {
@@ -1783,8 +2301,22 @@
       "meaning": "One is manifestation’s seed — spirit descending into matter. It reveals potential in tangible form, reminding us that abundance begins with intention grounded in faith."
     },
     "theme": "new beginnings, opportunity, grounded potential",
-    "upright": "New beginnings, opportunity, grounded potential. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
-    "reversed": "New beginnings, opportunity, grounded potential, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+    "upright": {
+      "meaning": "New beginnings, opportunity, grounded potential. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable.",
+      "voice": {
+        "lead_in": "You can’t control the weather, but you can choose your stance: practical progress.",
+        "pulse": "Ace of Pentacles upright puts practical progress on the table and asks you to be real about it.",
+        "turn": "Keep it clean: one boundary, one step, one honest choice toward practical progress."
+      }
+    },
+    "reversed": {
+      "meaning": "New beginnings, opportunity, grounded potential, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach.",
+      "voice": {
+        "lead_in": "This is a “check the story you’re telling yourself” moment — about stability.",
+        "pulse": "Ace of Pentacles reversed asks: is stability a choice right now, or a reflex?",
+        "turn": "Do the gentle fix: a small boundary that protects stability today."
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Do one practical task that improves stability.",
     "direct_guidance": {
@@ -1831,8 +2363,22 @@
       "meaning": "One is clarity crystallized — the first thought cutting through fog. It represents truth as creation: awareness shaping reality through focus and honesty."
     },
     "theme": "clarity, insight, decisive truth",
-    "upright": "Clarity, insight, decisive truth. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
-    "reversed": "Clarity, insight, decisive truth, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+    "upright": {
+      "meaning": "Clarity, insight, decisive truth. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly.",
+      "voice": {
+        "lead_in": "You can’t control the weather, but you can choose your stance: truth.",
+        "pulse": "Ace of Swords upright says truth matters more than optics — act accordingly.",
+        "turn": "Aim for repeatable progress — truth over perfection."
+      }
+    },
+    "reversed": {
+      "meaning": "Clarity, insight, decisive truth, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach.",
+      "voice": {
+        "lead_in": "Your instincts aren’t wrong; they’re just tired. Begin with truth.",
+        "pulse": "In Ace of Swords reversed, truth is present — but it’s being avoided or overdone.",
+        "turn": "Ask for help or simplify. truth doesn’t require martyrdom."
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Decide one thing; communicate it in one sentence.",
     "direct_guidance": {
@@ -1879,8 +2425,22 @@
       "meaning": "One is ignition — divine spark entering matter. It is passion’s first flame, the call to act from inspiration before doubt can intervene."
     },
     "theme": "inspiration, initiation, creative spark",
-    "upright": "Inspiration, initiation, creative spark. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
-    "reversed": "Inspiration, initiation, creative spark, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+    "upright": {
+      "meaning": "Inspiration, initiation, creative spark. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step.",
+      "voice": {
+        "lead_in": "This is the kind of moment where drive quietly becomes your superpower.",
+        "pulse": "Ace of Wands upright turns the volume down so drive can finally be heard.",
+        "turn": "Choose the simplest version of drive that you can repeat tomorrow."
+      }
+    },
+    "reversed": {
+      "meaning": "Inspiration, initiation, creative spark, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach.",
+      "voice": {
+        "lead_in": "If it’s confusing, that’s information: courage is out of alignment.",
+        "pulse": "Ace of Wands reversed is a mirror: where courage becomes self-sabotage if left unchecked.",
+        "turn": "Trade intensity for consistency: a smaller plan that preserves courage."
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Take one bold step toward your goal.",
     "direct_guidance": {
@@ -1927,8 +2487,22 @@
       "meaning": "Eleven is awakening through sensitivity — the bridge between feeling and expression. It whispers of curiosity born from empathy, where innocence meets intuition."
     },
     "theme": "emotional curiosity, creative openness, intuition",
-    "upright": "Emotional curiosity, creative openness, intuition. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly. Learn and experiment; keep it small and consistent.",
-    "reversed": "Emotional curiosity, creative openness, intuition, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach. Immaturity or distraction; simplify and return to basics.",
+    "upright": {
+      "meaning": "Emotional curiosity, creative openness, intuition. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly. Learn and experiment; keep it small and consistent.",
+      "voice": {
+        "lead_in": "You can’t control the weather, but you can choose your stance: emotion.",
+        "pulse": "In Page of Cups upright, emotion isn’t theory — it’s the next practical move.",
+        "turn": "Let emotion be visible: say it plainly, then back it with one small act."
+      }
+    },
+    "reversed": {
+      "meaning": "Emotional curiosity, creative openness, intuition, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach. Immaturity or distraction; simplify and return to basics.",
+      "voice": {
+        "lead_in": "This is a “check the story you’re telling yourself” moment — about healing.",
+        "pulse": "Page of Cups reversed suggests healing got bent out of shape and needs a reset.",
+        "turn": "Reduce the load: remove one obligation so healing can breathe."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Say one feeling out loud—clearly and kindly.",
     "direct_guidance": {
@@ -1975,8 +2549,22 @@
       "meaning": "Eleven is the moment of discovery — curiosity grounded in form. It turns observation into practice, reminding that mastery begins with mindful repetition."
     },
     "theme": "study, ambition, grounded learning",
-    "upright": "Study, ambition, grounded learning. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable. Learn and experiment; keep it small and consistent.",
-    "reversed": "Study, ambition, grounded learning, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach. Immaturity or distraction; simplify and return to basics.",
+    "upright": {
+      "meaning": "Study, ambition, grounded learning. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable. Learn and experiment; keep it small and consistent.",
+      "voice": {
+        "lead_in": "A small shift changes everything: choose craft on purpose.",
+        "pulse": "Page of Pentacles upright says craft matters more than optics — act accordingly.",
+        "turn": "When in doubt, pick the option that increases craft without increasing chaos."
+      }
+    },
+    "reversed": {
+      "meaning": "Study, ambition, grounded learning, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach. Immaturity or distraction; simplify and return to basics.",
+      "voice": {
+        "lead_in": "This is a detour, not a dead end. Track stability like breadcrumbs.",
+        "pulse": "Page of Pentacles reversed suggests stability got bent out of shape and needs a reset.",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores stability?"
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Do one practical task that improves stability.",
     "direct_guidance": {
@@ -2023,8 +2611,22 @@
       "meaning": "Eleven is mental ignition — the awakening of curiosity through communication. It embodies thought discovering its wings, words turning into awareness."
     },
     "theme": "curiosity, observation, new ideas",
-    "upright": "Curiosity, observation, new ideas. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly. Learn and experiment; keep it small and consistent.",
-    "reversed": "Curiosity, observation, new ideas, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach. Immaturity or distraction; simplify and return to basics.",
+    "upright": {
+      "meaning": "Curiosity, observation, new ideas. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly. Learn and experiment; keep it small and consistent.",
+      "voice": {
+        "lead_in": "This is you practicing adulthood in a cape: clarity, but make it real.",
+        "pulse": "Page of Swords upright puts clarity on the table and asks you to be real about it.",
+        "turn": "Don’t overthink — translate clarity into a 10-minute task and do it now."
+      }
+    },
+    "reversed": {
+      "meaning": "Curiosity, observation, new ideas, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach. Immaturity or distraction; simplify and return to basics.",
+      "voice": {
+        "lead_in": "This is a detour, not a dead end. Track truth like breadcrumbs.",
+        "pulse": "Page of Swords reversed shows truth running in the background — loud, exhausting, and unexamined.",
+        "turn": "Reduce the load: remove one obligation so truth can breathe."
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Get specific: clarify, decide, communicate.",
     "direct_guidance": {
@@ -2071,8 +2673,22 @@
       "meaning": "Eleven is inspiration awakening — the first flicker of identity meeting purpose. It carries the daring spark that says: try, risk, explore."
     },
     "theme": "enthusiasm, exploration, creative discovery",
-    "upright": "Enthusiasm, exploration, creative discovery. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step. Learn and experiment; keep it small and consistent.",
-    "reversed": "Enthusiasm, exploration, creative discovery, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach. Immaturity or distraction; simplify and return to basics.",
+    "upright": {
+      "meaning": "Enthusiasm, exploration, creative discovery. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step. Learn and experiment; keep it small and consistent.",
+      "voice": {
+        "lead_in": "Something in you is ready to level up — courage is the signal flare.",
+        "pulse": "Page of Wands upright marks the start of courage done with intention.",
+        "turn": "Let courage be visible: say it plainly, then back it with one small act."
+      }
+    },
+    "reversed": {
+      "meaning": "Enthusiasm, exploration, creative discovery, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach. Immaturity or distraction; simplify and return to basics.",
+      "voice": {
+        "lead_in": "This is a “check the story you’re telling yourself” moment — about courage.",
+        "pulse": "Page of Wands reversed points to courage without the support structure it needs.",
+        "turn": "Choose the version of courage that feels sustainable, not dramatic."
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Take one bold step toward your goal.",
     "direct_guidance": {
@@ -2119,8 +2735,22 @@
       "meaning": "Twelve is devotion in motion — heart energy seeking reflection. It symbolizes empathy on a quest, where idealism meets intimacy and emotion becomes art in action."
     },
     "theme": "romance, idealism, emotional expression",
-    "upright": "Romance, idealism, emotional expression. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly. Act with commitment; follow through, not just enthusiasm.",
-    "reversed": "Romance, idealism, emotional expression, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach. Impulsivity or avoidance; slow down and choose one direction.",
+    "upright": {
+      "meaning": "Romance, idealism, emotional expression. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly. Act with commitment; follow through, not just enthusiasm.",
+      "voice": {
+        "lead_in": "This is the chapter where tender truth becomes non-negotiable.",
+        "pulse": "Knight of Cups upright carries tender truth like a banner: clear, visible, and chosen.",
+        "turn": "Treat tender truth like a practice, not a performance."
+      }
+    },
+    "reversed": {
+      "meaning": "Romance, idealism, emotional expression, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach. Impulsivity or avoidance; slow down and choose one direction.",
+      "voice": {
+        "lead_in": "You don’t need to win today — you need to recover emotion.",
+        "pulse": "Knight of Cups reversed suggests emotion got bent out of shape and needs a reset.",
+        "turn": "Reduce the load: remove one obligation so emotion can breathe."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Say one feeling out loud—clearly and kindly.",
     "direct_guidance": {
@@ -2167,8 +2797,22 @@
       "meaning": "Twelve is diligence unfolding — motion made methodical. It blends drive with discipline, teaching progress through patience and consistency."
     },
     "theme": "dedication, reliability, long-term growth",
-    "upright": "Dedication, reliability, long-term growth. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable. Act with commitment; follow through, not just enthusiasm.",
-    "reversed": "Dedication, reliability, long-term growth, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach. Impulsivity or avoidance; slow down and choose one direction.",
+    "upright": {
+      "meaning": "Dedication, reliability, long-term growth. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable. Act with commitment; follow through, not just enthusiasm.",
+      "voice": {
+        "lead_in": "You can’t control the weather, but you can choose your stance: resources.",
+        "pulse": "Knight of Pentacles upright is a spotlight on resources — not dramatic, just undeniable.",
+        "turn": "When in doubt, pick the option that increases resources without increasing chaos."
+      }
+    },
+    "reversed": {
+      "meaning": "Dedication, reliability, long-term growth, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach. Impulsivity or avoidance; slow down and choose one direction.",
+      "voice": {
+        "lead_in": "This is a “check the story you’re telling yourself” moment — about resources.",
+        "pulse": "Knight of Pentacles reversed highlights resources slipping through your fingers because the system is off.",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores resources?"
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Practice your craft for 30 focused minutes.",
     "direct_guidance": {
@@ -2215,8 +2859,22 @@
       "meaning": "Twelve is intellect in motion — thought charging toward realization. It unites clarity with courage, testing ideas through the friction of reality."
     },
     "theme": "ambition, communication, decisive movement",
-    "upright": "Ambition, communication, decisive movement. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly. Act with commitment; follow through, not just enthusiasm.",
-    "reversed": "Ambition, communication, decisive movement, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach. Impulsivity or avoidance; slow down and choose one direction.",
+    "upright": {
+      "meaning": "Ambition, communication, decisive movement. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly. Act with commitment; follow through, not just enthusiasm.",
+      "voice": {
+        "lead_in": "There’s a clean path through this: follow honest language and ignore the static.",
+        "pulse": "Knight of Swords upright is the moment honest language stops being optional.",
+        "turn": "Keep it clean: one boundary, one step, one honest choice toward honest language."
+      }
+    },
+    "reversed": {
+      "meaning": "Ambition, communication, decisive movement, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach. Impulsivity or avoidance; slow down and choose one direction.",
+      "voice": {
+        "lead_in": "This is the cost of overgiving — boundaries needs protection.",
+        "pulse": "Knight of Swords reversed is a mirror: where boundaries becomes self-sabotage if left unchecked.",
+        "turn": "Choose the version of boundaries that feels sustainable, not dramatic."
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Get specific: clarify, decide, communicate.",
     "direct_guidance": {
@@ -2263,8 +2921,22 @@
       "meaning": "Twelve is passion on a journey — the fire of initiative meeting the rhythm of learning. It is the explorer’s heartbeat, turning inspiration into adventure."
     },
     "theme": "exploration, enthusiasm, bold pursuit",
-    "upright": "Exploration, enthusiasm, bold pursuit. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step. Act with commitment; follow through, not just enthusiasm.",
-    "reversed": "Exploration, enthusiasm, bold pursuit, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach. Impulsivity or avoidance; slow down and choose one direction.",
+    "upright": {
+      "meaning": "Exploration, enthusiasm, bold pursuit. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step. Act with commitment; follow through, not just enthusiasm.",
+      "voice": {
+        "lead_in": "You’re not behind. You’re calibrating. Let drive lead.",
+        "pulse": "Knight of Wands upright says drive matters more than optics — act accordingly.",
+        "turn": "When in doubt, pick the option that increases drive without increasing chaos."
+      }
+    },
+    "reversed": {
+      "meaning": "Exploration, enthusiasm, bold pursuit, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach. Impulsivity or avoidance; slow down and choose one direction.",
+      "voice": {
+        "lead_in": "This is the cost of overgiving — momentum needs protection.",
+        "pulse": "Knight of Wands reversed suggests momentum got bent out of shape and needs a reset.",
+        "turn": "Choose the version of momentum that feels sustainable, not dramatic."
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Take one bold step toward your goal.",
     "direct_guidance": {
@@ -2311,8 +2983,22 @@
       "meaning": "Thirteen is emotional mastery — the fusion of depth and discernment. It embodies love that listens, intuition that guides, and compassion that renews."
     },
     "theme": "empathy, intuition, emotional wisdom",
-    "upright": "Empathy, intuition, emotional wisdom. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly. Embody the quality; lead through example and boundaries.",
-    "reversed": "Empathy, intuition, emotional wisdom, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach. Overextension or imbalance; replenish and tighten boundaries.",
+    "upright": {
+      "meaning": "Empathy, intuition, emotional wisdom. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly. Embody the quality; lead through example and boundaries.",
+      "voice": {
+        "lead_in": "If you feel exposed, good — that’s where intuition can actually work.",
+        "pulse": "Queen of Cups upright arrives with intuition in its hands and a calm look that says “yes, this.”",
+        "turn": "Treat intuition like a practice, not a performance."
+      }
+    },
+    "reversed": {
+      "meaning": "Empathy, intuition, emotional wisdom, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach. Overextension or imbalance; replenish and tighten boundaries.",
+      "voice": {
+        "lead_in": "Your boundaries are fuzzy; healing is asking for definition.",
+        "pulse": "Queen of Cups reversed asks: is healing a choice right now, or a reflex?",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores healing?"
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Say one feeling out loud—clearly and kindly.",
     "direct_guidance": {
@@ -2359,8 +3045,22 @@
       "meaning": "Thirteen is creation made practical — the harmony of nurture and structure. It turns care into sustainability, embodying abundance through stewardship."
     },
     "theme": "stability, generosity, grounded care",
-    "upright": "Stability, generosity, grounded care. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable. Embody the quality; lead through example and boundaries.",
-    "reversed": "Stability, generosity, grounded care, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach. Overextension or imbalance; replenish and tighten boundaries.",
+    "upright": {
+      "meaning": "Stability, generosity, grounded care. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable. Embody the quality; lead through example and boundaries.",
+      "voice": {
+        "lead_in": "Today’s vibe: less force, more precision — anchored in resources.",
+        "pulse": "Queen of Pentacles upright is a spotlight on resources — not dramatic, just undeniable.",
+        "turn": "Choose the simplest version of resources that you can repeat tomorrow."
+      }
+    },
+    "reversed": {
+      "meaning": "Stability, generosity, grounded care, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach. Overextension or imbalance; replenish and tighten boundaries.",
+      "voice": {
+        "lead_in": "If it feels heavy, it’s because routine is being forced instead of chosen.",
+        "pulse": "Queen of Pentacles reversed flags a distortion: routine without clarity, or clarity without kindness.",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores routine?"
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Do one practical task that improves stability.",
     "direct_guidance": {
@@ -2407,8 +3107,22 @@
       "meaning": "Thirteen is intellect refined by experience — truth filtered through compassion. It merges clarity with empathy, turning honesty into healing."
     },
     "theme": "clarity, communication, discernment",
-    "upright": "Clarity, communication, discernment. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly. Embody the quality; lead through example and boundaries.",
-    "reversed": "Clarity, communication, discernment, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach. Overextension or imbalance; replenish and tighten boundaries.",
+    "upright": {
+      "meaning": "Clarity, communication, discernment. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly. Embody the quality; lead through example and boundaries.",
+      "voice": {
+        "lead_in": "You’re building something; truth is part of the foundation.",
+        "pulse": "Queen of Swords upright carries truth like a banner: clear, visible, and chosen.",
+        "turn": "Protect momentum: reduce the plan until truth is effortless to start."
+      }
+    },
+    "reversed": {
+      "meaning": "Clarity, communication, discernment, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach. Overextension or imbalance; replenish and tighten boundaries.",
+      "voice": {
+        "lead_in": "The signal is distorted. Slow down and listen for decision underneath it.",
+        "pulse": "Queen of Swords reversed flags a distortion: decision without clarity, or clarity without kindness.",
+        "turn": "Stop negotiating with chaos — set one rule that supports decision."
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Decide one thing; communicate it in one sentence.",
     "direct_guidance": {
@@ -2455,8 +3169,22 @@
       "meaning": "Thirteen is creative sovereignty — transformation aflame with confidence. It symbolizes the union of will and warmth, leadership born of authenticity."
     },
     "theme": "confidence, vitality, inspired leadership",
-    "upright": "Confidence, vitality, inspired leadership. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step. Embody the quality; lead through example and boundaries.",
-    "reversed": "Confidence, vitality, inspired leadership, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach. Overextension or imbalance; replenish and tighten boundaries.",
+    "upright": {
+      "meaning": "Confidence, vitality, inspired leadership. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step. Embody the quality; lead through example and boundaries.",
+      "voice": {
+        "lead_in": "This is the chapter where initiative becomes non-negotiable.",
+        "pulse": "Queen of Wands upright turns the volume down so initiative can finally be heard.",
+        "turn": "Keep it clean: one boundary, one step, one honest choice toward initiative."
+      }
+    },
+    "reversed": {
+      "meaning": "Confidence, vitality, inspired leadership, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach. Overextension or imbalance; replenish and tighten boundaries.",
+      "voice": {
+        "lead_in": "You may be reacting, not deciding — initiative is the clue.",
+        "pulse": "Queen of Wands reversed is a mirror: where initiative becomes self-sabotage if left unchecked.",
+        "turn": "Trade intensity for consistency: a smaller plan that preserves initiative."
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Take one bold step toward your goal.",
     "direct_guidance": {
@@ -2503,8 +3231,22 @@
       "meaning": "Fourteen is emotional authority — balance through empathy. It transforms feeling into guidance, teaching that stability and sensitivity can coexist in power."
     },
     "theme": "emotional balance, compassion, leadership through understanding",
-    "upright": "Emotional balance, compassion, leadership through understanding. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly. Take responsibility; decide and lead with steadiness.",
-    "reversed": "Emotional balance, compassion, leadership through understanding, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach. Control or detachment; lead with integrity and listen more.",
+    "upright": {
+      "meaning": "Emotional balance, compassion, leadership through understanding. In practice: focus on feelings, relationships, and emotional honesty. Best move: name what you feel and communicate it cleanly. Take responsibility; decide and lead with steadiness.",
+      "voice": {
+        "lead_in": "You don’t need permission. You need alignment — start with tender truth.",
+        "pulse": "King of Cups upright is a spotlight on tender truth — not dramatic, just undeniable.",
+        "turn": "Make it concrete: pick one action that proves tender truth is real."
+      }
+    },
+    "reversed": {
+      "meaning": "Emotional balance, compassion, leadership through understanding, but blocked or imbalanced. In practice: something in feelings, relationships, and emotional honesty is out of sync. Best move: stop avoiding the feeling or people-pleasing to keep the peace and reset your approach. Control or detachment; lead with integrity and listen more.",
+      "voice": {
+        "lead_in": "This is a detour, not a dead end. Track intuition like breadcrumbs.",
+        "pulse": "King of Cups reversed is a mirror: where intuition becomes self-sabotage if left unchecked.",
+        "turn": "Trade intensity for consistency: a smaller plan that preserves intuition."
+      }
+    },
     "guidance": "Do: name what you feel and communicate it cleanly. Don’t: avoiding the feeling or people-pleasing to keep the peace.",
     "call_to_action": "Say one feeling out loud—clearly and kindly.",
     "direct_guidance": {
@@ -2551,8 +3293,22 @@
       "meaning": "Fourteen is prosperity in motion — stewardship that adapts. It teaches that abundance remains alive only through generosity and evolution."
     },
     "theme": "security, stewardship, grounded success",
-    "upright": "Security, stewardship, grounded success. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable. Take responsibility; decide and lead with steadiness.",
-    "reversed": "Security, stewardship, grounded success, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach. Control or detachment; lead with integrity and listen more.",
+    "upright": {
+      "meaning": "Security, stewardship, grounded success. In practice: focus on resources, routines, work, and what’s sustainable. Best move: take one practical step and make it measurable. Take responsibility; decide and lead with steadiness.",
+      "voice": {
+        "lead_in": "There’s a clean path through this: follow practical progress and ignore the static.",
+        "pulse": "King of Pentacles upright puts practical progress on the table and asks you to be real about it.",
+        "turn": "When in doubt, pick the option that increases practical progress without increasing chaos."
+      }
+    },
+    "reversed": {
+      "meaning": "Security, stewardship, grounded success, but blocked or imbalanced. In practice: something in resources, routines, work, and what’s sustainable is out of sync. Best move: stop wishful thinking or ignoring the boring details and reset your approach. Control or detachment; lead with integrity and listen more.",
+      "voice": {
+        "lead_in": "The signal is distorted. Slow down and listen for resources underneath it.",
+        "pulse": "King of Pentacles reversed is a mirror: where resources becomes self-sabotage if left unchecked.",
+        "turn": "Trade intensity for consistency: a smaller plan that preserves resources."
+      }
+    },
     "guidance": "Do: take one practical step and make it measurable. Don’t: wishful thinking or ignoring the boring details.",
     "call_to_action": "Do one practical task that improves stability.",
     "direct_guidance": {
@@ -2599,8 +3355,22 @@
       "meaning": "Fourteen is clarity in command — intellect applied with integrity. It unites logic and ethics, turning knowledge into justice and words into order."
     },
     "theme": "intellect, truth, ethical leadership",
-    "upright": "Intellect, truth, ethical leadership. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly. Take responsibility; decide and lead with steadiness.",
-    "reversed": "Intellect, truth, ethical leadership, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach. Control or detachment; lead with integrity and listen more.",
+    "upright": {
+      "meaning": "Intellect, truth, ethical leadership. In practice: focus on clarity, decisions, communication, and boundaries. Best move: get specific, choose a direction, and say it plainly. Take responsibility; decide and lead with steadiness.",
+      "voice": {
+        "lead_in": "You’re allowed to take up space — especially when clarity is the theme.",
+        "pulse": "King of Swords upright marks the start of clarity done with intention.",
+        "turn": "When in doubt, pick the option that increases clarity without increasing chaos."
+      }
+    },
+    "reversed": {
+      "meaning": "Intellect, truth, ethical leadership, but blocked or imbalanced. In practice: something in clarity, decisions, communication, and boundaries is out of sync. Best move: stop rumination, defensiveness, or sharp words that create fallout and reset your approach. Control or detachment; lead with integrity and listen more.",
+      "voice": {
+        "lead_in": "This is a detour, not a dead end. Track clarity like breadcrumbs.",
+        "pulse": "King of Swords reversed suggests clarity got bent out of shape and needs a reset.",
+        "turn": "Trade intensity for consistency: a smaller plan that preserves clarity."
+      }
+    },
     "guidance": "Do: get specific, choose a direction, and say it plainly. Don’t: rumination, defensiveness, or sharp words that create fallout.",
     "call_to_action": "Get specific: clarify, decide, communicate.",
     "direct_guidance": {
@@ -2647,8 +3417,22 @@
       "meaning": "Fourteen is inspired mastery — fire that guides, not consumes. It transforms vision into leadership and passion into purpose shared."
     },
     "theme": "vision, charisma, creative leadership",
-    "upright": "Vision, charisma, creative leadership. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step. Take responsibility; decide and lead with steadiness.",
-    "reversed": "Vision, charisma, creative leadership, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach. Control or detachment; lead with integrity and listen more.",
+    "upright": {
+      "meaning": "Vision, charisma, creative leadership. In practice: focus on action, confidence, creativity, and momentum. Best move: act on the spark and commit to a next step. Take responsibility; decide and lead with steadiness.",
+      "voice": {
+        "lead_in": "This is the chapter where drive becomes non-negotiable.",
+        "pulse": "King of Wands upright is the moment drive stops being optional.",
+        "turn": "Protect momentum: reduce the plan until drive is effortless to start."
+      }
+    },
+    "reversed": {
+      "meaning": "Vision, charisma, creative leadership, but blocked or imbalanced. In practice: something in action, confidence, creativity, and momentum is out of sync. Best move: stop scattering energy or charging ahead without intention and reset your approach. Control or detachment; lead with integrity and listen more.",
+      "voice": {
+        "lead_in": "You may be reacting, not deciding — creative heat is the clue.",
+        "pulse": "King of Wands reversed is a mirror: where creative heat becomes self-sabotage if left unchecked.",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores creative heat?"
+      }
+    },
     "guidance": "Do: act on the spark and commit to a next step. Don’t: scattering energy or charging ahead without intention.",
     "call_to_action": "Take one bold step toward your goal.",
     "direct_guidance": {
@@ -2695,8 +3479,22 @@
       "meaning": "Zero is potential unbound — the circle before form, infinite beginnings. It embodies innocence, openness, and trust in life’s unfolding mystery."
     },
     "theme": "beginnings, faith, spontaneity",
-    "upright": "A new beginning is available—step forward with curiosity and awareness. In practice: do the smallest ‘first step’ that still feels brave.",
-    "reversed": "Either you’re hesitating out of fear, or you’re acting without looking. In practice: do the smallest ‘first step’ that still feels brave.",
+    "upright": {
+      "meaning": "A new beginning is available—step forward with curiosity and awareness. In practice: do the smallest ‘first step’ that still feels brave.",
+      "voice": {
+        "lead_in": "You’re allowed to take up space — especially when lesson is the theme.",
+        "pulse": "The Fool upright is a spotlight on lesson — not dramatic, just undeniable.",
+        "turn": "Protect momentum: reduce the plan until lesson is effortless to start."
+      }
+    },
+    "reversed": {
+      "meaning": "Either you’re hesitating out of fear, or you’re acting without looking. In practice: do the smallest ‘first step’ that still feels brave.",
+      "voice": {
+        "lead_in": "This is the cost of overgiving — fate needs protection.",
+        "pulse": "The Fool reversed shows fate running in the background — loud, exhausting, and unexamined.",
+        "turn": "Reduce the load: remove one obligation so fate can breathe."
+      }
+    },
     "guidance": "Do the smallest ‘first step’ that still feels brave.",
     "call_to_action": "Say yes to one new thing, then check the risks in writing.",
     "direct_guidance": {
@@ -2742,8 +3540,22 @@
       "meaning": "One is manifestation — the point of focus where potential becomes form. It symbolizes willpower, confidence, and creation through conscious choice."
     },
     "theme": "manifestation, focus, empowered creation",
-    "upright": "You have the tools; focus and follow-through will make this real. In practice: pick one outcome and build it with what you already have.",
-    "reversed": "Your power is scattered—or being used to impress instead of create. In practice: pick one outcome and build it with what you already have.",
+    "upright": {
+      "meaning": "You have the tools; focus and follow-through will make this real. In practice: pick one outcome and build it with what you already have.",
+      "voice": {
+        "lead_in": "You’re closer than you think; fate is already in motion.",
+        "pulse": "The Magician upright is a spotlight on fate — not dramatic, just undeniable.",
+        "turn": "Let fate be visible: say it plainly, then back it with one small act."
+      }
+    },
+    "reversed": {
+      "meaning": "Your power is scattered—or being used to impress instead of create. In practice: pick one outcome and build it with what you already have.",
+      "voice": {
+        "lead_in": "The pattern is familiar. The fix is gentler: threshold.",
+        "pulse": "In The Magician reversed, threshold is present — but it’s being avoided or overdone.",
+        "turn": "Stop negotiating with chaos — set one rule that supports threshold."
+      }
+    },
     "guidance": "Pick one outcome and build it with what you already have.",
     "call_to_action": "Define one goal and take one concrete action within 24 hours.",
     "direct_guidance": {
@@ -2790,8 +3602,22 @@
       "meaning": "Two is duality and perception — the wisdom of balance, silence, and inner knowing. It reveals truth through stillness, not effort."
     },
     "theme": "intuition, mystery, spiritual insight",
-    "upright": "You already know—trust your intuition and gather information quietly. In practice: pause, observe, and let the answer surface before you act.",
-    "reversed": "You’re ignoring your gut, oversharing, or demanding certainty too soon. In practice: pause, observe, and let the answer surface before you act.",
+    "upright": {
+      "meaning": "You already know—trust your intuition and gather information quietly. In practice: pause, observe, and let the answer surface before you act.",
+      "voice": {
+        "lead_in": "This is the chapter where growth becomes non-negotiable.",
+        "pulse": "The High Priestess upright arrives with growth in its hands and a calm look that says “yes, this.”",
+        "turn": "Choose the simplest version of growth that you can repeat tomorrow."
+      }
+    },
+    "reversed": {
+      "meaning": "You’re ignoring your gut, oversharing, or demanding certainty too soon. In practice: pause, observe, and let the answer surface before you act.",
+      "voice": {
+        "lead_in": "This is a “check the story you’re telling yourself” moment — about fate.",
+        "pulse": "The High Priestess reversed asks: is fate a choice right now, or a reflex?",
+        "turn": "Pause the spiral: one calming step, then revisit fate with clarity."
+      }
+    },
     "guidance": "Pause, observe, and let the answer surface before you act.",
     "call_to_action": "Spend 10 minutes in silence; write the first answer that appears.",
     "direct_guidance": {
@@ -2837,8 +3663,22 @@
       "meaning": "Three is creation — expression made fertile. It represents abundance, nurture, and the harmony between body and spirit."
     },
     "theme": "abundance, creativity, sensual presence",
-    "upright": "Nurture and growth—create, receive, and let things flourish. In practice: prioritize nourishment (body, home, relationships) before productivity.",
-    "reversed": "Burnout, creative block, or overgiving is draining your life-force. In practice: prioritize nourishment (body, home, relationships) before productivity.",
+    "upright": {
+      "meaning": "Nurture and growth—create, receive, and let things flourish. In practice: prioritize nourishment (body, home, relationships) before productivity.",
+      "voice": {
+        "lead_in": "You’re not behind. You’re calibrating. Let big-picture meaning lead.",
+        "pulse": "The Empress upright says big-picture meaning matters more than optics — act accordingly.",
+        "turn": "Keep it clean: one boundary, one step, one honest choice toward big-picture meaning."
+      }
+    },
+    "reversed": {
+      "meaning": "Burnout, creative block, or overgiving is draining your life-force. In practice: prioritize nourishment (body, home, relationships) before productivity.",
+      "voice": {
+        "lead_in": "This is the cost of overgiving — lesson needs protection.",
+        "pulse": "The Empress reversed is a mirror: where lesson becomes self-sabotage if left unchecked.",
+        "turn": "Reduce the load: remove one obligation so lesson can breathe."
+      }
+    },
     "guidance": "Prioritize nourishment (body, home, relationships) before productivity.",
     "call_to_action": "Do one nourishing thing for your body or space today.",
     "direct_guidance": {
@@ -2884,8 +3724,22 @@
       "meaning": "Four is foundation — stability made conscious. It symbolizes order, leadership, and the will to build structures that last."
     },
     "theme": "authority, discipline, grounded control",
-    "upright": "Structure and leadership—set rules, boundaries, and a clear plan. In practice: choose the simplest structure that makes the next step obvious.",
-    "reversed": "Control issues or chaos: either rigidity is choking things, or there’s no container. In practice: choose the simplest structure that makes the next step obvious.",
+    "upright": {
+      "meaning": "Structure and leadership—set rules, boundaries, and a clear plan. In practice: choose the simplest structure that makes the next step obvious.",
+      "voice": {
+        "lead_in": "The situation doesn’t need louder — it needs truer. Start with big-picture meaning.",
+        "pulse": "The Emperor upright marks the start of big-picture meaning done with intention.",
+        "turn": "Make it concrete: pick one action that proves big-picture meaning is real."
+      }
+    },
+    "reversed": {
+      "meaning": "Control issues or chaos: either rigidity is choking things, or there’s no container. In practice: choose the simplest structure that makes the next step obvious.",
+      "voice": {
+        "lead_in": "If it’s confusing, that’s information: fate is out of alignment.",
+        "pulse": "The Emperor reversed points to fate without the support structure it needs.",
+        "turn": "Ask for help or simplify. fate doesn’t require martyrdom."
+      }
+    },
     "guidance": "Choose the simplest structure that makes the next step obvious.",
     "call_to_action": "Write a 3-step plan and assign deadlines to each step.",
     "direct_guidance": {
@@ -2931,8 +3785,22 @@
       "meaning": "Five is adaptation within tradition — the bridge between faith and freedom. It challenges systems to evolve without losing meaning."
     },
     "theme": "wisdom, teaching, spiritual structure",
-    "upright": "Learn from a trusted system/mentor; tradition can help you stabilize this. In practice: keep what works, question what doesn’t, and make a conscious commitment.",
-    "reversed": "Dogma, rebellion-for-rebellion’s-sake, or a mismatch with your values is showing. In practice: keep what works, question what doesn’t, and make a conscious commitment.",
+    "upright": {
+      "meaning": "Learn from a trusted system/mentor; tradition can help you stabilize this. In practice: keep what works, question what doesn’t, and make a conscious commitment.",
+      "voice": {
+        "lead_in": "You’re allowed to take up space — especially when fate is the theme.",
+        "pulse": "The Hierophant upright is the moment fate stops being optional.",
+        "turn": "Hold steady. If fate is the truth, you don’t need to sprint."
+      }
+    },
+    "reversed": {
+      "meaning": "Dogma, rebellion-for-rebellion’s-sake, or a mismatch with your values is showing. In practice: keep what works, question what doesn’t, and make a conscious commitment.",
+      "voice": {
+        "lead_in": "This is the cost of overgiving — growth needs protection.",
+        "pulse": "The Hierophant reversed is a mirror: where growth becomes self-sabotage if left unchecked.",
+        "turn": "Pick recovery over proving. Let growth be the priority."
+      }
+    },
     "guidance": "Keep what works, question what doesn’t, and make a conscious commitment.",
     "call_to_action": "Ask: ‘What rule am I following—and do I agree with it?’",
     "direct_guidance": {
@@ -2978,8 +3846,22 @@
       "meaning": "Six is union and harmony — choice informed by love. It represents integration between self and other, desire and devotion."
     },
     "theme": "connection, alignment, conscious choice",
-    "upright": "A values-based choice is required; alignment matters more than convenience. In practice: choose what matches your values—even if it’s uncomfortable.",
-    "reversed": "Misalignment, mixed signals, or fear of commitment is muddying the situation. In practice: choose what matches your values—even if it’s uncomfortable.",
+    "upright": {
+      "meaning": "A values-based choice is required; alignment matters more than convenience. In practice: choose what matches your values—even if it’s uncomfortable.",
+      "voice": {
+        "lead_in": "You’re building something; threshold is part of the foundation.",
+        "pulse": "In The Lovers upright, threshold isn’t theory — it’s the next practical move.",
+        "turn": "Hold steady. If threshold is the truth, you don’t need to sprint."
+      }
+    },
+    "reversed": {
+      "meaning": "Misalignment, mixed signals, or fear of commitment is muddying the situation. In practice: choose what matches your values—even if it’s uncomfortable.",
+      "voice": {
+        "lead_in": "Your boundaries are fuzzy; threshold is asking for definition.",
+        "pulse": "The Lovers reversed highlights threshold slipping through your fingers because the system is off.",
+        "turn": "Pick recovery over proving. Let threshold be the priority."
+      }
+    },
     "guidance": "Choose what matches your values—even if it’s uncomfortable.",
     "call_to_action": "Write your top 3 values; pick the option that honors them.",
     "direct_guidance": {
@@ -3025,8 +3907,22 @@
       "meaning": "Seven is control through consciousness — victory born of alignment. It represents the will harnessed by wisdom, movement guided by purpose."
     },
     "theme": "determination, self-mastery, focused drive",
-    "upright": "Forward motion through discipline—pick a lane and drive it. In practice: align motive + method; remove distractions; commit to the route.",
-    "reversed": "Conflicting desires or poor focus is slowing you down. In practice: align motive + method; remove distractions; commit to the route.",
+    "upright": {
+      "meaning": "Forward motion through discipline—pick a lane and drive it. In practice: align motive + method; remove distractions; commit to the route.",
+      "voice": {
+        "lead_in": "You don’t need permission. You need alignment — start with fate.",
+        "pulse": "The Chariot upright puts fate on the table and asks you to be real about it.",
+        "turn": "Choose the simplest version of fate that you can repeat tomorrow."
+      }
+    },
+    "reversed": {
+      "meaning": "Conflicting desires or poor focus is slowing you down. In practice: align motive + method; remove distractions; commit to the route.",
+      "voice": {
+        "lead_in": "This is the cost of overgiving — threshold needs protection.",
+        "pulse": "The Chariot reversed suggests threshold got bent out of shape and needs a reset.",
+        "turn": "Do the gentle fix: a small boundary that protects threshold today."
+      }
+    },
     "guidance": "Align motive + method; remove distractions; commit to the route.",
     "call_to_action": "Choose one priority and remove one distraction for the rest of the day.",
     "direct_guidance": {
@@ -3072,8 +3968,22 @@
       "meaning": "Eight is balance through endurance — mastery refined by compassion. It teaches that true strength is the calm that tames chaos without suppressing it."
     },
     "theme": "courage, patience, gentle power",
-    "upright": "Gentle power—patience, compassion, and calm persistence win here. In practice: soften your approach; steadiness will get you farther than force.",
-    "reversed": "Insecurity, frustration, or reactivity is running the show. In practice: soften your approach; steadiness will get you farther than force.",
+    "upright": {
+      "meaning": "Gentle power—patience, compassion, and calm persistence win here. In practice: soften your approach; steadiness will get you farther than force.",
+      "voice": {
+        "lead_in": "The situation doesn’t need louder — it needs truer. Start with growth.",
+        "pulse": "Strength upright turns the volume down so growth can finally be heard.",
+        "turn": "Make it concrete: pick one action that proves growth is real."
+      }
+    },
+    "reversed": {
+      "meaning": "Insecurity, frustration, or reactivity is running the show. In practice: soften your approach; steadiness will get you farther than force.",
+      "voice": {
+        "lead_in": "Your instincts aren’t wrong; they’re just tired. Begin with lesson.",
+        "pulse": "Strength reversed shows lesson running in the background — loud, exhausting, and unexamined.",
+        "turn": "Stop negotiating with chaos — set one rule that supports lesson."
+      }
+    },
     "guidance": "Soften your approach; steadiness will get you farther than force.",
     "call_to_action": "Handle one hard moment with a calm voice and slower breathing.",
     "direct_guidance": {
@@ -3120,8 +4030,22 @@
       "meaning": "Nine is introspection — light turned inward. It symbolizes wisdom born of solitude and the quiet clarity that guides others by example."
     },
     "theme": "introspection, guidance, spiritual wisdom",
-    "upright": "Step back and reflect; clarity comes from quiet and honest self-inquiry. In practice: use solitude to learn—not to hide.",
-    "reversed": "Isolation is turning into avoidance, or you’re resisting guidance. In practice: use solitude to learn—not to hide.",
+    "upright": {
+      "meaning": "Step back and reflect; clarity comes from quiet and honest self-inquiry. In practice: use solitude to learn—not to hide.",
+      "voice": {
+        "lead_in": "You’re building something; lesson is part of the foundation.",
+        "pulse": "The Hermit upright taps the nerve of lesson: it’s alive, it’s honest, and it wants motion.",
+        "turn": "Don’t overthink — translate lesson into a 10-minute task and do it now."
+      }
+    },
+    "reversed": {
+      "meaning": "Isolation is turning into avoidance, or you’re resisting guidance. In practice: use solitude to learn—not to hide.",
+      "voice": {
+        "lead_in": "This is what happens when you carry fate alone for too long.",
+        "pulse": "The Hermit reversed suggests fate got bent out of shape and needs a reset.",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores fate?"
+      }
+    },
     "guidance": "Use solitude to learn—not to hide. Reconnect once you have the insight.",
     "call_to_action": "Take a solo walk; ask one question and listen for your answer.",
     "direct_guidance": {
@@ -3167,8 +4091,22 @@
       "meaning": "Ten is completion in motion — the cycle that renews itself. It embodies destiny, timing, and the turning interplay between choice and chance."
     },
     "theme": "change, destiny, cycles of renewal",
-    "upright": "A cycle is turning—adapt and take the opportunity that matches timing. In practice: stop forcing the old pattern; adjust strategy and move with the change.",
-    "reversed": "Resistance is keeping you stuck in the same loop. In practice: stop forcing the old pattern; adjust strategy and move with the change.",
+    "upright": {
+      "meaning": "A cycle is turning—adapt and take the opportunity that matches timing. In practice: stop forcing the old pattern; adjust strategy and move with the change.",
+      "voice": {
+        "lead_in": "A small shift changes everything: choose lesson on purpose.",
+        "pulse": "Wheel of Fortune upright arrives with lesson in its hands and a calm look that says “yes, this.”",
+        "turn": "Let lesson be visible: say it plainly, then back it with one small act."
+      }
+    },
+    "reversed": {
+      "meaning": "Resistance is keeping you stuck in the same loop. In practice: stop forcing the old pattern; adjust strategy and move with the change.",
+      "voice": {
+        "lead_in": "This is a detour, not a dead end. Track fate like breadcrumbs.",
+        "pulse": "Wheel of Fortune reversed brings fate to the surface so you can stop bleeding energy into it.",
+        "turn": "Trade intensity for consistency: a smaller plan that preserves fate."
+      }
+    },
     "guidance": "Stop forcing the old pattern; adjust strategy and move with the change.",
     "call_to_action": "Identify the repeating pattern; change one behavior that feeds it.",
     "direct_guidance": {
@@ -3214,8 +4152,22 @@
       "meaning": "Eleven is equilibrium made conscious — the mirror of cause and effect. It teaches awareness of balance, truth, and responsibility."
     },
     "theme": "truth, fairness, moral clarity",
-    "upright": "Truth and accountability—make the fair call and own your part. In practice: tell the truth, document facts, and act in line with your principles.",
-    "reversed": "Avoidance, bias, or denial is creating imbalance. In practice: tell the truth, document facts, and act in line with your principles.",
+    "upright": {
+      "meaning": "Truth and accountability—make the fair call and own your part. In practice: tell the truth, document facts, and act in line with your principles.",
+      "voice": {
+        "lead_in": "Treat fate like a compass, not a verdict.",
+        "pulse": "Justice upright turns the volume down so fate can finally be heard.",
+        "turn": "Keep it clean: one boundary, one step, one honest choice toward fate."
+      }
+    },
+    "reversed": {
+      "meaning": "Avoidance, bias, or denial is creating imbalance. In practice: tell the truth, document facts, and act in line with your principles.",
+      "voice": {
+        "lead_in": "This is the cost of overgiving — big-picture meaning needs protection.",
+        "pulse": "Justice reversed asks: is big-picture meaning a choice right now, or a reflex?",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores big-picture meaning?"
+      }
+    },
     "guidance": "Tell the truth, document facts, and act in line with your principles.",
     "call_to_action": "Write the facts (not feelings); make one fair decision based on them.",
     "direct_guidance": {
@@ -3261,8 +4213,22 @@
       "meaning": "Twelve is surrender in service of transformation — perspective released into revelation. It represents wisdom through pause, renewal through letting go."
     },
     "theme": "sacrifice, new perspective, surrender",
-    "upright": "Pause and shift perspective; surrender control to gain insight. In practice: let go of one assumption; the ‘stuck’ is an invitation to reframe.",
-    "reversed": "Stagnation: you’re stuck because you won’t release what needs releasing. In practice: let go of one assumption; the ‘stuck’ is an invitation to reframe.",
+    "upright": {
+      "meaning": "Pause and shift perspective; surrender control to gain insight. In practice: let go of one assumption; the ‘stuck’ is an invitation to reframe.",
+      "voice": {
+        "lead_in": "Your next step is simpler than your anxiety says: lesson.",
+        "pulse": "In The Hanged Man upright, lesson isn’t theory — it’s the next practical move.",
+        "turn": "Aim for repeatable progress — lesson over perfection."
+      }
+    },
+    "reversed": {
+      "meaning": "Stagnation: you’re stuck because you won’t release what needs releasing. In practice: let go of one assumption; the ‘stuck’ is an invitation to reframe.",
+      "voice": {
+        "lead_in": "If it’s confusing, that’s information: growth is out of alignment.",
+        "pulse": "The Hanged Man reversed says growth is real, but your approach is costing too much.",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores growth?"
+      }
+    },
     "guidance": "Let go of one assumption; the ‘stuck’ is an invitation to reframe.",
     "call_to_action": "Stop pushing; try the opposite approach once today.",
     "direct_guidance": {
@@ -3308,8 +4274,22 @@
       "meaning": "Thirteen is transformation — endings as evolution. It teaches that decay is not destruction but renewal disguised as release."
     },
     "theme": "transformation, release, renewal",
-    "upright": "An ending is real—release it so the next chapter can begin. In practice: close the door cleanly; don’t keep feeding the dead thing.",
-    "reversed": "You’re clinging to what’s already over, delaying relief. In practice: close the door cleanly; don’t keep feeding the dead thing.",
+    "upright": {
+      "meaning": "An ending is real—release it so the next chapter can begin. In practice: close the door cleanly; don’t keep feeding the dead thing.",
+      "voice": {
+        "lead_in": "Treat big-picture meaning like a compass, not a verdict.",
+        "pulse": "Death upright taps the nerve of big-picture meaning: it’s alive, it’s honest, and it wants motion.",
+        "turn": "Choose the simplest version of big-picture meaning that you can repeat tomorrow."
+      }
+    },
+    "reversed": {
+      "meaning": "You’re clinging to what’s already over, delaying relief. In practice: close the door cleanly; don’t keep feeding the dead thing.",
+      "voice": {
+        "lead_in": "The signal is distorted. Slow down and listen for growth underneath it.",
+        "pulse": "Death reversed shows growth running in the background — loud, exhausting, and unexamined.",
+        "turn": "Trade intensity for consistency: a smaller plan that preserves growth."
+      }
+    },
     "guidance": "Close the door cleanly; don’t keep feeding the dead thing.",
     "call_to_action": "End one lingering thread (message, item, habit) that keeps it alive.",
     "direct_guidance": {
@@ -3355,8 +4335,22 @@
       "meaning": "Fourteen is harmony through adaptation — the dance between extremes. It teaches integration, patience, and balance born from flow rather than force."
     },
     "theme": "balance, moderation, inner alchemy",
-    "upright": "Balance and integration—blend extremes and pace yourself. In practice: choose the middle path; consistency beats intensity.",
-    "reversed": "Too much/too fast: imbalance is the problem, not lack of effort. In practice: choose the middle path; consistency beats intensity.",
+    "upright": {
+      "meaning": "Balance and integration—blend extremes and pace yourself. In practice: choose the middle path; consistency beats intensity.",
+      "voice": {
+        "lead_in": "Your next step is simpler than your anxiety says: growth.",
+        "pulse": "Temperance upright puts growth on the table and asks you to be real about it.",
+        "turn": "Keep it clean: one boundary, one step, one honest choice toward growth."
+      }
+    },
+    "reversed": {
+      "meaning": "Too much/too fast: imbalance is the problem, not lack of effort. In practice: choose the middle path; consistency beats intensity.",
+      "voice": {
+        "lead_in": "If it’s confusing, that’s information: lesson is out of alignment.",
+        "pulse": "Temperance reversed brings lesson to the surface so you can stop bleeding energy into it.",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores lesson?"
+      }
+    },
     "guidance": "Choose the middle path; consistency beats intensity.",
     "call_to_action": "Pick one sustainable habit and do it today—no drama, no extremes.",
     "direct_guidance": {
@@ -3402,8 +4396,22 @@
       "meaning": "Fifteen is desire’s mirror — the confrontation with shadow. It teaches awareness through attachment, showing that what binds also reveals what we crave most deeply."
     },
     "theme": "temptation, awareness, reclaiming power",
-    "upright": "Attachment is running you—name the pattern and reclaim your agency. In practice: stop bargaining with the habit; set a boundary and get support.",
-    "reversed": "The grip is loosening, but you must choose freedom deliberately. In practice: stop bargaining with the habit; set a boundary and get support.",
+    "upright": {
+      "meaning": "Attachment is running you—name the pattern and reclaim your agency. In practice: stop bargaining with the habit; set a boundary and get support.",
+      "voice": {
+        "lead_in": "This is the chapter where threshold becomes non-negotiable.",
+        "pulse": "The Devil upright taps the nerve of threshold: it’s alive, it’s honest, and it wants motion.",
+        "turn": "Aim for repeatable progress — threshold over perfection."
+      }
+    },
+    "reversed": {
+      "meaning": "The grip is loosening, but you must choose freedom deliberately. In practice: stop bargaining with the habit; set a boundary and get support.",
+      "voice": {
+        "lead_in": "The signal is distorted. Slow down and listen for threshold underneath it.",
+        "pulse": "In The Devil reversed, threshold is present — but it’s being avoided or overdone.",
+        "turn": "Pause the spiral: one calming step, then revisit threshold with clarity."
+      }
+    },
     "guidance": "Stop bargaining with the habit; set a boundary and get support.",
     "call_to_action": "Name the dependency; take one boundary action (remove, block, replace).",
     "direct_guidance": {
@@ -3450,8 +4458,22 @@
       "meaning": "Sixteen is revelation — truth striking illusion. It dismantles false structures so that authenticity can rise in their place."
     },
     "theme": "awakening, upheaval, liberation through truth",
-    "upright": "A false structure is collapsing; let truth reset the foundation. In practice: don’t cling to what’s cracking.",
-    "reversed": "You’re trying to avoid the necessary breakdown—or rebuilding too fast. In practice: don’t cling to what’s cracking.",
+    "upright": {
+      "meaning": "A false structure is collapsing; let truth reset the foundation. In practice: don’t cling to what’s cracking.",
+      "voice": {
+        "lead_in": "Something in you is ready to level up — lesson is the signal flare.",
+        "pulse": "In The Tower upright, lesson isn’t theory — it’s the next practical move.",
+        "turn": "Treat lesson like a practice, not a performance."
+      }
+    },
+    "reversed": {
+      "meaning": "You’re trying to avoid the necessary breakdown—or rebuilding too fast. In practice: don’t cling to what’s cracking.",
+      "voice": {
+        "lead_in": "This is what happens when you carry threshold alone for too long.",
+        "pulse": "In The Tower reversed, threshold is present — but it’s being avoided or overdone.",
+        "turn": "Unhook from the narrative. What’s the smallest action that restores threshold?"
+      }
+    },
     "guidance": "Don’t cling to what’s cracking. Salvage the lesson and move on.",
     "call_to_action": "Write the truth you’ve been avoiding; remove one lie-supporting behavior.",
     "direct_guidance": {
@@ -3497,8 +4519,22 @@
       "meaning": "Seventeen is renewal through faith — light returning after loss. It embodies hope, inspiration, and the soul’s quiet recalibration toward purpose."
     },
     "theme": "hope, inspiration, spiritual renewal",
-    "upright": "Healing and hope—rebuild faith through small, consistent renewal. In practice: treat hope as a daily practice, not a mood you wait for.",
-    "reversed": "Discouragement or cynicism is blocking recovery. In practice: treat hope as a daily practice, not a mood you wait for.",
+    "upright": {
+      "meaning": "Healing and hope—rebuild faith through small, consistent renewal. In practice: treat hope as a daily practice, not a mood you wait for.",
+      "voice": {
+        "lead_in": "You don’t need permission. You need alignment — start with lesson.",
+        "pulse": "The Star upright taps the nerve of lesson: it’s alive, it’s honest, and it wants motion.",
+        "turn": "Hold steady. If lesson is the truth, you don’t need to sprint."
+      }
+    },
+    "reversed": {
+      "meaning": "Discouragement or cynicism is blocking recovery. In practice: treat hope as a daily practice, not a mood you wait for.",
+      "voice": {
+        "lead_in": "You can’t think your way out of a drained battery. Restore big-picture meaning.",
+        "pulse": "In The Star reversed, big-picture meaning is present — but it’s being avoided or overdone.",
+        "turn": "Stop negotiating with chaos — set one rule that supports big-picture meaning."
+      }
+    },
     "guidance": "Treat hope as a daily practice, not a mood you wait for.",
     "call_to_action": "Do one restorative thing (water, rest, creativity) and keep it simple.",
     "direct_guidance": {
@@ -3544,8 +4580,22 @@
       "meaning": "Eighteen is intuition’s tide — illusion meeting imagination. It teaches that clarity is cyclical and that shadow is simply light not yet understood."
     },
     "theme": "intuition, illusion, subconscious revelation",
-    "upright": "Uncertainty and intuition—move slowly and verify what’s real. In practice: don’t commit to a story yet; gather data and listen to your gut.",
-    "reversed": "Confusion, deception, or denial: you’re missing or ignoring key information. In practice: don’t commit to a story yet; gather data and listen to your gut.",
+    "upright": {
+      "meaning": "Uncertainty and intuition—move slowly and verify what’s real. In practice: don’t commit to a story yet; gather data and listen to your gut.",
+      "voice": {
+        "lead_in": "You’re closer than you think; threshold is already in motion.",
+        "pulse": "In The Moon upright, threshold isn’t theory — it’s the next practical move.",
+        "turn": "Keep it clean: one boundary, one step, one honest choice toward threshold."
+      }
+    },
+    "reversed": {
+      "meaning": "Confusion, deception, or denial: you’re missing or ignoring key information. In practice: don’t commit to a story yet; gather data and listen to your gut.",
+      "voice": {
+        "lead_in": "This isn’t a moral failure — it’s a systems issue. Start with threshold.",
+        "pulse": "The Moon reversed highlights threshold slipping through your fingers because the system is off.",
+        "turn": "Name the leak: what’s draining threshold? Cut that first."
+      }
+    },
     "guidance": "Don’t commit to a story yet; gather data and listen to your gut.",
     "call_to_action": "Write what you know vs. what you assume; ask one clarifying question.",
     "direct_guidance": {
@@ -3592,8 +4642,22 @@
       "meaning": "Nineteen is illumination — joy made conscious. It represents vitality, authenticity, and the celebration of clarity regained."
     },
     "theme": "joy, vitality, enlightenment",
-    "upright": "Clarity and joy—things are improving; be visible and honest. In practice: return to simplicity and truth; let yourself enjoy what’s good.",
-    "reversed": "Your light is dimmed by doubt, comparison, or unrealistic expectations. In practice: return to simplicity and truth; let yourself enjoy what’s good.",
+    "upright": {
+      "meaning": "Clarity and joy—things are improving; be visible and honest. In practice: return to simplicity and truth; let yourself enjoy what’s good.",
+      "voice": {
+        "lead_in": "You don’t need permission. You need alignment — start with big-picture meaning.",
+        "pulse": "The Sun upright arrives with big-picture meaning in its hands and a calm look that says “yes, this.”",
+        "turn": "When in doubt, pick the option that increases big-picture meaning without increasing chaos."
+      }
+    },
+    "reversed": {
+      "meaning": "Your light is dimmed by doubt, comparison, or unrealistic expectations. In practice: return to simplicity and truth; let yourself enjoy what’s good.",
+      "voice": {
+        "lead_in": "You might be doing the right thing the hard way — revisit fate.",
+        "pulse": "The Sun reversed asks: is fate a choice right now, or a reflex?",
+        "turn": "Pick recovery over proving. Let fate be the priority."
+      }
+    },
     "guidance": "Return to simplicity and truth; let yourself enjoy what’s good.",
     "call_to_action": "Do one thing purely because it makes you feel alive.",
     "direct_guidance": {
@@ -3639,8 +4703,22 @@
       "meaning": "Twenty is awakening — realization rising from reflection. It merges past and present into purpose, calling the soul to conscious renewal."
     },
     "theme": "rebirth, accountability, spiritual awakening",
-    "upright": "A wake-up call—own the lesson, forgive yourself, and level up. In practice: make the amends, take the lesson, and move forward cleanly.",
-    "reversed": "Self-criticism or avoidance is blocking your renewal. In practice: make the amends, take the lesson, and move forward cleanly.",
+    "upright": {
+      "meaning": "A wake-up call—own the lesson, forgive yourself, and level up. In practice: make the amends, take the lesson, and move forward cleanly.",
+      "voice": {
+        "lead_in": "This is you practicing adulthood in a cape: threshold, but make it real.",
+        "pulse": "Judgement upright is a spotlight on threshold — not dramatic, just undeniable.",
+        "turn": "Protect momentum: reduce the plan until threshold is effortless to start."
+      }
+    },
+    "reversed": {
+      "meaning": "Self-criticism or avoidance is blocking your renewal. In practice: make the amends, take the lesson, and move forward cleanly.",
+      "voice": {
+        "lead_in": "You can’t think your way out of a drained battery. Restore threshold.",
+        "pulse": "Judgement reversed asks: is threshold a choice right now, or a reflex?",
+        "turn": "Choose the version of threshold that feels sustainable, not dramatic."
+      }
+    },
     "guidance": "Make the amends, take the lesson, and move forward cleanly.",
     "call_to_action": "Write what you learned; choose one new behavior that proves it.",
     "direct_guidance": {
@@ -3686,8 +4764,22 @@
       "meaning": "Twenty-one is completion through integration — unity achieved by embracing diversity. It celebrates wholeness, mastery, and the infinite return to beginning."
     },
     "theme": "fulfillment, integration, completion",
-    "upright": "Completion and integration—close the cycle and claim the achievement. In practice: finish what you started; celebrate, then set the next horizon.",
-    "reversed": "Loose ends or fear of ‘what’s next’ is delaying closure. In practice: finish what you started; celebrate, then set the next horizon.",
+    "upright": {
+      "meaning": "Completion and integration—close the cycle and claim the achievement. In practice: finish what you started; celebrate, then set the next horizon.",
+      "voice": {
+        "lead_in": "If you feel exposed, good — that’s where fate can actually work.",
+        "pulse": "The World upright puts fate on the table and asks you to be real about it.",
+        "turn": "Make it concrete: pick one action that proves fate is real."
+      }
+    },
+    "reversed": {
+      "meaning": "Loose ends or fear of ‘what’s next’ is delaying closure. In practice: finish what you started; celebrate, then set the next horizon.",
+      "voice": {
+        "lead_in": "Your energy is leaking somewhere; growth shows where the crack is.",
+        "pulse": "The World reversed is a mirror: where growth becomes self-sabotage if left unchecked.",
+        "turn": "Pause the spiral: one calming step, then revisit growth with clarity."
+      }
+    },
     "guidance": "Finish what you started; celebrate, then set the next horizon.",
     "call_to_action": "Complete one lingering task today to close the loop.",
     "direct_guidance": {
