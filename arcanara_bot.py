@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 import discord
 from discord.ext import commands
@@ -147,8 +146,9 @@ def ensure_tables():
 DEFAULT_TONE = "poetic"
 
 TONE_SPECS = {
-    "quick":  ["quick", "call_to_action"],
-    "poetic": ["poetic_hint", "meaning", "mantra", "call_to_action"],
+    "quick": ["voice_pulse", "call_to_action"],
+    "poetic": ["voice_lead", "meaning", "voice_pulse", "mantra", "voice_turn", "call_to_action"],
+
 
     "direct": ["reader_voice", "tell", "do_dont", "prescription", "watch_for", "pitfall", "questions", "next_24h", "call_to_action"],
     "shadow": ["reader_voice", "tell", "shadow", "watch_for", "pitfall", "questions", "call_to_action"],
@@ -157,8 +157,10 @@ TONE_SPECS = {
     "work":   ["reader_voice", "tell", "work", "prescription", "watch_for", "next_24h", "call_to_action"],
     "money":  ["reader_voice", "tell", "money", "prescription", "watch_for", "next_24h", "call_to_action"],
 
-    "full":   ["reader_voice", "tell", "meaning", "mantra", "do_dont", "prescription", "watch_for", "pitfall",
-               "shadow", "green_red", "questions", "next_24h", "call_to_action"],
+    "full": ["voice_lead", "reader_voice", "tell", "meaning", "voice_pulse", "mantra", "do_dont",
+         "prescription", "watch_for", "pitfall", "shadow", "green_red", "questions",
+         "next_24h", "voice_turn", "call_to_action"],
+
 }
 
 TONE_LABELS = {
@@ -218,14 +220,59 @@ def _clip(text: str, max_len: int = 3800) -> str:
         return text
     return text[: max_len - 1] + "…"
 
+def _orientation_key(orientation: str) -> str:
+    o = (orientation or "").strip().lower()
+    return "upright" if o.startswith("u") else "reversed"
+
+
+def _get_orientation_data(card: dict, orientation: str) -> dict:
+    """
+    Always returns a dict for the selected orientation.
+    Supports old decks where upright/reversed might be a string or list.
+    """
+    okey = _orientation_key(orientation)
+    val = card.get(okey)
+
+    if isinstance(val, dict):
+        return val
+    if isinstance(val, str):
+        return {"meaning": val}
+    if isinstance(val, list):
+        joined = "\n".join(str(x) for x in val if str(x).strip())
+        return {"meaning": joined}
+    return {}
+
 
 def render_card_text(card: Dict[str, Any], orientation: str, tone: str) -> str:
     tone = normalize_tone(tone)
-    spec = TONE_SPECS.get(tone, TONE_SPECS[DEFAULT_TONE])  # <-- FIX: uses TONE_SPECS
+    spec = TONE_SPECS.get(tone, TONE_SPECS[DEFAULT_TONE])
 
-    is_rev = (orientation.lower() == "reversed")
-    meaning = card.get("reversed" if is_rev else "upright", "—")
+    is_rev = orientation.strip().lower().startswith("r")
+    okey = "reversed" if is_rev else "upright"
 
+    # ✅ NEW: normalize orientation data to a dict
+    odata_raw = card.get(okey, {})
+    if isinstance(odata_raw, dict):
+        odata = odata_raw
+    elif isinstance(odata_raw, str):
+        odata = {"meaning": odata_raw}
+    elif isinstance(odata_raw, list):
+        odata = {"meaning": "\n".join(str(x) for x in odata_raw if str(x).strip())}
+    else:
+        odata = {}
+
+    # ✅ NEW: meaning must be a string
+    meaning = (odata.get("meaning") or "—")
+    if not isinstance(meaning, str):
+        meaning = str(meaning)
+    # ✅ OPTIONAL UPGRADE: new voice fields (safe, no behavior change unless used)
+    voice = odata.get("voice", {})
+    if not isinstance(voice, dict):
+        voice = {}
+
+    v_lead = (voice.get("lead_in") or "").strip()
+    v_pulse = (voice.get("pulse") or "").strip()
+    v_turn = (voice.get("turn") or "").strip()
     dg = card.get("direct_guidance", {}) or {}
     lenses = dg.get("lenses", {}) or {}
 
@@ -335,8 +382,20 @@ def render_card_text(card: Dict[str, Any], orientation: str, tone: str) -> str:
 
         elif token == "poetic_hint":
             ph = dg.get("poetic_hint", "")
-            if ph:
+            if ph and not (v_lead or v_pulse or v_turn):
                 blocks.append(f"*{ph}*")
+
+        elif token == "voice_lead":
+            if v_lead:
+                blocks.append(f"*{v_lead}*")
+
+        elif token == "voice_pulse":
+            if v_pulse:
+                blocks.append(f"*{v_pulse}*")
+
+        elif token == "voice_turn":
+            if v_turn:
+                blocks.append(f"*{v_turn}*")
 
         elif token == "call_to_action":
             a = card.get("call_to_action", "")
@@ -1471,7 +1530,7 @@ async def meaning_slash(interaction: discord.Interaction, card: str):
     embed.set_footer(text=f"{E['light']} Interpreting symbols through Arcanara • Tarot Bot")
 
     # --- Image: same attachment style as cardoftheday ---
-    file_obj, attach_url = make_image_attachment(chosen_name)
+    file_obj, attach_url = make_image_attachment(chosen_name, False)
 
     if file_obj:
         embed.set_image(url=f"attachment://{file_obj.filename}")
