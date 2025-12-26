@@ -4,7 +4,7 @@ from discord.ext import commands
 from discord import app_commands
 import re
 import random
-from discord.errors import NotFound
+from discord.errors import NotFound as DiscordNotFound
 import time
 import json
 from pathlib import Path
@@ -173,6 +173,19 @@ TONE_LABELS = {
     "work":   "Work Lens (purpose + friction)",
     "money":  "Money Lens (resources + decisions)",
 }
+
+_original_autocomplete = discord.InteractionResponse.autocomplete
+
+async def _safe_autocomplete(self, choices):
+    try:
+        return await _original_autocomplete(self, choices)
+    except DiscordNotFound as e:
+        # 10062 = Unknown interaction (common when user types fast / interaction expires)
+        if getattr(e, "code", None) == 10062:
+            return
+        raise
+
+discord.InteractionResponse.autocomplete = _safe_autocomplete
 
 def normalize_tone(tone: str) -> str:
     t = (tone or "").lower().strip()
@@ -800,7 +813,7 @@ async def safe_defer(interaction: discord.Interaction, *, ephemeral: bool = True
         if not interaction.response.is_done():
             await interaction.response.defer(ephemeral=ephemeral)
         return True
-    except (discord.NotFound, NotFound):
+    except DiscordNotFound:
         # 10062 Unknown interaction
         return False
     except discord.HTTPException as e:
@@ -1040,7 +1053,7 @@ async def send_ephemeral(
 
         await send_fn(**_send_kwargs(content=content or "—", ephemeral=True))
         
-    except (discord.NotFound, NotFound) as e:
+    except DiscordNotFound
         # Interaction expired / unknown; nothing we can do
         return
 
@@ -1090,10 +1103,8 @@ async def on_ready():
 
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-    # ✅ Never respond to autocomplete interactions
+    # Never try to respond to autocomplete interactions
     if interaction.type == discord.InteractionType.autocomplete:
-        orig = getattr(error, "original", error)
-        print(f"⚠️ Autocomplete error: {type(orig).__name__}: {orig}")
         return
 
     orig = getattr(error, "original", error)
@@ -1109,6 +1120,7 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
         )
     except Exception as e:
         print(f"⚠️ Failed to send error message: {type(e).__name__}: {e}")
+
 
 # ==============================
 # SLASH COMMANDS (EPHEMERAL)
