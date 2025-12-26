@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 import os
 import psycopg
-from datetime import datetime
+from datetime import datetime, date
 import traceback
 from zoneinfo import ZoneInfo
 from psycopg.types.json import Json
