@@ -709,7 +709,7 @@ def normalize_card_name(name: str) -> str:
 # ==============================
 DEFAULT_TZ = ZoneInfo("America/Chicago")
 
-def _today_local_date() -> datetime.date:
+def _today_local_date() -> date:
     return datetime.now(DEFAULT_TZ).date()
 
 def get_daily_card_row(user_id: int, day) -> Optional[Dict[str, Any]]:
@@ -1053,7 +1053,7 @@ async def send_ephemeral(
 
         await send_fn(**_send_kwargs(content=content or "—", ephemeral=True))
         
-    except DiscordNotFound
+    except DiscordNotFound:
         # Interaction expired / unknown; nothing we can do
         return
 
